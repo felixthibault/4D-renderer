@@ -273,7 +273,7 @@ fn vérif() {
 
 
 
-fn panik() {
+pub fn panik() {
     panic!("crash and burn");
 }
 
