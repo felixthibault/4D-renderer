@@ -1,10 +1,12 @@
 [package]
 name = "CAD_renderer"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+
 
 [dependencies]
 bevy = "0.16.0"
+bevy_encase_derive = "0.16.0"
 glium = "0.36.0"
 ogl33 = "0.3.0"
 sdl = "0.3.6"

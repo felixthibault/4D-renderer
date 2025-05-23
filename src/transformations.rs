@@ -6,12 +6,15 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::*;
-use std::{collections::HashMap, fs::File, io::prelude::*, os::unix::fs::FileExt, string::*};
+use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, string::*};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
+
 #[path = "main.rs"]
 mod embarquation_b4d;
 use embarquation_b4d::*;
+
+
 
 //'! Structure générale des entités
 #[derive(Debug)]
@@ -268,12 +271,6 @@ fn vérif() {
 
 
 
-//'! Implémentation des instances d'objets regroupés sous le nom d'une entité
-fn verifier_fichier() -> std::io::Result<()> {
-    let mut terrain = File::open("terrain.d4b")?;
-    terrain.read_to_end(&mut data)?;
-    Ok(())
-}
 
 
 fn panik() {

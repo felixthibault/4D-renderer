@@ -1,31 +1,38 @@
+use bevy::render::{renderer::RenderAdapter, RenderDebugFlags};
 #[cfg(not(target_arch = "wasm32"))]
 use bevy::{pbr::wireframe::{WireframeConfig, WireframePlugin},prelude::*};
-
+use std::process::exit;
+use std::*;
 
 mod transformations;
-mod embarquation_b4d;
-use {std::*, transformations::*, embarquation_b4d::*};
+
+#[path = "embarquation_b4d.rs"]
+mod verifier_fichier;
+
 
 fn main() {
     App::new()
         .add_plugins((#[cfg(not(target_arch = "wasm32"))] 
-                        WireframePlugin,))
+                        WireframePlugin{debug_flags:RenderDebugFlags},))
         .add_systems(Startup, setup)
         .add_systems(
             Update,
             (#[cfg(not(target_arch = "wasm32"))]
-                toggle_wireframe,
+                toggle_wireframe,setup
             ),)
-        .run(setup);
-    let carré=
+        .run();
     println!("Entité triangle générée");
 }
 fn setup(){
     //Vérifier que le fichier binaire est présent sinon en créer un vide
-    let f= verifier_fichier()->std::io::Error;
+    verifier_fichier();
+    exit(0x0);
     //Vérifier que le fichier JSON est présent sinon en créer un avec des paramètres par défaut
 
 }
+
+
+
 
 #[cfg(not(target_arch = "wasm32"))]
 fn toggle_wireframe(
