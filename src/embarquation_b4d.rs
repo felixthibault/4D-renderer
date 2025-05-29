@@ -7,18 +7,21 @@ use serde::Deserialize;
 pub fn verifier_fichier(){
     let  fichier= File::open("Préférences.json").expect("Le fichier de préférences devrait être read-only.");
     let json: serde_json::Value = serde_json::from_reader(fichier).expect("Le fichier de préférences devrait être de format JSON");
-    //Utiliser json comme structure pour accéder au fichier json.
+    //Utiliser json comme structure pour accéder au fichier JSON.
+    
+    let preference_ouverture = json.get("Ouverture_sécuritaire").unwrap();
+    let nom_par_défaut:String=
+        if preference_ouverture==true{json.get("Default_project_name").expect("Le nom par défaut du projet devrait exister
+        si l'ouverture sécuritaire est activée.").to_string()}
+        else{json.get("Preferred_default_project_name").expect("Le nom du par défaut de préférence devrait exister
+        si l'ouverture sécuritaire est désactivée.").to_string()};
 
-    let ouverture_terrain_result = File::open("terrain.d4b").unwrap_or_else(|error|{
+    let ouverture_terrain_result = File::open(&nom_par_défaut).unwrap_or_else(|error|{
         if error.kind() == ErrorKind::NotFound {
-            let preference_ouverture = json.get("Ouverture_sécuritaire");
-            let nom_par_défaut:String=
-                if preference_ouverture=="True"{String::from(json.get("Default_project_name"))}
-                else{json.get("Preferred_project_name")};
             create_fichier(nom_par_défaut)
         }
         else {
-            panic!("Problem opening the file: {error:?}");
+            panic!("Problem opening the default file: {error:?}");
         }
     });
     print!("Fichier {ouverture_terrain_result:?} ouvert");

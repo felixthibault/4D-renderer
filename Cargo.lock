@@ -11,6 +11,8 @@ dependencies = [
  "glium",
  "ogl33",
  "sdl",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
