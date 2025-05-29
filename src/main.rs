@@ -22,10 +22,11 @@ fn main() {
     println!("Entité triangle générée");
 }
 fn setup(){
+    //Vérifier que le fichier JSON est présent sinon en créer un avec des paramètres par défaut
+    
     //Vérifier que le fichier binaire est présent sinon en créer un vide
     verifier_fichier();
     exit(0x0);
-    //Vérifier que le fichier JSON est présent sinon en créer un avec des paramètres par défaut
 
 }
 

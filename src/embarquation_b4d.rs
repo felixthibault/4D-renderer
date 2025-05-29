@@ -4,7 +4,8 @@ use std::{*, fs::File,io::*, io::prelude::*};
 use serde::Deserialize;
 
 //'! Implémentation des instances d'objets regroupés sous le nom d'une entité
-pub fn verifier_fichier(){
+pub fn verifier_fichier(type_de_fichieràouvrir:&str){
+    match type_de_fichieràouvrir{
     let  fichier= File::open("Préférences.json").expect("Le fichier de préférences devrait être read-only.");
     let json: serde_json::Value = serde_json::from_reader(fichier).expect("Le fichier de préférences devrait être de format JSON");
     //Utiliser json comme structure pour accéder au fichier JSON.
@@ -25,7 +26,7 @@ pub fn verifier_fichier(){
         }
     });
     print!("Fichier {ouverture_terrain_result:?} ouvert");
-    
+    }
 }
  
 fn create_fichier(nom_fichier:String)-> File{
