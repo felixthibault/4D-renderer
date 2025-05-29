@@ -1,0 +1,14 @@
+{
+    "configuration":[
+        {
+            "Ouverture_sécuritaire": "True",
+            "Default_project_name": "terrain.b4d",
+            "Preferred_project_name": "Cube.b4d"
+
+
+        }
+    ],
+    "Utilisateur": "Félix T",
+    "version": "alpha"
+
+}
