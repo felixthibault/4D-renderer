@@ -36,10 +36,9 @@ target/
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,rust
-
-
-
-/target
-/build
+### Rust Patch ###
+.target/*
+.build/*
 #Ignore Kaloo234
+
+# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,rust
