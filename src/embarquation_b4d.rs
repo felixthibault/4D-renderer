@@ -25,6 +25,7 @@ pub fn verifier_fichier(TypeDeFichier:String){
     }
     let ouverture_terrain_result = File::open(&nom_fichier).unwrap_or_else(|error|{
         if error.kind() == ErrorKind::NotFound {
+            print!("Fichier du projet par défaut non trouvé, écriture d'un nouveau.");
             create_fichier(nom_fichier)
         }
         else {
@@ -41,6 +42,8 @@ fn create_fichier(nom_fichier:String)-> File{
     return create_fichier;
 }
 
-fn écrire_texte_fichier(mut projet:File,texte:String){
-    projet.write(texte.as_bytes());
+fn ecrire_texte_fichier(mut projet:File,texte:String)->std::io::Result<()>{
+    projet.write(texte.as_bytes())?;
+    //write!("Some bytes were written to {}",projet);
+    Ok(())
 }
