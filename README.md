@@ -1,7 +1,7 @@
 # 4D-renderer
 Un essai de concevoir un CAD en 4 dimensions, comme si 3 n'étaient déjà pas assez...
 
-Version présente: Alpha
+###### Version présente: Alpha
 
 
 #! Note pour l'usager:
