@@ -4,7 +4,7 @@ use std::{*, fs::File,io::*, io::prelude::*};
 use serde::Deserialize;
 
 //'! Implémentation des instances d'objets regroupés sous le nom d'une entité
-pub fn verifier_fichier(){
+pub fn verifier_fichier()->String{
     let  fichier= File::open("Préférences.json").expect("Le fichier de préférences devrait être read-only.");
     let json: serde_json::Value = serde_json::from_reader(fichier).expect("Le fichier de préférences devrait être de format JSON");
     //Utiliser json comme structure pour accéder au fichier JSON.
@@ -19,13 +19,14 @@ pub fn verifier_fichier(){
     let ouverture_terrain_result = File::open(&nom_par_défaut).unwrap_or_else(|error|{
         if error.kind() == ErrorKind::NotFound {
             create_fichier(nom_par_défaut)
+            return "avec difficulté"
         }
         else {
             panic!("Problem opening the default file: {error:?}");
         }
     });
     print!("Fichier {ouverture_terrain_result:?} ouvert");
-    
+    return "correctement"
 }
  
 fn create_fichier(nom_fichier:String)-> File{
