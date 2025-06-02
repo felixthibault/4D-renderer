@@ -3,8 +3,8 @@
         {
             "Ouverture_sécuritaire": true,
             "Default_project_name": "terrain.b4d",
-            "Preferred_default_project_name": "Cube.b4d"
-
+            "Preferred_default_project_name": "Cube.b4d",
+            "Debugging": true
 
         }
     ],
