@@ -4,7 +4,7 @@ use std::{*, fs::File,io::*, io::prelude::*};
 use serde::Deserialize;
 
 //'! Implémentation des instances d'objets regroupés sous le nom d'une entité
-pub fn verifier_fichier(TypeDeFichier:String){
+pub fn verifier_fichier(TypeDeFichier:String)->String {
     if TypeDeFichier=="Demarrage"{
         //Vérification des fichiers de démarrage standarts.
         let parametre= File::open("Préférences.json").unwrap_or_else(|error|{
@@ -34,12 +34,14 @@ pub fn verifier_fichier(TypeDeFichier:String){
         if error.kind() == ErrorKind::NotFound {
             print!("Fichier du projet par défaut non trouvé, écriture d'un nouveau vide.");
             create_fichier(nom_fichier)
+            return "avec difficulté"
         }
         else {
             panic!("Problem opening the default file: {error:?}");
         }
     });
     print!("Fichier {ouverture_terrain_result:?} ouvert");
+    return "correctement"
 }
  
 fn create_fichier(nom_fichier:String)-> File {
