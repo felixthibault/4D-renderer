@@ -60,7 +60,7 @@ fn create_json(nom_fichier:String)-> File {
     //Ça va très sûrement peut-être bugger ici en format binaire
     return json;
 }
-/*Régler ce code pour l'update beta
+/*Régler ce code dans l'update beta
 fn actualise_json{
     //Se rappeler de merger les préférences actuelles avec les nouvelles
     let data:String= match version {
