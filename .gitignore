@@ -19,11 +19,7 @@ target/
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
 
 # Local History for Visual Studio Code
 .history/
@@ -40,5 +36,6 @@ target/
 .target/*
 .build/*
 #Ignore Kaloo234
+.Kaloo234
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,rust
