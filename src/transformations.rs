@@ -256,7 +256,7 @@ impl Polychore{
 
 
 //Vérification des macros générants des objets
-fn vérif() {
+fn verif() {
     // --temporaire-- Exemple de création d'un objet avec des tags, rôles, permissions et position initiale
     let objet:&str = "Triangle";
     let permissions: HashMap<String, bool> = HashMap::from([("fixe".to_string(),true)]);
@@ -271,17 +271,32 @@ fn vérif() {
 
 
 
-
+pub fn ReportError(message:String){
+    //Afficher fenêtre contenant erreur mineure
+}
 
 pub fn panik() {
     panic!("crash and burn");
 }
 
+fn deferencer(reference:String){
+    //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
+    //Crée des structures temporaires de toutes les sous-références jusqu'aux points
+}
+
 //'! Transformation des points
-fn rotation(angle:i32,objet:Entity,axe:Entity){
+fn Rotation(angle:i32,objet:Entity,axe:Entity){
 
 }
 
-fn translation_linéaire(mesure:f64,objet:Entity,axe:Entity){
+fn TranslationLineaire(mesure:Vec<f32;4>,objet:Entity){
+}
 
+fn TranslationUnAxe(mesure:f32,objet:Entity, axe:String){
+    if objet.objets==None{ReportError("Aucune référence trouvée");}
+    else {
+        //Passer à travers les références de l'entité
+        let point:Point=deferencer(objet.objets);//Méthode
+        point.changer_x(point.x+mesure);
+    }
 }
