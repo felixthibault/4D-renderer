@@ -279,9 +279,11 @@ pub fn panik() {
     panic!("crash and burn");
 }
 
-fn deferencer(reference:String){
+fn deferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
-    //Crée des structures temporaires de toutes les sous-références jusqu'aux points
+    //Crée des structures temporaires de toutes les références
+    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacés lors de la boucle)
+    return SousStructures
 }
 
 //'! Transformation des points
@@ -289,14 +291,23 @@ fn Rotation(angle:i32,objet:Entity,axe:Entity){
 
 }
 
-fn TranslationLineaire(mesure:Vec<f32;4>,objet:Entity){
+fn TranslationLineaire(mesure:Vec<f32>,objet:Entity){assert_eq(mesure.len(),4);
 }
 
-fn TranslationUnAxe(mesure:f32,objet:Entity, axe:String){
-    if objet.objets==None{ReportError("Aucune référence trouvée");}
+fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
+    if Entite.objets==None{ReportError("Aucune référence trouvée");}
     else {
         //Passer à travers les références de l'entité
-        let point:Point=deferencer(objet.objets);//Méthode
-        point.changer_x(point.x+mesure);
+        let SousStructures:Option<Vec<String>>=deferencer(Entite.objets);//Méthode
+       for objet in SousStructures{
+           //Déférencer en boucle jusqu'au points
+           if objet.reference==None{
+                //C'est un point
+               match axe{
+                   "x"
+               point.changer_x(point.x+mesure);
+           }
+           
+       }
     }
 }
