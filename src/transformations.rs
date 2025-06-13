@@ -269,12 +269,18 @@ fn verif() {
 }
 
 
-
-
-pub fn ReportError(message:String){
-    //Afficher fenêtre contenant erreur mineure
+//Fonctions pour aider la production
+pub fn println(msg:&str){
+    println!("{}",msg);
 }
-
+pub fn print(msg:&str){
+    print!("{}",msg);
+}
+pub fn ReportError(message:&str,code:String){
+    //Afficher fenêtre contenant erreur mineure
+    //Pour l'instant:
+    println!("{} {}.",message,code);
+}
 pub fn panik() {
     panic!("crash and burn");
 }
@@ -282,32 +288,92 @@ pub fn panik() {
 fn deferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
     //Crée des structures temporaires de toutes les références
-    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacés lors de la boucle)
+    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
+    
     return SousStructures
 }
 
+
+
 //'! Transformation des points
-fn Rotation(angle:i32,objet:Entity,axe:Entity){
+fn Rotation(angle:f16,objet:Entity,axe:Entity){
 
 }
 
-fn TranslationLineaire(mesure:Vec<f32>,objet:Entity){assert_eq(mesure.len(),4);
-}
-
-fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
-    if Entite.objets==None{ReportError("Aucune référence trouvée");}
+fn TranslationLineaire(mut mesure:Vec<f64>,objet:Entity){
+    //Ajoute une quantité vectorielle de déplacement sur toute l'entité
+    if json.Debugging==true{ assert_eq(mesure.len(),4);}
+    else if mesure.len()!=4{
+        for i in mesure.len()..4){
+            mesure.push(0.0);    
+    } }
+    fn BoucleDeference(Objets){
+        let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+        for objet in SousStructures{
+           //Déférencer en boucle jusqu'aux points
+           if objet.reference==None{
+               if objet.x !=None{
+                    //C'est un point=>Changer coordonnées
+                       objet.changer_x(point.x+mesure[0]);
+                       objet.changer_y(point.y+mesure[1]);
+                       objet.changer_z(point.z+mesure[2]);
+                       objet.changer_w(point.w+mesure[3]);
+                }
+                else{
+                    //C'est une entité référencée d'une certaine façon
+                    BoucleDeference(objet.objets);
+                }
+           }
+            else{
+                //Il y a des sous-structures
+                BoucleDeference(objet.reference);
+           }
+       }
+    }
+    
+    if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
     else {
         //Passer à travers les références de l'entité
-        let SousStructures:Option<Vec<String>>=deferencer(Entite.objets);//Méthode
-       for objet in SousStructures{
-           //Déférencer en boucle jusqu'au points
+        BoucleDeference(Entite.objets);
+        if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
+    }
+}
+
+
+fn TranslationUnAxe(mesure:f64,Entite:Entity,axe:String){
+    //Ajoute une quantité scalaire de translation dans un seul axe sur toute l'entité
+    fn BoucleDeference(Objets){
+        let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+        for objet in SousStructures{
+           //Déférencer en boucle jusqu'aux points
            if objet.reference==None{
-                //C'est un point
-               match axe{
-                   "x"
-               point.changer_x(point.x+mesure);
+               if objet.x !=None{
+                    //C'est un point
+                    match axe{
+                       "x"=>objet.changer_x(objet.x+mesure),
+                       "y"=>objet.changer_y(objet.y+mesure),
+                       "z"=>objet.changer_z(objet.z+mesure),
+                       "w"=>objet.changer_w(objet.w+mesure),
+                       _=>ReportError("Axe de translation non-existant",axe),
+                       None=>panik!("Axe de translation incohérent",axe),
+                    }
+                }
+                else{
+                    //C'est une entité référencée d'une certaine façon
+                    BoucleDeference(objet.objets);
+                }
            }
-           
+            else{
+                //Il y a des sous-structures
+                BoucleDeference(objet.reference);
+           }
        }
+    }
+    
+    if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
+    else {
+        //Passer à travers les références de l'entité
+        BoucleDeference(Entite.objets);
+        if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
     }
 }
