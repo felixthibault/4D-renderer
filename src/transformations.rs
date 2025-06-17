@@ -296,8 +296,8 @@ fn deferencer(reference:String)->Option<Vec<String>>{
 
 
 //'! Transformation des points
-fn Rotation(angle:f16,objet:Entity,axe:Entity){
-
+fn Rotation(angle:f16,Entite:Entity,axe:String){
+    //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
 }
 
 fn TranslationLineaire(mut mesure:Vec<f64>,objet:Entity){
