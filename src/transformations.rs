@@ -296,8 +296,15 @@ fn deferencer(reference:String)->Option<Vec<String>>{
 
 
 //'! Transformation des points
+//Un matrice de dimension n est une suite de x vecteurs que l'on peut appliquer une transformation 
+//Les matrices peuvent se multiplier entre elles pour former une nouvelle matrice de même dimension issue d'une trasnformation. Accumuler ces transformations pour les modification de croquis.
+//https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
+//https://en.wikipedia.org/wiki/Transformation_matrix
+
 fn Rotation(angle:f16,Entite:Entity,axe:String){
     //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
+    //https://en.wikipedia.org/wiki/Rotation_matrix
+    
 }
 
 fn TranslationLineaire(mut mesure:Vec<f64>,objet:Entity){
