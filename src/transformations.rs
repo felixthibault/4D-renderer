@@ -31,10 +31,10 @@ pub struct Entité{
 pub struct Point{
     pub nom:&'static str,// Nom du point
     //Pas de tags car il n'y a pas de dimension inférieur dépendante du point
-    x: f64,  //Coordonnées associées au point
-    y: f64,
-    z: f64,
-    w: f64,
+    x: f32,  //Coordonnées associées au point
+    y: f32,
+    z: f32,
+    w: f32,
     permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
 }
 
@@ -112,23 +112,23 @@ impl Point{
     //Création d'un nouveau point selon les coordonnées
     fn create_point(
         nom:&'static str,
-        x: f64,
-        y: f64,
-        z: f64,
-        w: f64,
+        x: f32,
+        y: f32,
+        z: f32,
+        w: f32,
         permissions:HashMap<String, bool>,
         )-> Self 
         {Point{nom,x,y,z,w,permissions,}}
     //Modifier le nom
     fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
     // Modifier x
-    fn changer_x(&mut self, nouvelle_coordonnee: f64) {self.x=nouvelle_coordonnee;}
+    fn changer_x(&mut self, nouvelle_coordonnee: f32) {self.x=nouvelle_coordonnee;}
     // Modifier y
-    fn changer_y(&mut self, nouvelle_coordonnee: f64) {self.y=nouvelle_coordonnee;}
+    fn changer_y(&mut self, nouvelle_coordonnee: f32) {self.y=nouvelle_coordonnee;}
     // Modifier z
-    fn changer_z(&mut self, nouvelle_coordonnee: f64) {self.z=nouvelle_coordonnee;}
+    fn changer_z(&mut self, nouvelle_coordonnee: f32) {self.z=nouvelle_coordonnee;}
     // Modifier w
-    fn changer_w(&mut self, nouvelle_coordonnee: f64) {self.w=nouvelle_coordonnee;}
+    fn changer_w(&mut self, nouvelle_coordonnee: f32) {self.w=nouvelle_coordonnee;}
     // Modifier les permissions
     fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
     fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
@@ -293,21 +293,41 @@ fn deferencer(reference:String)->Option<Vec<String>>{
     return SousStructures
 }
 
+fn MultiplicationMatrices(matrice1:Vec<Vec<f32>>,matrice2:Vec<Vec<f32>>){
+    //Multiplie des matrices de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+    if matrice1[0].len()!=matrice2.len(){
+        print("Multiplication de matrices incompatibles");
+        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
+        panik();
+    }
+    let mut matrice3:Vec<Vec<f32>>=Vec::new();
+    let mut calcul:f32=0.0;
+    for j in 0..matrice1.len(){
+        matrice3.push(Vec::new());
+        for i in matrice1[j]{
+            l
+        }
+    }
+}
 
 
 //'! Transformation des points
-//Un matrice de dimension n est une suite de x vecteurs que l'on peut appliquer une transformation 
-//Les matrices peuvent se multiplier entre elles pour former une nouvelle matrice de même dimension issue d'une trasnformation. Accumuler ces transformations pour les modification de croquis.
-//https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
-//https://en.wikipedia.org/wiki/Transformation_matrix
-
+/* Un matrice de dimension n est une suite de x vecteurs que l'on peut appliquer une transformation.
+Un point peut aussi être une matrice de coordonnées (4 lignes et une colonne).
+Les matrices peuvent se multiplier entre elles pour former une nouvelle matrice de dimension différente issue d'une transformation. Accumuler ces transformations pour les modification de croquis.
+Pour une rotation ou d'autres transformations similaires, transformer d'abord le point en matrice est pratique.
+https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
+https://en.wikipedia.org/wiki/Transformation_matrix
+https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
+*/
+    
 fn Rotation(angle:f16,Entite:Entity,axe:String){
     //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
     //https://en.wikipedia.org/wiki/Rotation_matrix
     
 }
 
-fn TranslationLineaire(mut mesure:Vec<f64>,objet:Entity){
+fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
     //Ajoute une quantité vectorielle de déplacement sur toute l'entité
     if json.Debugging==true{ assert_eq(mesure.len(),4);}
     else if mesure.len()!=4{
@@ -347,7 +367,7 @@ fn TranslationLineaire(mut mesure:Vec<f64>,objet:Entity){
 }
 
 
-fn TranslationUnAxe(mesure:f64,Entite:Entity,axe:String){
+fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
     //Ajoute une quantité scalaire de translation dans un seul axe sur toute l'entité
     fn BoucleDeference(Objets){
         let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
