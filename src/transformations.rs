@@ -285,6 +285,10 @@ pub fn panik() {
     panic!("crash and burn");
 }
 
+pub fn unreachable(x: Void) -> ! {
+    match x {}
+}
+
 fn deferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
     //Crée des structures temporaires de toutes les références
@@ -293,16 +297,28 @@ fn deferencer(reference:String)->Option<Vec<String>>{
     return SousStructures
 }
 
-fn ScalableFloatMatrix(scalaire:f16,matrice:Vec<Vec<f32>>){
-    //Multiplication d'une matrice par un scalaire float. Retourne une matrice de même dimension.
+fn ScalableFloatMatrix(scalaire:f32,mut matrice:Vec<Vec<f32>>)->Vec<Vec<f32>>{
+    //Multiplication d'une matrice par un scalaire float. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des float.
+    for mut j in &mut matrice{
+        for i in 0..j.len(){
+        j[i]*=scalaire;
+        }
+    }
+    return matrice
 }
 
-fn ScalableIntMatrix(scalaire:u16,matrice:Vec<Vec<u32>>){
-    //Multiplication d'une matrice d'integers par un scalaire int non signé. Retourne une matrice de même dimension.
+fn ScalableIntMatrix(scalaire:usize,mut matrice:Vec<Vec<usize>>)->Vec<Vec<usize>>{
+    //Multiplication d'une matrice d'entiers par un scalaire int non signé. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des usize.
+    for mut j in &mut matrice{
+        for i in 0..j.len(){
+        j[i]*=scalaire;
+        }
+    }
+    matrice//return
 }
 
-fn MultiplicationMatrices(matrice1:Vec<Vec<f32>>,matrice2:Vec<Vec<f32>>){
-    //Multiplie des matrices de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+pub(super) fn MultiplicationFloatMatrices(matrice1:Vec<Vec<f32>>,matrice2:Vec<Vec<f32>>)->Vec<Vec<f32>>{
+    //Multiplie des matrices f32 de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
     //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
     if matrice1[0].len()!=matrice2.len(){
         print("Multiplication de matrices incompatibles");
@@ -324,6 +340,28 @@ fn MultiplicationMatrices(matrice1:Vec<Vec<f32>>,matrice2:Vec<Vec<f32>>){
     return matrice3
 }
 
+pub(super) fn MultiplicationIntMatrices(matrice1:Vec<Vec<usize>>,matrice2:Vec<Vec<usize>>)->Vec<Vec<usize>>{
+    //Multiplie des matrices d'uX de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
+    if matrice1[0].len()!=matrice2.len(){
+        print("Multiplication de matrices incompatibles");
+        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
+        panik();
+    }
+    let mut matrice3:Vec<Vec<usize>>=Vec::new();
+    let mut calcul:usize;
+    for j in 0..matrice1.len(){
+        matrice3.push(Vec::new());
+        for i in 0..matrice2[0].len(){
+            calcul=0;
+            for case in 0..matrice1[j].len(){
+                calcul+=matrice1[j][case]*matrice2[case][i];
+            matrice3[j].push(calcul);
+            }    
+        }
+    }
+    return matrice3
+}
 
 //'! Transformation des points
 /* Un matrice de dimension n est une suite de x vecteurs que l'on peut appliquer une transformation.
@@ -335,10 +373,48 @@ https://en.wikipedia.org/wiki/Transformation_matrix
 https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
 */
     
-fn Rotation(angle:f16,Entite:Entity,axe:String){
+fn Rotation(angle:f16,Entite:Entity,axe:String,origine:Vec<f32>){
     //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
     //https://en.wikipedia.org/wiki/Rotation_matrix
+    fn BoucleDeference(Objets){
+        let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+        for objet in SousStructures{
+           //Déférencer en boucle jusqu'aux points
+           if objet.reference==None{
+               if objet.x !=None{
+                    //C'est un point
+                   let mut point=vec![objet.x,objet.y,objet.z,objet.w];
+                   if 
+                    match axe{
+                       "x"=>
+                       "y"=>objet.changer_y(objet.y+mesure),
+                       "z"=>objet.changer_z(objet.z+mesure),
+                       "w"=>objet.changer_w(objet.w+mesure),
+                       _=>ReportError("Axe de rotation non-existant",axe),
+                       None=>panik!("Axe de rotation incohérent",axe),
+                    }
+                    objet.changer_x
+                }
+                else{
+                    //C'est une entité référencée d'une certaine façon
+                    BoucleDeference(objet.objets);
+                }
+           }
+            else{
+                //Il y a des sous-structures
+                BoucleDeference(objet.reference);
+           }
+       }
+    }
     
+    if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
+    else {
+        //Passer à travers les références de l'entité
+        BoucleDeference(Entite.objets);
+        if json.Debugging==true{print!("Rotation de l'entité {} de {}{} dans l'axe {}",Entite, angle, json.Unité, axe);}
+    }
+}
+
 }
 
 fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
