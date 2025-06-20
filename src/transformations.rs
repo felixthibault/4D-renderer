@@ -293,21 +293,35 @@ fn deferencer(reference:String)->Option<Vec<String>>{
     return SousStructures
 }
 
+fn ScalableFloatMatrix(scalaire:f16,matrice:Vec<Vec<f32>>){
+    //Multiplication d'une matrice par un scalaire float. Retourne une matrice de même dimension.
+}
+
+fn ScalableIntMatrix(scalaire:u16,matrice:Vec<Vec<u32>>){
+    //Multiplication d'une matrice d'integers par un scalaire int non signé. Retourne une matrice de même dimension.
+}
+
 fn MultiplicationMatrices(matrice1:Vec<Vec<f32>>,matrice2:Vec<Vec<f32>>){
     //Multiplie des matrices de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
     if matrice1[0].len()!=matrice2.len(){
         print("Multiplication de matrices incompatibles");
         println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
         panik();
     }
     let mut matrice3:Vec<Vec<f32>>=Vec::new();
-    let mut calcul:f32=0.0;
+    let mut calcul:f32;
     for j in 0..matrice1.len(){
         matrice3.push(Vec::new());
-        for i in matrice1[j]{
-            l
+        for i in 0..matrice2[0].len(){
+            calcul=0.0;
+            for case in 0..matrice1[j].len(){
+                calcul+=matrice1[j][case]*matrice2[case][i];
+            matrice3[j].push(calcul);
+            }    
         }
     }
+    return matrice3
 }
 
 
