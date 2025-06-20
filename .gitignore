@@ -35,6 +35,7 @@ target/
 ### Rust Patch ###
 .target/*
 .build/*
+.Sauvegardes/*
 #Ignore Kaloo234
 .Kaloo234
 
