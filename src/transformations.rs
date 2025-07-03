@@ -293,7 +293,12 @@ fn deferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
     //Crée des structures temporaires de toutes les références
     //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
-    
+    /*Autre idée pour simplifier les coordonnées: représenter les entités déférencées temporairement avec 4 matrices, soit une matrice de sommets (4 lignes de hauteur par x points de long),
+      une matrice d'arêtes (chaque ligne représente une arrête et comporte 4 éléments: 2 premières colonnes= référence ou numéro des sommets, les x autres= les références ou numéro des faces
+      contenant cette arête), une matrice de faces (chaque ligne représente une face et comporte naturellement 2 colonnes= référence ou numéro des polyèdres contenant cette face), finalement
+      une matrice de polyèdres (chaque ligne représente un polyèdre et comporte x colonnes= référence ou numéro des polychores contenant ce polyèdre). Le reste des données modifiées pourrait
+      être généré d'une autre façon (laquelle?) ou avec des références comme plus haut.
+    */
     return SousStructures
 }
 
@@ -371,6 +376,7 @@ Pour une rotation ou d'autres transformations similaires, transformer d'abord le
 https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
 https://en.wikipedia.org/wiki/Transformation_matrix
 https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
+https://bibnum.publimath.fr/IST/IST83028.pdf
 */
     
 fn Rotation(angle:f16,Entite:Entity,axe:String,origine:Vec<f32>){
@@ -493,4 +499,8 @@ fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
         BoucleDeference(Entite.objets);
         if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
     }
+}
+
+fn StretchingInt(mesure:Vec<usize>, matrice:Vec<Vec<usize>>){
+    let facteur:Vec<Vec<usize>>=vec![vec![mesure[0],0,0,0],[vec![mesure[1],0,0,0]],[vec![mesure[2],0,0,0]],[vec![mesure[3],0,0,0]]];
 }
