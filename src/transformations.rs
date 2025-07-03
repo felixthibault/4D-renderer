@@ -282,11 +282,16 @@ pub fn ReportError(message:&str,code:String){
     println!("{} {}.",message,code);
 }
 pub fn panik() {
+    println("cras ans burn");
     panic!("crash and burn");
 }
 
 pub fn unreachable(x: Void) -> ! {
     match x {}
+}
+
+pub unsafe fn do_nothing(_:Void) -> !{
+    return Void
 }
 
 fn deferencer(reference:String)->Option<Vec<String>>{
@@ -366,6 +371,36 @@ pub(super) fn MultiplicationIntMatrices(matrice1:Vec<Vec<usize>>,matrice2:Vec<Ve
         }
     }
     return matrice3
+}
+
+pub(super) fn MultiplicationTMatrices<T>(matrice1:Vec<Vec<T>>,matrice2:Vec<Vec<T>>)->Vec<Vec<T>>{
+    //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
+    if matrice1[0].len()!=matrice2.len(){
+        print("Multiplication de matrices incompatibles");
+        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
+        panik();
+    }
+    let mut matrice3:Vec<Vec<T>>=Vec::new();
+    let mut calcul:T;
+    for j in 0..matrice1.len(){
+        matrice3.push(Vec::new());
+        for i in 0..matrice2[0].len(){
+            calcul=0;
+            for case in 0..matrice1[j].len(){
+                calcul+=matrice1[j][case]*matrice2[case][i];
+            matrice3[j].push(calcul);
+            }    
+        }
+    }
+    return matrice3
+}
+
+pub(super) fn completer_matrice<T>(mut matrice:Vec<Vec<T>>,longueur:i16)->Vec<Vec<T>>{
+    for i in 0..longueur-matrice.len(){
+        matrice.push(vec![0;4]);
+    }
+    matrice
 }
 
 //'! Transformation des points
@@ -503,4 +538,32 @@ fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
 
 fn StretchingInt(mesure:Vec<usize>, matrice:Vec<Vec<usize>>){
     let facteur:Vec<Vec<usize>>=vec![vec![mesure[0],0,0,0],[vec![mesure[1],0,0,0]],[vec![mesure[2],0,0,0]],[vec![mesure[3],0,0,0]]];
+}
+
+fn Transformation<S>(){
+    //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
+    fn Stretching<T>(mesure:Vec<T>, matrice:Vec<Vec<T>>){
+        //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
+        let mut facteur:Vec<Vec<T>>=Vec::new();
+        for dimension in 0..mesure.len(){
+            facteur.push(vec![0;4]);
+            facteur[dimension][dimension]=mesure[dimension];
+        }
+        if mesure.len()<4{
+            //Ajouter des zéros pour compléter en carré
+            const facteur=completer_matrice(facteur,4);
+        }
+        else if mesure.len()==4{
+            //On fait f*ckall c'est déjà bon
+            do_nothing()
+        }
+        else if mesure.len()>=4{
+            //Ce CAD est limité à 4 dimension calmdown!
+            ReportError("Trop de dimensions ajoutées dans cette mise en échelle", format!("{:?}",mesure));
+        else {
+            //Math is not mathing, please what is going on
+            panik();
+        }
+    MultiplicationTMatrices(facteur:Vec<Vec<T>>,matrice:Vec<Vec<T>>)
+    }
 }
