@@ -396,11 +396,21 @@ pub(super) fn MultiplicationTMatrices<T>(matrice1:Vec<Vec<T>>,matrice2:Vec<Vec<T
     return matrice3
 }
 
-pub(super) fn completer_matrice<T>(mut matrice:Vec<Vec<T>>,longueur:i16)->Vec<Vec<T>>{
+pub(super) fn completer_matrice_carre<T>(mut matrice:Vec<Vec<T>>,const longueur:i16)->Vec<Vec<T>>{
     for i in 0..longueur-matrice.len(){
-        matrice.push(vec![0;4]);
+        matrice.push(vec![0;longueur]);
     }
     matrice
+}
+
+pub(super) fn cos<S>(theta:S)->S{
+    //retourne cos de theta radian
+    theta.cos()
+}
+pub(super) fn sin<S>(theta:S)->S{
+    //retourne sin de theta radian
+    //Retourne une erreur si le type d'angle n'est pas f32 ou f64
+    theta.sin()
 }
 
 //'! Transformation des points
@@ -414,156 +424,204 @@ https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transforma
 https://bibnum.publimath.fr/IST/IST83028.pdf
 */
     
-fn Rotation(angle:f16,Entite:Entity,axe:String,origine:Vec<f32>){
-    //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
-    //https://en.wikipedia.org/wiki/Rotation_matrix
-    fn BoucleDeference(Objets){
-        let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
-        for objet in SousStructures{
-           //Déférencer en boucle jusqu'aux points
-           if objet.reference==None{
-               if objet.x !=None{
-                    //C'est un point
-                   let mut point=vec![objet.x,objet.y,objet.z,objet.w];
-                   if 
-                    match axe{
-                       "x"=>
-                       "y"=>objet.changer_y(objet.y+mesure),
-                       "z"=>objet.changer_z(objet.z+mesure),
-                       "w"=>objet.changer_w(objet.w+mesure),
-                       _=>ReportError("Axe de rotation non-existant",axe),
-                       None=>panik!("Axe de rotation incohérent",axe),
-                    }
-                    objet.changer_x
-                }
-                else{
-                    //C'est une entité référencée d'une certaine façon
-                    BoucleDeference(objet.objets);
-                }
-           }
-            else{
-                //Il y a des sous-structures
-                BoucleDeference(objet.reference);
-           }
-       }
-    }
-    
-    if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
-    else {
-        //Passer à travers les références de l'entité
-        BoucleDeference(Entite.objets);
-        if json.Debugging==true{print!("Rotation de l'entité {} de {}{} dans l'axe {}",Entite, angle, json.Unité, axe);}
-    }
-}
-
-}
-
-fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
-    //Ajoute une quantité vectorielle de déplacement sur toute l'entité
-    if json.Debugging==true{ assert_eq(mesure.len(),4);}
-    else if mesure.len()!=4{
-        for i in mesure.len()..4){
-            mesure.push(0.0);    
-    } }
-    fn BoucleDeference(Objets){
-        let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
-        for objet in SousStructures{
-           //Déférencer en boucle jusqu'aux points
-           if objet.reference==None{
-               if objet.x !=None{
-                    //C'est un point=>Changer coordonnées
-                       objet.changer_x(point.x+mesure[0]);
-                       objet.changer_y(point.y+mesure[1]);
-                       objet.changer_z(point.z+mesure[2]);
-                       objet.changer_w(point.w+mesure[3]);
-                }
-                else{
-                    //C'est une entité référencée d'une certaine façon
-                    BoucleDeference(objet.objets);
-                }
-           }
-            else{
-                //Il y a des sous-structures
-                BoucleDeference(objet.reference);
-           }
-       }
-    }
-    
-    if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
-    else {
-        //Passer à travers les références de l'entité
-        BoucleDeference(Entite.objets);
-        if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
-    }
-}
 
 
-fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
-    //Ajoute une quantité scalaire de translation dans un seul axe sur toute l'entité
-    fn BoucleDeference(Objets){
-        let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
-        for objet in SousStructures{
-           //Déférencer en boucle jusqu'aux points
-           if objet.reference==None{
-               if objet.x !=None{
-                    //C'est un point
-                    match axe{
-                       "x"=>objet.changer_x(objet.x+mesure),
-                       "y"=>objet.changer_y(objet.y+mesure),
-                       "z"=>objet.changer_z(objet.z+mesure),
-                       "w"=>objet.changer_w(objet.w+mesure),
-                       _=>ReportError("Axe de translation non-existant",axe),
-                       None=>panik!("Axe de translation incohérent",axe),
-                    }
-                }
-                else{
-                    //C'est une entité référencée d'une certaine façon
-                    BoucleDeference(objet.objets);
-                }
-           }
-            else{
-                //Il y a des sous-structures
-                BoucleDeference(objet.reference);
-           }
-       }
-    }
-    
-    if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
-    else {
-        //Passer à travers les références de l'entité
-        BoucleDeference(Entite.objets);
-        if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
-    }
-}
-
-fn StretchingInt(mesure:Vec<usize>, matrice:Vec<Vec<usize>>){
-    let facteur:Vec<Vec<usize>>=vec![vec![mesure[0],0,0,0],[vec![mesure[1],0,0,0]],[vec![mesure[2],0,0,0]],[vec![mesure[3],0,0,0]]];
-}
-
-fn Transformation<S>(){
+pub(super) mod Transformation<S>{
     //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
-    fn Stretching<T>(mesure:Vec<T>, matrice:Vec<Vec<T>>){
-        //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
-        let mut facteur:Vec<Vec<T>>=Vec::new();
-        for dimension in 0..mesure.len(){
-            facteur.push(vec![0;4]);
-            facteur[dimension][dimension]=mesure[dimension];
+    //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
+    pub mod Matrice{
+        fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
+            //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
+            let mut facteur:Vec<Vec<T>>=Vec::new();
+            for dimension in 0..mesure.len(){
+                facteur.push(vec![0;4]);
+                facteur[dimension][dimension]=mesure[dimension];
+            }
+            if mesure.len()<4{
+                //Ajouter des zéros pour compléter en carré
+                const facteur=completer_matrice_carre(facteur,4);
+            }
+            else if mesure.len()==4{
+                //On fait f*ckall c'est déjà bon
+                do_nothing()
+            }
+            else if mesure.len()>=4{
+                //Ce CAD est limité à 4 dimension calmdown!
+                ReportError("Trop de dimensions ajoutées dans cette mise en échelle", format!("{:?}",mesure));
+            else {
+                //Math is not mathing, please what is going on
+                panik();
+            }
+            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-        if mesure.len()<4{
-            //Ajouter des zéros pour compléter en carré
-            const facteur=completer_matrice(facteur,4);
+
+        fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+            //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
+            //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
+            //https://quaternions.online/
+            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation",format!("{:?}",origine)}
+            let mut facteur:Vec<Vec<T>>=Vec::new();
+            match plan{
+                "zw"|"wz"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
+                                        vec![sin(angle),cos(angle),0,0],
+                                        vec![0,0,1,0],
+                                        vec![0,0,0,1]),
+                
+                "yw"|"wy"=>facteur.push(vec![cos(angle),0,-sin(angle),0],
+                                        vec![0,1,0,0],
+                                        vec![sin(angle),0,cos(angle),0],
+                                        vec![0,0,0,1]),
+                
+                "yz"|"zy"=>facteur.push(vec![cos(angle),0,0,-sin(angle)],
+                                        vec![0,1,0,0],
+                                        vec![0,0,1,0],
+                                        vec![sin(angle),0,0,cos(angle)]),
+                
+                "xw"|"wx"=>facteur.push(vec![1,0,0,0],
+                                        vec![0,cos(angle),-sin(angle),0,0],
+                                        vec![0,0,1,0],
+                                        vec![0,0,0,1]),
+                "xz"|"zx"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
+                                        vec![sin(angle),-cos(angle),0,0],
+                                        vec![0,0,1,0],
+                                        vec![0,0,0,1]),
+                "xy"|"yx"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
+                                        vec![sin(angle),-cos(angle),0,0],
+                                        vec![0,0,1,0],
+                                        vec![0,0,0,1]),
+                _=>ReportError("Plan de rotation incorrect ou incohérent",format!("{:?}",plan)
+            }
+                
+            
+            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-        else if mesure.len()==4{
-            //On fait f*ckall c'est déjà bon
-            do_nothing()
+        fn Rotation2D<T>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
+            //https://math.stackexchange.com/questions/1402362/can-rotations-in-4d-be-given-an-explicit-matrix-form
+            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation")}
+            let const facteur:Vec<Vec<T>>=vec![vec![cos(angle),-sin(angle),0,0],
+                                             vec![sin(angle),-cos(angle),0,0],
+                                             vec![0;4],//ou bien c'est 0,0,1,0
+                                             vec![0;4]] //et ici c'est 0,0,0,1
+            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-        else if mesure.len()>=4{
-            //Ce CAD est limité à 4 dimension calmdown!
-            ReportError("Trop de dimensions ajoutées dans cette mise en échelle", format!("{:?}",mesure));
-        else {
-            //Math is not mathing, please what is going on
-            panik();
+    }
+    pub mod Entity{
+        fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
+            //Ajoute une quantité vectorielle de déplacement sur toute l'entité
+            if json.Debugging==true{ assert_eq(mesure.len(),4);}
+            else if mesure.len()!=4{
+                for i in mesure.len()..4){
+                    mesure.push(0.0);    
+            } }
+            fn BoucleDeference(Objets){
+                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+                for objet in SousStructures{
+                   //Déférencer en boucle jusqu'aux points
+                   if objet.reference==None{
+                       if objet.x !=None{
+                            //C'est un point=>Changer coordonnées
+                            objet.changer_x(point.x+mesure[0]);
+                            objet.changer_y(point.y+mesure[1]);
+                            objet.changer_z(point.z+mesure[2]);
+                            objet.changer_w(point.w+mesure[3]);
+                        }
+                        else{
+                            //C'est une entité référencée d'une certaine façon
+                            BoucleDeference(objet.objets);
+                        }
+                   }
+                    else{
+                        //Il y a des sous-structures
+                        BoucleDeference(objet.reference);
+                   }
+               }
+            }
+            
+            if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
+            else {
+                //Passer à travers les références de l'entité
+                BoucleDeference(Entite.objets);
+                if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
+            }
         }
-    MultiplicationTMatrices(facteur:Vec<Vec<T>>,matrice:Vec<Vec<T>>)
+        
+        fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
+            //Ajoute une quantité scalaire de translation dans un seul axe sur toute l'entité
+            fn BoucleDeference(Objets){
+                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+                for objet in SousStructures{
+                   //Déférencer en boucle jusqu'aux points
+                   if objet.reference==None{
+                       if objet.x !=None{
+                            //C'est un point
+                            match axe{
+                               "x"=>objet.changer_x(objet.x+mesure),
+                               "y"=>objet.changer_y(objet.y+mesure),
+                               "z"=>objet.changer_z(objet.z+mesure),
+                               "w"=>objet.changer_w(objet.w+mesure),
+                               _=>ReportError("Axe de translation non-existant",axe),
+                               None=>panik!("Axe de translation incohérent",axe),
+                            }
+                        }
+                        else{
+                            //C'est une entité référencée d'une certaine façon
+                            BoucleDeference(objet.objets);
+                        }
+                   }
+                    else{
+                        //Il y a des sous-structures
+                        BoucleDeference(objet.reference);
+                   }
+               }
+            }
+            
+            if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
+            else {
+                //Passer à travers les références de l'entité
+                BoucleDeference(Entite.objets);
+                if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
+            }
+        }
+        fn Rotation(angle:f16,Entite:Entity,axe:String,origine:Vec<f32>){
+            //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
+            //https://en.wikipedia.org/wiki/Rotation_matrix
+            fn BoucleDeference(Objets){
+                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+                for objet in SousStructures{
+                   //Déférencer en boucle jusqu'aux points
+                   if objet.reference==None{
+                       if objet.x !=None{
+                            //C'est un point
+                           let mut point=vec![objet.x,objet.y,objet.z,objet.w];
+                           if 
+                            match axe{
+                               "x"=>//à CORRIGER LES MESURES
+                               "y"=>objet.changer_y(objet.y+mesure),
+                               "z"=>objet.changer_z(objet.z+mesure),
+                               "w"=>objet.changer_w(objet.w+mesure),
+                               _=>ReportError("Axe de rotation non-existant",axe),
+                               None=>panik!("Axe de rotation incohérent",axe),
+                            }
+                            objet.changer_x
+                        }
+                        else{
+                            //C'est une entité référencée d'une certaine façon
+                            BoucleDeference(objet.objets);
+                        }
+                   }
+                    else{
+                        //Il y a des sous-structures
+                        BoucleDeference(objet.reference);
+                   }
+               }
+            }
+            
+            if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
+            else {
+                //Passer à travers les références de l'entité
+                BoucleDeference(Entite.objets);
+                if json.Debugging==true{print!("Rotation de l'entité {} de {}{} dans l'axe {}",Entite, angle, json.Unité, axe);}
+            }
+        }
     }
 }
