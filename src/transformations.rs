@@ -282,7 +282,7 @@ pub fn ReportError(message:&str,code:String){
     println!("{} {}.",message,code);
 }
 pub fn panik() {
-    println("cras ans burn");
+    println("crash ans burn");
     panic!("crash and burn");
 }
 
