@@ -60,7 +60,8 @@ fn create_json(nom_fichier:String)-> File {
     //Ça va très sûrement peut-être bugger ici en format binaire
     return json;
 }
-/*Régler ce code dans l'update beta
+
+/*Régler ce code pour l'update beta
 fn actualise_json{
     //Se rappeler de merger les préférences actuelles avec les nouvelles
     let data:String= match version {
@@ -68,11 +69,33 @@ fn actualise_json{
 
         "alpha"=>
     }
-}
-*/
+}*/
   
 fn ecrire_texte_fichier(mut projet:File,texte:String)->std::io::Result<()>{
     projet.write(texte.as_bytes())?;
     //write!("Some bytes were written to {}",projet);
     Ok(())
 }
+
+pub unsafe trait FromBytes {
+    fn write_to_type(f: &mut std::fs::File) -> Self;
+}
+unsafe impl FromBytes for u32 {
+pub fn write_to_type(f: &mut std::fs::File) -> u32 {
+    let mut bytes = [0u8; 4];
+        let bytes_read = f.read_exact(&mut bytes);
+    unsafe { std::mem::transmute::<[u8; 4], u32>(bytes) }
+}}
+
+unsafe fn EcrireUnByteFichier(mut projet:File,bytes:u8)->std::io::Result<()>{
+    projet.write(bytes);
+}
+
+//Wrapper les valeurs trop grosse de données de plusieurs bytes dans un vecteur de byte
+
+struct Wrapper{
+    wrapper: Option<Vec<Bytes>>,
+}
+
+//Allouer de l'espace dans le fichier avant qu'un objet soit complètement prêt à être écrit. Simuler l'écriture des entités.
+https://docs.rs/serde_bytes_wrapper/latest/serde_bytes_wrapper/struct.Bytes.html
