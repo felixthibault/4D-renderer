@@ -408,7 +408,7 @@ pub(super) fn cos<S>(theta:S)->S{
     //retourne cos de theta radian
     theta.cos()
 }
-pub(super) fn sin<S>(mut theta:S)->S{
+pub(super) fn sin<S: f32|f64>(mut theta:S)->S{
     //retourne sin de theta radian
     //Retourne une erreur si le type d'angle n'est pas f32 ou f64
     theta=Some(theta);

@@ -3,6 +3,7 @@
 use bevy::{pbr::wireframe::{WireframeConfig,},prelude::*};
 use std::process::exit;
 use std::*;
+use tetra::window;
 
 //mod transformations;
 mod embarquation_b4d;
@@ -20,14 +21,23 @@ fn main() {
                 toggle_wireframe,))
         .run();
     println!("Entité triangle générée");
+    exit(0x0);
 }
 fn setup(){
-    //Vérifier que le fichier JSON est présent sinon en créer un avec des paramètres par défaut
-    
     //Vérifier que le fichier binaire est présent sinon en créer un vide
-    verifier_fichier();
-    exit(0x0);
-
+    //Vérifier que le fichier JSON est présent sinon en créer un avec des paramètres par défaut selon la version
+    let VerificationFichier:String=verifier_fichier("Demarrage");
+    
+    //Vérification des paramètres de l'écran
+    let ScreenSize:Vec(i32,i32)=[get_height(),get_width()];
+    //Démarrage de l'interface
+    print!("Interface démarrée");
+    
+    //Imprimer le débuggage
+    if json.get("Debugging")==true{
+    println!("Le fichier du projet a été ouvert {}",VerificationFichier);
+    println!("Taille de l'écran de {}",ScreenSize);
+    }
 }
 
 

@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_encase_derive",
+ "do_nothing",
  "glium",
  "ogl33",
  "sdl",
@@ -1909,6 +1910,12 @@ checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
  "libloading",
 ]
+
+[[package]]
+name = "do_nothing"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e9f19b07cc655e103480f0f8f9325fbf0b819e1c21cd51387ba243a41081995"
 
 [[package]]
 name = "document-features"
