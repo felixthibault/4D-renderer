@@ -9,8 +9,7 @@ use std::*;
 use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, string::*};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
-use Option::Some;
-    
+
 #[path = "main.rs"]
 mod embarquation_b4d;
 use embarquation_b4d::*;
@@ -32,10 +31,10 @@ pub struct Entité{
 pub struct Point{
     pub nom:&'static str,// Nom du point
     //Pas de tags car il n'y a pas de dimension inférieur dépendante du point
-    x: f32,  //Coordonnées associées au point
-    y: f32,
-    z: f32,
-    w: f32,
+    x: f64,  //Coordonnées associées au point
+    y: f64,
+    z: f64,
+    w: f64,
     permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
 }
 
@@ -113,23 +112,23 @@ impl Point{
     //Création d'un nouveau point selon les coordonnées
     fn create_point(
         nom:&'static str,
-        x: f32,
-        y: f32,
-        z: f32,
-        w: f32,
+        x: f64,
+        y: f64,
+        z: f64,
+        w: f64,
         permissions:HashMap<String, bool>,
         )-> Self 
         {Point{nom,x,y,z,w,permissions,}}
     //Modifier le nom
     fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
     // Modifier x
-    fn changer_x(&mut self, nouvelle_coordonnee: f32) {self.x=nouvelle_coordonnee;}
+    fn changer_x(&mut self, nouvelle_coordonnee: f64) {self.x=nouvelle_coordonnee;}
     // Modifier y
-    fn changer_y(&mut self, nouvelle_coordonnee: f32) {self.y=nouvelle_coordonnee;}
+    fn changer_y(&mut self, nouvelle_coordonnee: f64) {self.y=nouvelle_coordonnee;}
     // Modifier z
-    fn changer_z(&mut self, nouvelle_coordonnee: f32) {self.z=nouvelle_coordonnee;}
+    fn changer_z(&mut self, nouvelle_coordonnee: f64) {self.z=nouvelle_coordonnee;}
     // Modifier w
-    fn changer_w(&mut self, nouvelle_coordonnee: f32) {self.w=nouvelle_coordonnee;}
+    fn changer_w(&mut self, nouvelle_coordonnee: f64) {self.w=nouvelle_coordonnee;}
     // Modifier les permissions
     fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
     fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
@@ -257,7 +256,7 @@ impl Polychore{
 
 
 //Vérification des macros générants des objets
-fn verif() {
+fn vérif() {
     // --temporaire-- Exemple de création d'un objet avec des tags, rôles, permissions et position initiale
     let objet:&str = "Triangle";
     let permissions: HashMap<String, bool> = HashMap::from([("fixe".to_string(),true)]);
@@ -270,363 +269,19 @@ fn verif() {
 }
 
 
-//Fonctions pour aider la production
-pub fn println(msg:&str){
-    println!("{}",msg);
-}
-pub fn print(msg:&str){
-    print!("{}",msg);
-}
-pub fn ReportError(message:&str,code:String){
-    //Afficher fenêtre contenant erreur mineure
-    //Pour l'instant:
-    println!("{} {}.",message,code);
-}
+
+
+
+
 pub fn panik() {
-    println("crash ans burn");
     panic!("crash and burn");
 }
 
-pub fn unreachable(x: Void) -> ! {
-    match x {}
-}
-
-pub unsafe fn do_nothing(_:Void) -> !{
-    return Void
-}
-
-fn deferencer(reference:String)->Option<Vec<String>>{
-    //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
-    //Crée des structures temporaires de toutes les références
-    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
-    /*Autre idée pour simplifier les coordonnées: représenter les entités déférencées temporairement avec 4 matrices, soit une matrice de sommets (4 lignes de hauteur par x points de long),
-      une matrice d'arêtes (chaque ligne représente une arrête et comporte 4 éléments: 2 premières colonnes= référence ou numéro des sommets, les x autres= les références ou numéro des faces
-      contenant cette arête), une matrice de faces (chaque ligne représente une face et comporte naturellement 2 colonnes= référence ou numéro des polyèdres contenant cette face), finalement
-      une matrice de polyèdres (chaque ligne représente un polyèdre et comporte x colonnes= référence ou numéro des polychores contenant ce polyèdre). Le reste des données modifiées pourrait
-      être généré d'une autre façon (laquelle?) ou avec des références comme plus haut.
-    */
-    return SousStructures
-}
-
-fn ScalableFloatMatrix(scalaire:f32,mut matrice:Vec<Vec<f32>>)->Vec<Vec<f32>>{
-    //Multiplication d'une matrice par un scalaire float. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des float.
-    for mut j in &mut matrice{
-        for i in 0..j.len(){
-        j[i]*=scalaire;
-        }
-    }
-    return matrice
-}
-
-fn ScalableIntMatrix(scalaire:usize,mut matrice:Vec<Vec<usize>>)->Vec<Vec<usize>>{
-    //Multiplication d'une matrice d'entiers par un scalaire int non signé. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des usize.
-    for mut j in &mut matrice{
-        for i in 0..j.len(){
-        j[i]*=scalaire;
-        }
-    }
-    matrice//return
-}
-
-pub(super) fn MultiplicationFloatMatrices(matrice1:Vec<Vec<f32>>,matrice2:Vec<Vec<f32>>)->Vec<Vec<f32>>{
-    //Multiplie des matrices f32 de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if matrice1[0].len()!=matrice2.len(){
-        print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
-        panik();
-    }
-    let mut matrice3:Vec<Vec<f32>>=Vec::new();
-    let mut calcul:f32;
-    for j in 0..matrice1.len(){
-        matrice3.push(Vec::new());
-        for i in 0..matrice2[0].len(){
-            calcul=0.0;
-            for case in 0..matrice1[j].len(){
-                calcul+=matrice1[j][case]*matrice2[case][i];
-            matrice3[j].push(calcul);
-            }    
-        }
-    }
-    return matrice3
-}
-
-pub(super) fn MultiplicationIntMatrices(matrice1:Vec<Vec<usize>>,matrice2:Vec<Vec<usize>>)->Vec<Vec<usize>>{
-    //Multiplie des matrices d'uX de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if matrice1[0].len()!=matrice2.len(){
-        print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
-        panik();
-    }
-    let mut matrice3:Vec<Vec<usize>>=Vec::new();
-    let mut calcul:usize;
-    for j in 0..matrice1.len(){
-        matrice3.push(Vec::new());
-        for i in 0..matrice2[0].len(){
-            calcul=0;
-            for case in 0..matrice1[j].len(){
-                calcul+=matrice1[j][case]*matrice2[case][i];
-            matrice3[j].push(calcul);
-            }    
-        }
-    }
-    return matrice3
-}
-
-pub(super) fn MultiplicationTMatrices<T>(matrice1:Vec<Vec<T>>,matrice2:Vec<Vec<T>>)->Vec<Vec<T>>{
-    //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if matrice1[0].len()!=matrice2.len(){
-        print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
-        panik();
-    }
-    let mut matrice3:Vec<Vec<T>>=Vec::new();
-    let mut calcul:T;
-    for j in 0..matrice1.len(){
-        matrice3.push(Vec::new());
-        for i in 0..matrice2[0].len(){
-            calcul=0;
-            for case in 0..matrice1[j].len(){
-                calcul+=matrice1[j][case]*matrice2[case][i];
-            matrice3[j].push(calcul);
-            }    
-        }
-    }
-    return matrice3
-}
-
-pub(super) fn completer_matrice_carre<T>(mut matrice:Vec<Vec<T>>,const longueur:i16)->Vec<Vec<T>>{
-    for i in 0..longueur-matrice.len(){
-        matrice.push(vec![0;longueur]);
-    }
-    matrice
-}
-
-pub(super) fn cos<S>(theta:S)->S{
-    //retourne cos de theta radian
-    theta.cos()
-}
-pub(super) fn sin<S>(mut theta:S)->S{
-    //retourne sin de theta radian
-    //Retourne une erreur si le type d'angle n'est pas f32 ou f64
-    theta=Some(theta);
-    theta.sin()
-}
-
 //'! Transformation des points
-/* Un matrice de dimension n est une suite de x vecteurs que l'on peut appliquer une transformation.
-Un point peut aussi être une matrice de coordonnées (4 lignes et une colonne).
-Les matrices peuvent se multiplier entre elles pour former une nouvelle matrice de dimension différente issue d'une transformation. Accumuler ces transformations pour les modification de croquis.
-Pour une rotation ou d'autres transformations similaires, transformer d'abord le point en matrice est pratique.
-https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
-https://en.wikipedia.org/wiki/Transformation_matrix
-https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
-https://bibnum.publimath.fr/IST/IST83028.pdf
-*/
-    
+fn rotation(angle:i32,objet:Entity,axe:Entity){
 
+}
 
-pub(super) mod Transformation<S>{
-    //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
-    //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
-    pub mod Matrice{
-        fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
-            //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
-            let mut facteur:Vec<Vec<T>>=Vec::new();
-            for dimension in 0..mesure.len(){
-                facteur.push(vec![0;4]);
-                facteur[dimension][dimension]=mesure[dimension];
-            }
-            if mesure.len()<4{
-                //Ajouter des zéros pour compléter en carré
-                const facteur=completer_matrice_carre(facteur,4);
-            }
-            else if mesure.len()==4{
-                //On fait f*ckall c'est déjà bon
-                do_nothing()
-            }
-            else if mesure.len()>=4{
-                //Ce CAD est limité à 4 dimension calmdown!
-                ReportError("Trop de dimensions ajoutées dans cette mise en échelle", format!("{:?}",mesure));
-            else {
-                //Math is not mathing, please what is going on
-                panik();
-            }
-            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
-        }
+fn translation_linéaire(mesure:f64,objet:Entity,axe:Entity){
 
-        fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
-            //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
-            //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
-            //https://quaternions.online/
-            //https://math.stackexchange.com/questions/1402362/can-rotations-in-4d-be-given-an-explicit-matrix-form
-            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation",format!("{:?}",origine)}
-            let mut facteur:Vec<Vec<T>>=Vec::new();
-            let sin:sin(angle as f32)
-            match plan{
-                "zw"|"wz"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
-                                        vec![sin(angle),cos(angle),0,0],
-                                        vec![0,0,1,0],
-                                        vec![0,0,0,1]),
-                
-                "yw"|"wy"=>facteur.push(vec![cos(angle),0,-sin(angle),0],
-                                        vec![0,1,0,0],
-                                        vec![sin(angle),0,cos(angle),0],
-                                        vec![0,0,0,1]),
-                
-                "yz"|"zy"=>facteur.push(vec![cos(angle),0,0,-sin(angle)],
-                                        vec![0,1,0,0],
-                                        vec![0,0,1,0],
-                                        vec![sin(angle),0,0,cos(angle)]),
-                
-                "xw"|"wx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos(angle),-sin(angle),0],
-                                        vec![0,sin(angle),cos(angle),0],
-                                        vec![0,0,0,1]),
-
-                "xz"|"zx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos(angle),sin(angle),0],
-                                        vec![0,0,1,0],
-                                        vec![0,sin(angle),0,cos(angle)]),
-
-                "xy"|"yx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,1,0,0],
-                                        vec![0,0,cos(angle),-sin(angle)],
-                                        vec![0,0,sin(angle),cos(angle)]),
-                _=>ReportError("Plan de rotation incorrect ou incohérent",format!("{:?}",plan)
-            }
-                
-            
-            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
-        }
-        fn Rotation2D<T>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
-            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation")}
-            let const facteur:Vec<Vec<T>>=vec![vec![cos(angle),-sin(angle),0,0],
-                                             vec![sin(angle),-cos(angle),0,0],
-                                             vec![0;4],//ou bien c'est 0,0,1,0
-                                             vec![0;4]] //et ici c'est 0,0,0,1
-            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
-        }
-    }
-    pub mod Entity{
-        fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
-            //Ajoute une quantité vectorielle de déplacement sur toute l'entité
-            if json.Debugging==true{ assert_eq(mesure.len(),4);}
-            else if mesure.len()!=4{
-                for i in mesure.len()..4){
-                    mesure.push(0.0);    
-            } }
-            fn BoucleDeference(Objets){
-                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
-                for objet in SousStructures{
-                   //Déférencer en boucle jusqu'aux points
-                   if objet.reference==None{
-                       if objet.x !=None{
-                            //C'est un point=>Changer coordonnées
-                            objet.changer_x(point.x+mesure[0]);
-                            objet.changer_y(point.y+mesure[1]);
-                            objet.changer_z(point.z+mesure[2]);
-                            objet.changer_w(point.w+mesure[3]);
-                        }
-                        else{
-                            //C'est une entité référencée d'une certaine façon
-                            BoucleDeference(objet.objets);
-                        }
-                   }
-                    else{
-                        //Il y a des sous-structures
-                        BoucleDeference(objet.reference);
-                   }
-               }
-            }
-            
-            if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
-            else {
-                //Passer à travers les références de l'entité
-                BoucleDeference(Entite.objets);
-                if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
-            }
-        }
-        
-        fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
-            //Ajoute une quantité scalaire de translation dans un seul axe sur toute l'entité
-            fn BoucleDeference(Objets){
-                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
-                for objet in SousStructures{
-                   //Déférencer en boucle jusqu'aux points
-                   if objet.reference==None{
-                       if objet.x !=None{
-                            //C'est un point
-                            match axe{
-                               "x"=>objet.changer_x(objet.x+mesure),
-                               "y"=>objet.changer_y(objet.y+mesure),
-                               "z"=>objet.changer_z(objet.z+mesure),
-                               "w"=>objet.changer_w(objet.w+mesure),
-                               _=>ReportError("Axe de translation non-existant",axe),
-                               None=>panik!("Axe de translation incohérent",axe),
-                            }
-                        }
-                        else{
-                            //C'est une entité référencée d'une certaine façon
-                            BoucleDeference(objet.objets);
-                        }
-                   }
-                    else{
-                        //Il y a des sous-structures
-                        BoucleDeference(objet.reference);
-                   }
-               }
-            }
-            
-            if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
-            else {
-                //Passer à travers les références de l'entité
-                BoucleDeference(Entite.objets);
-                if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
-            }
-        }
-        fn Rotation(angle:f16,Entite:Entity,axe:String,origine:Vec<f32>){
-            //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
-            //https://en.wikipedia.org/wiki/Rotation_matrix
-            fn BoucleDeference(Objets){
-                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
-                for objet in SousStructures{
-                   //Déférencer en boucle jusqu'aux points
-                   if objet.reference==None{
-                       if objet.x !=None{
-                            //C'est un point
-                           let mut point=vec![objet.x,objet.y,objet.z,objet.w];
-                           if 
-                            match axe{
-                               "x"=>//à CORRIGER LES MESURES
-                               "y"=>objet.changer_y(objet.y+mesure),
-                               "z"=>objet.changer_z(objet.z+mesure),
-                               "w"=>objet.changer_w(objet.w+mesure),
-                               _=>ReportError("Axe de rotation non-existant",axe),
-                               None=>panik!("Axe de rotation incohérent",axe),
-                            }
-                            objet.changer_x
-                        }
-                        else{
-                            //C'est une entité référencée d'une certaine façon
-                            BoucleDeference(objet.objets);
-                        }
-                   }
-                    else{
-                        //Il y a des sous-structures
-                        BoucleDeference(objet.reference);
-                   }
-               }
-            }
-            
-            if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
-            else {
-                //Passer à travers les références de l'entité
-                BoucleDeference(Entite.objets);
-                if json.Debugging==true{print!("Rotation de l'entité {} de {}{} dans l'axe {}",Entite, angle, json.Unité, axe);}
-            }
-        }
-    }
 }

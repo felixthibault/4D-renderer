@@ -3,13 +3,8 @@
         {
             "Ouverture_sécuritaire": true,
             "Default_project_name": "terrain.b4d",
-            "Preferred_default_project_name": "Cube.b4d",
+            "Preferred_default_project_name": "Cube.b4d"
 
-            "Debugging": true,
-            "Visualisation": "Isométrique",
-            "Projection4DMergé": true,
-            "_comment_unité": "Les valeurs possibles sont cm,mm,in,m",
-            "Unité": "cm",
 
         }
     ],
