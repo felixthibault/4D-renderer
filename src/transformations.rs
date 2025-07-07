@@ -9,7 +9,8 @@ use std::*;
 use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, string::*};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
-
+use Option::Some;
+    
 #[path = "main.rs"]
 mod embarquation_b4d;
 use embarquation_b4d::*;
@@ -407,9 +408,10 @@ pub(super) fn cos<S>(theta:S)->S{
     //retourne cos de theta radian
     theta.cos()
 }
-pub(super) fn sin<S>(theta:S)->S{
+pub(super) fn sin<S>(mut theta:S)->S{
     //retourne sin de theta radian
     //Retourne une erreur si le type d'angle n'est pas f32 ou f64
+    theta=Some(theta);
     theta.sin()
 }
 
@@ -459,8 +461,10 @@ pub(super) mod Transformation<S>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
             //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
             //https://quaternions.online/
+            //https://math.stackexchange.com/questions/1402362/can-rotations-in-4d-be-given-an-explicit-matrix-form
             if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation",format!("{:?}",origine)}
             let mut facteur:Vec<Vec<T>>=Vec::new();
+            let sin:sin(angle as f32)
             match plan{
                 "zw"|"wz"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
                                         vec![sin(angle),cos(angle),0,0],
@@ -478,17 +482,19 @@ pub(super) mod Transformation<S>{
                                         vec![sin(angle),0,0,cos(angle)]),
                 
                 "xw"|"wx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos(angle),-sin(angle),0,0],
-                                        vec![0,0,1,0],
+                                        vec![0,cos(angle),-sin(angle),0],
+                                        vec![0,sin(angle),cos(angle),0],
                                         vec![0,0,0,1]),
-                "xz"|"zx"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
-                                        vec![sin(angle),-cos(angle),0,0],
+
+                "xz"|"zx"=>facteur.push(vec![1,0,0,0],
+                                        vec![0,cos(angle),sin(angle),0],
                                         vec![0,0,1,0],
-                                        vec![0,0,0,1]),
-                "xy"|"yx"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
-                                        vec![sin(angle),-cos(angle),0,0],
-                                        vec![0,0,1,0],
-                                        vec![0,0,0,1]),
+                                        vec![0,sin(angle),0,cos(angle)]),
+
+                "xy"|"yx"=>facteur.push(vec![1,0,0,0],
+                                        vec![0,1,0,0],
+                                        vec![0,0,cos(angle),-sin(angle)],
+                                        vec![0,0,sin(angle),cos(angle)]),
                 _=>ReportError("Plan de rotation incorrect ou incohérent",format!("{:?}",plan)
             }
                 
@@ -496,7 +502,6 @@ pub(super) mod Transformation<S>{
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
         fn Rotation2D<T>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
-            //https://math.stackexchange.com/questions/1402362/can-rotations-in-4d-be-given-an-explicit-matrix-form
             if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation")}
             let const facteur:Vec<Vec<T>>=vec![vec![cos(angle),-sin(angle),0,0],
                                              vec![sin(angle),-cos(angle),0,0],
