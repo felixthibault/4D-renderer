@@ -10,6 +10,7 @@ use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, st
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
 use Option::Some;
+use num_traits::ToPrimitive;
     
 #[path = "main.rs"]
 mod embarquation_b4d;
@@ -295,7 +296,7 @@ pub unsafe fn do_nothing(_:Void) -> !{
     return Void
 }
 
-fn deferencer(reference:String)->Option<Vec<String>>{
+fn dereferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
     //Crée des structures temporaires de toutes les références
     //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
@@ -405,17 +406,68 @@ pub(super) fn completer_matrice_carre<T>(mut matrice:Vec<Vec<T>>,const longueur:
 }
 
 mod Trigo{
-    pub(super)fn sin<S: Into<f32> + std::fmt::Display>(theta:S)->f32{
-        //retourne sin de theta radian
-        //Retourne une erreur si le type d'angle n'est pas f32 ou f64, prend des floats ou integers
+    pub(super)fn sin<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
+        //retourne le sin de theta radians
+        //Retourne une erreur si le type d'angle n'est pas f32, prend des floats ou integers
         print!("Receive sin function. Angle of {} degrees. ", theta);
-        theta.into().sin()
-    }
-    pub(super) fn cos<S: Into<f32> + std::fmt::Display>(theta:S)->f32{
-        //retourne cos de theta radian
+        (theta.into() as f32).sin()
+    } 
+    pub(super) fn cos<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
+        //retourne le cos de theta radians
         print!("Receive cos function. Angle of {} degrees. ", theta);
-        theta.into().cos()
+        (theta.into() as f32).cos()
     }
+
+    pub fn sin_f64<S: ToPrimitive + std::fmt::Display>(theta:S)->f64{
+        //Retourne le sin en f64 de n'importe quel nombre entré.
+        print!("Receive sin function. Angle of {} degrees. ", theta);
+        theta.to_f64().expect("Échec de la conversion en f64").sin()
+    }
+    pub fn cos_f64<S: ToPrimitive + std::fmt::Display>(theta:S)->f64{
+        //Retourne le cos en f64 de n'importe quel nombre entré.
+        print!("Receive cos function. Angle of {} degrees. ", theta);
+        theta.to_f64().expect("Échec de la conversion en f64").cos()
+    }
+
+    pub(super) fn tan<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
+        //Retourne la pente à theta radians
+        print!("Receive tan function. Angle of {} degrees. ", theta);
+        (theta.into() as f32).tan()
+    }
+    pub(super) fn sec<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
+        //Retourne la sécante à theta radians
+        print!("Receive sec function. Angle of {} degrees. ", theta);
+        (theta.into() as f32).sec()
+    }
+    pub(super) fn cosec<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
+        //Retourne la cosécante à theta radians
+        print!("Receive cosec function. Angle of {} degrees. ", theta);
+        (theta.into() as f32).csc()
+    }
+    pub(super) fn cot<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
+        //Retourne la pente à theta radians
+        print!("Receive cot function. Angle of {} degrees. ", theta);
+        (theta.into() as f32).cot()
+    }
+    pub(super) fn arctan<S: Into<f64> + std::fmt::Display>(x:S)->f32{
+        //Retourne l'angle theta d'une pente x
+        print!("Receive arctan function. Pente of {}. ", x);
+        (x.into() as f32).atan()
+    }
+    pub(super) const atan: fn(f32) -> f32 = arctan;//Pointer d'un f32 vers arctan
+    
+    pub(super) fn arcsin<S: Into<f64> + std::fmt::Display>(x:S)->f32{
+        //Retourne l'angle theta d'une sine inverse x
+        print!("Receive arcsin function. Coordinate of {}. ", x);
+        (x.into() as f32).asin()
+    }
+    pub(super) const asin: fn(f32) -> f32 = arcsin;
+    pub(super) fn arccos<S: Into<f64> + std::fmt::Display>(x:S)->f32{
+        //Retourne l'angle theta d'une cos inverse x
+        print!("Receive arccos function. Coordinate of {}. ", x);
+        (x.into() as f32).acos()
+    }
+    pub(super) const acos: fn(f32) -> f32 = arccos;
 }
 
 //'! Transformation des points
@@ -469,35 +521,35 @@ pub(super) mod Transformation<S>{
             let mut facteur:Vec<Vec<T>>=Vec::new();
             let sin:sin(angle as f32)
             match plan{
-                "zw"|"wz"=>facteur.push(vec![cos(angle),-sin(angle),0,0],
-                                        vec![sin(angle),cos(angle),0,0],
+                "zw"|"wz"=>facteur.push(vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
+                                        vec![Trigo::sin(angle),Trigo::cos(angle),0,0],
                                         vec![0,0,1,0],
                                         vec![0,0,0,1]),
                 
-                "yw"|"wy"=>facteur.push(vec![cos(angle),0,-sin(angle),0],
+                "yw"|"wy"=>facteur.push(vec![Trigo::cos(angle),0,-Trigo::sin(angle),0],
                                         vec![0,1,0,0],
-                                        vec![sin(angle),0,cos(angle),0],
+                                        vec![Trigo::sin(angle),0,Trigo::cos(angle),0],
                                         vec![0,0,0,1]),
                 
-                "yz"|"zy"=>facteur.push(vec![cos(angle),0,0,-sin(angle)],
+                "yz"|"zy"=>facteur.push(vec![Trigo::cos(angle),0,0,-Trigo::sin(angle)],
                                         vec![0,1,0,0],
                                         vec![0,0,1,0],
-                                        vec![sin(angle),0,0,cos(angle)]),
+                                        vec![Trigo::sin(angle),0,0,Trigo::cos(angle)]),
                 
                 "xw"|"wx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos(angle),-sin(angle),0],
-                                        vec![0,sin(angle),cos(angle),0],
+                                        vec![0,Trigo::cos(angle),-Trigo::sin(angle),0],
+                                        vec![0,Trigo::sin(angle),Trigo::cos(angle),0],
                                         vec![0,0,0,1]),
 
                 "xz"|"zx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos(angle),sin(angle),0],
+                                        vec![0,Trigo::cos(angle),Trigo::sin(angle),0],
                                         vec![0,0,1,0],
-                                        vec![0,sin(angle),0,cos(angle)]),
+                                        vec![0,Trigo::sin(angle),0,Trigo::cos(angle)]),
 
                 "xy"|"yx"=>facteur.push(vec![1,0,0,0],
                                         vec![0,1,0,0],
-                                        vec![0,0,cos(angle),-sin(angle)],
-                                        vec![0,0,sin(angle),cos(angle)]),
+                                        vec![0,0,Trigo::cos(angle),-Trigo::sin(angle)],
+                                        vec![0,0,Trigo::sin(angle),Trigo::cos(angle)]),
                 _=>ReportError("Plan de rotation incorrect ou incohérent",format!("{:?}",plan)
             }
                 
@@ -506,8 +558,8 @@ pub(super) mod Transformation<S>{
         }
         fn Rotation2D<T>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
             if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation")}
-            let const facteur:Vec<Vec<T>>=vec![vec![cos(angle),-sin(angle),0,0],
-                                             vec![sin(angle),-cos(angle),0,0],
+            let const facteur:Vec<Vec<T>>=vec![vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
+                                             vec![Trigo::sin(angle),-Trigo::cos(angle),0,0],
                                              vec![0;4],//ou bien c'est 0,0,1,0
                                              vec![0;4]] //et ici c'est 0,0,0,1
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
@@ -521,8 +573,8 @@ pub(super) mod Transformation<S>{
                 for i in mesure.len()..4){
                     mesure.push(0.0);    
             } }
-            fn BoucleDeference(Objets){
-                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+            fn BoucleDereference(Objets){
+                let SousStructures:Option<Vec<String>>=dereferencer(Objets);//Méthode
                 for objet in SousStructures{
                    //Déférencer en boucle jusqu'aux points
                    if objet.reference==None{
@@ -535,12 +587,12 @@ pub(super) mod Transformation<S>{
                         }
                         else{
                             //C'est une entité référencée d'une certaine façon
-                            BoucleDeference(objet.objets);
+                            BoucleDereference(objet.objets);
                         }
                    }
                     else{
                         //Il y a des sous-structures
-                        BoucleDeference(objet.reference);
+                        BoucleDereference(objet.reference);
                    }
                }
             }
@@ -548,15 +600,15 @@ pub(super) mod Transformation<S>{
             if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
             else {
                 //Passer à travers les références de l'entité
-                BoucleDeference(Entite.objets);
+                BoucleDereference(Entite.objets);
                 if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
             }
         }
         
         fn TranslationUnAxe(mesure:f32,Entite:Entity,axe:String){
             //Ajoute une quantité scalaire de translation dans un seul axe sur toute l'entité
-            fn BoucleDeference(Objets){
-                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+            fn BoucleDereference(Objets){
+                let SousStructures:Option<Vec<String>>=dereferencer(Objets);//Méthode
                 for objet in SousStructures{
                    //Déférencer en boucle jusqu'aux points
                    if objet.reference==None{
@@ -573,12 +625,12 @@ pub(super) mod Transformation<S>{
                         }
                         else{
                             //C'est une entité référencée d'une certaine façon
-                            BoucleDeference(objet.objets);
+                            BoucleDereference(objet.objets);
                         }
                    }
                     else{
                         //Il y a des sous-structures
-                        BoucleDeference(objet.reference);
+                        BoucleDereference(objet.reference);
                    }
                }
             }
@@ -586,15 +638,15 @@ pub(super) mod Transformation<S>{
             if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
             else {
                 //Passer à travers les références de l'entité
-                BoucleDeference(Entite.objets);
+                BoucleDereference(Entite.objets);
                 if json.Debugging==true{print!("Translation de l'entité {} de {}{} dans l'axe {}",Entite, mesure, json.Unité, axe);}
             }
         }
         fn Rotation(angle:f16,Entite:Entity,axe:String,origine:Vec<f32>){
             //Applique une rotation matricielle des coordonnées selon un axe sur toute l'entité
             //https://en.wikipedia.org/wiki/Rotation_matrix
-            fn BoucleDeference(Objets){
-                let SousStructures:Option<Vec<String>>=deferencer(Objets);//Méthode
+            fn BoucleDereference(Objets){
+                let SousStructures:Option<Vec<String>>=dereferencer(Objets);//Méthode
                 for objet in SousStructures{
                    //Déférencer en boucle jusqu'aux points
                    if objet.reference==None{
@@ -614,12 +666,12 @@ pub(super) mod Transformation<S>{
                         }
                         else{
                             //C'est une entité référencée d'une certaine façon
-                            BoucleDeference(objet.objets);
+                            BoucleDereference(objet.objets);
                         }
                    }
                     else{
                         //Il y a des sous-structures
-                        BoucleDeference(objet.reference);
+                        BoucleDereference(objet.reference);
                    }
                }
             }
@@ -627,7 +679,7 @@ pub(super) mod Transformation<S>{
             if Entite.objets==None{ReportError("Aucune référence trouvée dans l'entité",format!("{:?}",Entite));}
             else {
                 //Passer à travers les références de l'entité
-                BoucleDeference(Entite.objets);
+                BoucleDereference(Entite.objets);
                 if json.Debugging==true{print!("Rotation de l'entité {} de {}{} dans l'axe {}",Entite, angle, json.Unité, axe);}
             }
         }
