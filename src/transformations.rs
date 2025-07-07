@@ -404,15 +404,18 @@ pub(super) fn completer_matrice_carre<T>(mut matrice:Vec<Vec<T>>,const longueur:
     matrice
 }
 
-pub(super) fn cos<S>(theta:S)->S{
-    //retourne cos de theta radian
-    theta.cos()
-}
-pub(super) fn sin<S: f32|f64>(mut theta:S)->S{
-    //retourne sin de theta radian
-    //Retourne une erreur si le type d'angle n'est pas f32 ou f64
-    theta=Some(theta);
-    theta.sin()
+mod Trigo{
+    pub(super)fn sin<S: Into<f32> + std::fmt::Display>(theta:S)->f32{
+        //retourne sin de theta radian
+        //Retourne une erreur si le type d'angle n'est pas f32 ou f64, prend des floats ou integers
+        print!("Receive sin function. Angle of {} degrees. ", theta);
+        theta.into().sin()
+    }
+    pub(super) fn cos<S: Into<f32> + std::fmt::Display>(theta:S)->f32{
+        //retourne cos de theta radian
+        print!("Receive cos function. Angle of {} degrees. ", theta);
+        theta.into().cos()
+    }
 }
 
 //'! Transformation des points
