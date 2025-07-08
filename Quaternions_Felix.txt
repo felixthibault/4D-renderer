@@ -1,8 +1,9 @@
 Q=((au-bx-cy-dz)+(ax+bu+dy-cz)i+(ay+bz+cu-dx)j+(az+cx+du-by)k)*(p,q,r,s)
 
-(a,b,c,d)->(p,q,r,s)=>R
+(a,b,c,d)->(p,q,r,s)=>Réels
 (u,x,y,z)->((au-bx-cy-dz),(ax+bu+dy-cz),(ay+bz+cu-dx),(az+cx+du-by))
 
 
-Q=(p(au-bx-cy-dz)-q(ax+bu+dy-cz)-r(ay+bz+cu-dx)-s(az+cx+du-by))+(p(ax+bu+dy-cz)+q(au-bx-cy-dz)+s(ay+bz+cu-dx)-r(az+cx+du-by))i+(p(ay+bz+cu-dx)+p(az+cx+du-by)+r(au-bx-cy-dz)-s(ax+bu+dy-cz))j+(p(az+cx+du-by)+r(ax+bu+dy-cz)+s(au-bx-cy-dz)-q(ay+bz+cu-dx))k
-=(aup-bpx-cpy-dpz-aqx-bqu-dqy+cqz-ary-brz-cru+drx-asz-csx-dsu+bsy)+(apx+bpu+dpy-cpz+aqu-bqx-cqy-dqz+asy+bsz+csu-dsx-arz-crx-dru+bry)i+(p(ay+bz+cu-dx)+p(az+cx+du-by)+r(au-bx-cy-dz)-s(ax+bu+dy-cz))j+(p(az+cx+du-by)+r(ax+bu+dy-cz)+s(au-bx-cy-dz)-q(ay+bz+cu-dx))k
+Q=(p(au-bx-cy-dz)-q(ax+bu+dy-cz)-r(ay+bz+cu-dx)-s(az+cx+du-by))+(p(ax+bu+dy-cz)+q(au-bx-cy-dz)+s(ay+bz+cu-dx)-r(az+cx+du-by))i+(p(ay+bz+cu-dx)+q(az+cx+du-by)+r(au-bx-cy-dz)-s(ax+bu+dy-cz))j+(p(az+cx+du-by)+r(ax+bu+dy-cz)+s(au-bx-cy-dz)-q(ay+bz+cu-dx))k
+
+=(aup-bpx-cpy-dpz-aqx-bqu-dqy+cqz-ary-brz-cru+drx-asz-csx-dsu+bsy)+(apx+bpu+dpy-cpz+aqu-bqx-cqy-dqz+asy+bsz+csu-dsx-arz-crx-dru+bry)i+(apy+bpz+cpu-dpx+aqz+cqx+dqu-bqy+aru-brx-cry-drz-asx-bsu-dsy+csz)j+(p(az+cx+du-by)+r(ax+bu+dy-cz)+s(au-bx-cy-dz)-q(ay+bz+cu-dx))k
