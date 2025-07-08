@@ -487,7 +487,7 @@ pub(super) mod Transformation<S>{
     //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
     //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
     pub mod Matrice{
-        fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
+        pub fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
             //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
             let mut facteur:Vec<Vec<T>>=Vec::new();
             for dimension in 0..mesure.len(){
@@ -511,8 +511,10 @@ pub(super) mod Transformation<S>{
             }
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-
-        fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+        pub fn RotationDouble<T>(angle:Vec<&str>,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+            //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
+        }
+        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
             //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
             //https://quaternions.online/
@@ -556,12 +558,12 @@ pub(super) mod Transformation<S>{
             
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-        fn Rotation2D<T>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
-            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation")}
-            let const facteur:Vec<Vec<T>>=vec![vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
-                                             vec![Trigo::sin(angle),-Trigo::cos(angle),0,0],
-                                             vec![0;4],//ou bien c'est 0,0,1,0
-                                             vec![0;4]] //et ici c'est 0,0,0,1
+        pub fn Rotation2D<T: std::fmt::Display>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
+            if origine.len()!=4{ ReportError("Nombre de dimensions incorrect à l'origine de rotation",origine)}
+            let const facteur:Vec<Vec<T>>=vec![ vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
+                                                vec![Trigo::sin(angle),Trigo::cos(angle),0,0],
+                                                vec![0,0,1,0],
+                                                vec![0,0,0,1]];
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
     }
