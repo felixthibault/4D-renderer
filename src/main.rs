@@ -5,10 +5,10 @@ use std::process::exit;
 use std::*;
 use tetra::window;
 
-//mod transformations;
+mod transformations;
 mod embarquation_b4d;
 use crate::embarquation_b4d::*;
-//use crate::transformations::*;
+use crate::transformations::*;
 fn main() {
     App::new()
         .add_plugins((#[cfg(not(target_arch = "wasm32"))]
@@ -29,14 +29,14 @@ fn setup(){
     let VerificationFichier:String=verifier_fichier("Demarrage");
     
     //Vérification des paramètres de l'écran
-    let ScreenSize:Vec(i32,i32)=[get_height(),get_width()];
+    let ScreenSize:(i32,i32)=(get_height(),get_width());
     //Démarrage de l'interface
     print!("Interface démarrée");
     
     //Imprimer le débuggage
     if json.get("Debugging")==true{
-    println!("Le fichier du projet a été ouvert {}",VerificationFichier);
-    println!("Taille de l'écran de {}",ScreenSize);
+        println!("Le fichier du projet a été ouvert {}",VerificationFichier);
+        println!("Taille de l'écran de {}",ScreenSize);
     }
 }
 
