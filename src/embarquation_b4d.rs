@@ -33,7 +33,7 @@ pub fn verifier_fichier(TypeDeFichier:String)->String {
     let ouverture_terrain_result = File::open(&nom_fichier).unwrap_or_else(|error|{
         if error.kind() == ErrorKind::NotFound {
             print!("Fichier du projet par défaut non trouvé, écriture d'un nouveau vide.");
-            create_fichier(nom_fichier)
+            create_fichier(nom_fichier);
             return "avec difficulté"
         }
         else {
@@ -42,7 +42,7 @@ pub fn verifier_fichier(TypeDeFichier:String)->String {
     });
     print!("Fichier {ouverture_terrain_result:?} ouvert");
     return "correctement"
-}
+}}
  
 fn create_fichier(nom_fichier:String)-> File {
     let mut fichier=File::create(&nom_fichier).expect("Problem creating the file:");
@@ -54,7 +54,7 @@ fn create_fichier(nom_fichier:String)-> File {
 fn create_json(nom_fichier:String)-> File {
     //Aller chercher la version la plus récente de github au main. https://github.com/felixthibault/4D-renderer/blob/main/Préférences.json
     let mut json=File::create_new(&nom_fichier).expect("Problem creating the file:");
-    let data:String=request(https://github.com/felixthibault/4D-renderer/blob/main/Préférences.json);
+    let data:String=request("https:github.com/felixthibault/4D-renderer/blob/main/Préférences.json");
     let v: Value = serde_json::from_str(data);
     json.write_all(v);
     //Ça va très sûrement peut-être bugger ici en format binaire
@@ -98,4 +98,4 @@ struct Wrapper{
 }
 
 //Allouer de l'espace dans le fichier avant qu'un objet soit complètement prêt à être écrit. Simuler l'écriture des entités.
-https://docs.rs/serde_bytes_wrapper/latest/serde_bytes_wrapper/struct.Bytes.html
+//https:docs.rs/serde_bytes_wrapper/latest/serde_bytes_wrapper/struct.Bytes.html

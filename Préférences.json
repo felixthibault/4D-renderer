@@ -9,7 +9,7 @@
             "Visualisation": "Isométrique",
             "Projection4DMergé": true,
             "_comment_unité": "Les valeurs possibles sont cm,mm,in,m",
-            "Unité": "cm",
+            "Unité": "cm"
 
         }
     ],
