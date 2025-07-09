@@ -22,14 +22,14 @@ En trois dimension le quaternion de rotation QL=(u,x,y,z) serait créé à parti
 Le quaternion P=(a,b,c,d) provient de la position vectorielle du point et est réalisé par la formule suivante: (0, X, Y, Z) où le zéro est la coordonnées w ou u de la 4e dimension (d'un objet 3d).
 
 En quatre dimensions il est nécessaire d'avoir une paire de quaternion de multiplication pour obtenir une double rotation autour de plusieurs plans (et non deux axes). La mise en sandwich de rotation reste la même: QL*P*QL^-1.
-Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*Mr*P ou MR*ML*P. 
+Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*MR*P ou MR*ML*P. 
 Comme dit, les rotations s'effectuent dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4).
 Pour une matrice, cette représentation est décrit par R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
 								[sin(θ), cos(θ), 0, 0]
 								[0, 0, cos(ϕ), -sin(ϕ)]
 								[0, 0, sin(ϕ), cos(ϕ)] ]
 Pour un quaternion QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
-		et QR deviendra Qr=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
+		et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
 où u et v sont des plans (combinaison de deux axes) quelconques
 
 
