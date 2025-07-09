@@ -477,6 +477,7 @@ Les matrices peuvent se multiplier entre elles pour former une nouvelle matrice 
 Pour une rotation ou d'autres transformations similaires, transformer d'abord le point en matrice est pratique.
 https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
 https://en.wikipedia.org/wiki/Transformation_matrix
+https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
 https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
 https://bibnum.publimath.fr/IST/IST83028.pdf
 */
@@ -511,8 +512,10 @@ pub(super) mod Transformation<S>{
             }
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-        pub fn RotationDouble<T>(angle:Vec<&str>,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+        pub fn RotationDouble<T>(theta:T, phi:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
+            //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
+            /*For example a rotation of α in the xy-plane and β in the zw-plane is given by the matrix [[cos(α),-sin(α),0,0],[sin(α),cos(α),0,0],[0,0,cos(β),-sin(β)],[0,0,sin(β),cos(β)]] */
         }
         pub fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
@@ -523,7 +526,7 @@ pub(super) mod Transformation<S>{
             let mut facteur:Vec<Vec<T>>=Vec::new();
             let sin:sin(angle as f32)
             match plan{
-                "zw"|"wz"=>facteur.push(vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
+                "xy"|"yx"=>facteur.push(vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
                                         vec![Trigo::sin(angle),Trigo::cos(angle),0,0],
                                         vec![0,0,1,0],
                                         vec![0,0,0,1]),
@@ -548,7 +551,7 @@ pub(super) mod Transformation<S>{
                                         vec![0,0,1,0],
                                         vec![0,Trigo::sin(angle),0,Trigo::cos(angle)]),
 
-                "xy"|"yx"=>facteur.push(vec![1,0,0,0],
+                "zw"|"wz"=>facteur.push(vec![1,0,0,0],
                                         vec![0,1,0,0],
                                         vec![0,0,Trigo::cos(angle),-Trigo::sin(angle)],
                                         vec![0,0,Trigo::sin(angle),Trigo::cos(angle)]),
