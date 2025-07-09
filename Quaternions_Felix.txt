@@ -14,4 +14,25 @@ Q=(u,x,y,z)*(a,b,c,d)*(p,q,r,s)
 Cette syntaxe est évidemment longue à calculer à la main!!!
 Un oeil avisé s'aperçoit que toute les 4^3 possibilités de triplets sont présentes dans la structure, donc aucune combinaison ne se répète.
 Il est recommandé par l'auteur d'automatiser les calculs suivants cette démarche ultra-généraliste et d'emboîter le tout dans une fonction.
-La conception de QL et QR se fait par...
+La conception de QL et QR se fait depuis un quaternion de rotation (attitude quaternion) où QL est le Q original et QR=QL^-1
+L'inverse d'un quaternion est comme le conjugué d'un nombre complexe où on inverse les signes des parties vectorielles.
+Pour le quaternion un Q (u,x,y,z)=>Q^-1 (u,-x,-y,-z). Donc plus haut, QR=(p,q,r,s)=(u,-x,-y,-z)
+
+En trois dimension le quaternion de rotation QL=(u,x,y,z) serait créé à partir d'un angle sur un axe de rotation nommé θ (thêta) et réalisé par la formule suivante: (cos(0.5*θ), Vx*sin(0,5*θ), Vy*sin(0.5*θ), Vz*sin(0.5*θ)) où le facteur 0.5 provient de la mise en sandwich du quaternion P (donc il faut diviser par deux l'angle de rotation) et les Vx, Vy et Vz sont les coordonnées ou vecteurs de position de l'axe de rotation.
+Le quaternion P=(a,b,c,d) provient de la position vectorielle du point et est réalisé par la formule suivante: (0, X, Y, Z) où le zéro est la coordonnées w ou u de la 4e dimension (d'un objet 3d).
+
+En quatre dimensions il est nécessaire d'avoir une paire de quaternion de multiplication pour obtenir une double rotation autour de plusieurs plans (et non deux axes). La mise en sandwich de rotation reste la même: QL*P*QL^-1.
+Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*Mr*P ou MR*ML*P. 
+Comme dit, les rotations s'effectuent dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4).
+Pour une matrice, cette représentation est décrit par R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
+								[sin(θ), cos(θ), 0, 0]
+								[0, 0, cos(ϕ), -sin(ϕ)]
+								[0, 0, sin(ϕ), cos(ϕ)] ]
+Pour un quaternion QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
+		et QR deviendra Qr=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
+où u et v sont des plans (combinaison de deux axes) quelconques
+
+
+
+
+
