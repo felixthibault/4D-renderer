@@ -1,0 +1,8 @@
+Q=(u,x,y,z)*(a,b,c,d)*(p,q,r,s)
+
+=((au-bx-cy-dz)+(ax+bu+dy-cz)i+(ay+bz+cu-dx)j+(az+cx+du-by)k)*(p,q,r,s)
+
+=(aup-bpx-cpy-dpz-aqx-bqu-dqy+cqz-ary-brz-cru+drx-asz-csx-dsu+bsy)+
+(apx+bpu+dpy-cpz+aqu-bqx-cqy-dqz+asy+bsz+csu-dsx-arz-crx-dru+bry)i+
+(apy+bpz+cpu-dpx+aqz+cqx+dqu-bqy+aru-brx-cry-drz-asx-bsu-dsy+csz)j+
+(apz+cpx+dpu-bpy+arx+bru+dry-crz+asu-bsx-csy-dsz-aqy-bqz-cqu+dqx)k
