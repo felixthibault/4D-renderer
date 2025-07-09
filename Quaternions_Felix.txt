@@ -1,3 +1,7 @@
+Une Entité quadridimensionnelle peut être représentée par un quaternion tel que P=a+bi+cj+dk.
+La rotation de cette entité étant ici un point autour de l'origine se fait par la multiplication de 2 quaternions à gauche et à droite (puisqu'un 
+plan agit comme axe de rotation) tels que QLeft= u+xi+yj+zk et QRight= p+qi+rj+sk. La multiplication de trois quaternions n'est pas commutative.
+Ainsi, il faut multiplier de la façon QLeft*P*QRight qui doit ressembler au développement ci-dessous. Décidons que P' (après la rotation) => Q
 Q=(u,x,y,z)*(a,b,c,d)*(p,q,r,s)
 
 =((au-bx-cy-dz)+(ax+bu+dy-cz)i+(ay+bz+cu-dx)j+(az+cx+du-by)k)*(p,q,r,s)
@@ -6,3 +10,8 @@ Q=(u,x,y,z)*(a,b,c,d)*(p,q,r,s)
 (apx+bpu+dpy-cpz+aqu-bqx-cqy-dqz+asy+bsz+csu-dsx-arz-crx-dru+bry)i+
 (apy+bpz+cpu-dpx+aqz+cqx+dqu-bqy+aru-brx-cry-drz-asx-bsu-dsy+csz)j+
 (apz+cpx+dpu-bpy+arx+bru+dry-crz+asu-bsx-csy-dsz-aqy-bqz-cqu+dqx)k
+
+Cette syntaxe est évidemment longue à calculer à la main!!!
+Un oeil avisé s'aperçoit que toute les 4^3 possibilités de triplets sont présentes dans la structure, donc aucune combinaison ne se répète.
+Il est recommandé par l'auteur d'automatiser les calculs suivants cette démarche ultra-généraliste et d'emboîter le tout dans une fonction.
+La conception de QL et QR se fait par...
