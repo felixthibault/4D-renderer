@@ -28,9 +28,17 @@ Pour une matrice, cette représentation est décrit par R(θ, ϕ)=[ [cos(θ), -s
 								[sin(θ), cos(θ), 0, 0]
 								[0, 0, cos(ϕ), -sin(ϕ)]
 								[0, 0, sin(ϕ), cos(ϕ)] ]
+La formule de rotation simple est la suivante: R=I+(cos(θ)−1)(u*u^-1+v*v^-1)+sin(θ)(v*u^-1−u*v^-1)
+où u et v sont décrits plus bas, I est une matrice 4x4 ajustant les vecteurs : I= [[1,0,0,0],
+										   [0,1,0,0],
+										   [0,0,1,0],
+										   [0,0,0,1]]
+
 Pour un quaternion QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
 		et QR deviendra Qr=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
-où u et v sont des plans (combinaison de deux axes) quelconques
+où u et v sont des vecteurs permettant la représentation d'un plan
+Les plans sont décomposés chacuns en 2 vecteurs, mettons u et v qui sont des vecteurs orthogonaux et unitaire. Donc, chacun des vecteurs peut être positionné comme on le voudrait, mais ils doivent être à 90 degrés l'un de l'autre et la norme doit être de 1 pour les deux (ou u*v=0 et w²+x²+y²+z²=1). Il est possible d'avoir un plan de rotation complètement arbitraire en modifiant les identités u et v en ayant pas uniquement une seule composante 1 et le reste des 0, tant que l'autre vecteur soit orthogonal à celui-ci. 
+Comme dans le contexte de la méthode matricielle, le vecteur u peut être associé au QLeft et v à Qright. Les quaternions peuvent être accumulés par multiplication pour obtenir plus de rotation. Les quaternions gauches et droites forment ainsi un plan de rotation, il est possible d'en avoir plusieurs.
 
 
 
