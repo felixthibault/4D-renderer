@@ -23,6 +23,7 @@ Le quaternion P=(a,b,c,d) provient de la position vectorielle du point et est r�
 
 En quatre dimensions il est nécessaire d'avoir une paire de quaternion de multiplication pour obtenir une double rotation autour de plusieurs plans (et non deux axes). La mise en sandwich de rotation reste la même: QL*P*QL^-1.
 Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*Mr*P ou MR*ML*P. 
+Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*MR*P ou MR*ML*P. 
 Comme dit, les rotations s'effectuent dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4).
 Pour une matrice, cette représentation est décrit par R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
 								[sin(θ), cos(θ), 0, 0]
@@ -35,10 +36,15 @@ où u et v sont décrits plus bas, I est une matrice 4x4 ajustant les vecteurs :
 										   [0,0,0,1]]
 
 Pour un quaternion QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
+<<<<<<< HEAD
 		et QR deviendra Qr=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
 où u et v sont des vecteurs permettant la représentation d'un plan
 Les plans sont décomposés chacuns en 2 vecteurs, mettons u et v qui sont des vecteurs orthogonaux et unitaire. Donc, chacun des vecteurs peut être positionné comme on le voudrait, mais ils doivent être à 90 degrés l'un de l'autre et la norme doit être de 1 pour les deux (ou u*v=0 et w²+x²+y²+z²=1). Il est possible d'avoir un plan de rotation complètement arbitraire en modifiant les identités u et v en ayant pas uniquement une seule composante 1 et le reste des 0, tant que l'autre vecteur soit orthogonal à celui-ci. 
 Comme dans le contexte de la méthode matricielle, le vecteur u peut être associé au QLeft et v à Qright. Les quaternions peuvent être accumulés par multiplication pour obtenir plus de rotation. Les quaternions gauches et droites forment ainsi un plan de rotation, il est possible d'en avoir plusieurs.
+=======
+		et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
+où u et v sont des plans (combinaison de deux axes) quelconques
+>>>>>>> 6173f076e4c4d03ec25254c2dac356e7f71362b2
 
 
 
