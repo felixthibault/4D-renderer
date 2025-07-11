@@ -23,30 +23,35 @@ Un oeil avisé s'aperçoit que toute les 4^3 possibilités de triplets sont pré
 Il est recommandé par l'auteur d'automatiser les calculs suivants cette démarche ultra-généraliste et d'emboîter le tout dans une fonction.
 La création de QL et QR est interreliée en 3D mais pas en 4D et est la conséquence du choix du plan de rotation.
 
-En trois dimension, le fait de parler d'axe de rotation n'est pas rigoureux mathématiquement comme technique, mais est correct usuellement.
-La distinction est qu'un objet tourne autour d'un axe fixe quand son plan de rotation, lui, est modifié par la rotation.
+En trois dimension, le fait de parler d'axe de rotation n'est pas rigoureux mathématiquement comme technique, mais est vrai usuellement.
+La distinction est qu'un objet tourne autour d'un axe fixe pendant que son plan de rotation, lui, est modifié par la rotation.
+Un plan de rotation arbitraire a ses composantes modifiées alors que l'élément pivot invariant est une ligne.
 Comme il sera vu prochainement, en 4D il faudra parler de plan de rotation, alors autant commencer tout de suite.
 Les quaternions représentant la rotation dans un plan bidimensionnel sont les avatars des deux vecteurs unitaires et orthogonaux symbolisant le plan.
 Par souci de respect de la projection stéréographique d'un objet 3D, le quaternion QR doit être le quaternion transposé de QL ou QL^-1, autrement des déformations dans la 4e dimension serait visible et incohérent dans la rotation.
-La formule pour une rotation purement 3D ressemble donc à P' = QLeft*P*QLeft^-1. Le résultat, par le fonctionnement du quaternion retourne le point tourné.
+La formule pour une rotation purement 3D ressemble donc à P' = QLeft*P*QLeft^-1. Le quaternion P' est le résultat après cette muliplication non-commutative.
 La rotation est donc calculée par la valeur de QL seul et à partir d'un seul angle de rotation nommé θ (thêta).
-QLeft=a+bi+cj+dk est réalisé par la formule suivante: (cos(0.5*θ), Vx*sin(0,5*θ), Vy*sin(0.5*θ), Vz*sin(0.5*θ)) où le facteur 0.5 provient de la mise en sandwich du quaternion P (donc il faut diviser par deux l'angle de rotation) et les Vx, Vy et Vz sont les coordonnées ou vecteurs de position de la ligne de rotation.
-Il est impératif que le vecteur Vx,Vy,Vz représentant QL soit unitaire et orthogonal à QR (d'où la transposition de QR)
+Ce quaternion est réalisé par la formule suivante: QLeft=cos(0.5*θ) +  i*Vx*sin(0,5*θ) + j*Vy*sin(0.5*θ) + k*Vz*sin(0.5*θ) où le facteur 0.5 provient de la mise en sandwich du quaternion P (donc il faut diviser par deux l'angle de rotation) et les Vx, Vy et Vz sont les coordonnées ou composantes de ce vecteur dans le plan de rotation.
+Comme dit, un plan (de rotation ou autre) est une entité bidimensionnelle composée de 2 vecteurs, mettons u et v qui sont des vecteurs orthogonaux, tridimensionnels et unitaires (norme de 1). 
+Autrement dit, il est impératif que Vx²+Vy²+Vz²=1, que Ux²+Uy²+Uz²=1 et que u*v=0 (d'où la transposition de QR).
+Le quaternion P=(a,b,c,d) provient de la position vectorielle de l'objet et est réalisé par la formule suivante: P=0 + xi + yj + zk où le zéro est la coordonnées w ou u de la 4e dimension (d'un objet 3d).
 
-le quaternion de rotation QL=(a,b,c,d) serait créé à partir d'un angle sur un axe de rotation nommé θ (thêta) et réalisé 
-Le quaternion P=(a,b,c,d) provient de la position vectorielle du point et est réalisé par la formule suivante: P=0 + xi + yj + zk où le zéro est la coordonnées w ou u de la 4e dimension (d'un objet 3d). Un plan de rotation arbitraire a ses composantes modifiées alors que l'élément pivot invariant est une ligne.
+En quatre dimensions, il est toujours nécessaire d'avoir un plan de rotation, mais la dimension supplémentaire implique d'avoir un plan de rotation mobile et un plan fixe. 
+L'appellation d'axe de rotation n'est mathématiquement plus vrai ici. Ce n'est pas une ligne qui reste inchangée par la rotation, mais deux, ce qui forme un plan fixe ou indépendant.
+Il existe donc 6 libertés de rotation en 4D contre 3 en 3D: "xy", "xz", "xw", "yz", "yw" et "zw".
+De plus, il y a la possibilité d'effectuer une simple ou double rotation par la présence de deux plans distincts. Il sera vu plus tard comment les formules changent selon le cas.
+La formule pour calculer la nouvelle position d'une entité quadridimensionnelle, telle que P=u+xi+yj+zk, est encore le sandwich P' = QLeft*P*QRight.
+Dans le cas d'une rotation simple, autour d'un plan lequel reste invariant sous la rotation, un seul angle de rotation est nécessaire et QL est encore orthogonal à QR. QL=QR^-1. 
+L'équation est quasiment la même qu'en 3D, soit QLeft=cos(θ) +  i*Ux*sin(θ) + j*Uy*sin(θ) + k*Uz*sin(θ)
+Dans le cas d'une rotation double, autour d'un point lequel reste invariant sous la rotation, deux angles de rotation sont nécessaires tels que [θ, ϕ]. 
+Les vecteurs u et v sont associables à QL et QR respectivement comme les anciennes formules et ne sont plus nécessairement ortogonaux même si toujours unitaires (à vérifier).
+Avec des quaternions, QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
+		et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
+où u et v sont des vecteurs quadridimensionnels créant le plan de rotation.
+Le calcul peut aussi se faire avec 2 matrices commutative ML*MR*P ou MR*ML*P.
 
-En quatre dimensions, il est nécessaire
 
-
-
-
-
-
-En quatre dimensions il est nécessaire d'avoir une paire de quaternion de multiplication pour obtenir une double rotation autour de plusieurs plans (et non deux axes). La mise en sandwich de rotation reste la même: QL*P*QL^-1.
-Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*MR*P ou MR*ML*P. 
-Le paramètre P est construit par la formule suivante: (W, X, Y, Z) qui sont des coordonnées spatiales. La paire d'angle de rotation [θ, ϕ] expriment les rotations DANS les plans orientés. Le calcul peut aussi se faire avec 2 matrices commutative ML*MR*P ou MR*ML*P. 
-Comme dit, les rotations s'effectuent dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4).
+#Comme dit, les rotations s'effectuent dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4).
 Pour une matrice, cette représentation est décrit par R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
 								[sin(θ), cos(θ), 0, 0]
 								[0, 0, cos(ϕ), -sin(ϕ)]
@@ -57,11 +62,7 @@ où u et v sont décrits plus bas, I est une matrice 4x4 ajustant les vecteurs :
 										   [0,0,1,0],
 										   [0,0,0,1]]
 
-Pour un quaternion QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
-		et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
-où u et v sont des vecteurs permettant la représentation d'un plan
-Les plans sont décomposés chacuns en 2 vecteurs, mettons u et v qui sont des vecteurs orthogonaux et unitaire. Donc, chacun des vecteurs peut être positionné comme on le voudrait, mais ils doivent être à 90 degrés l'un de l'autre et la norme doit être de 1 pour les deux (ou u*v=0 et w²+x²+y²+z²=1). Il est possible d'avoir un plan de rotation complètement arbitraire en modifiant les identités u et v en ayant pas uniquement une seule composante 1 et le reste des 0, tant que l'autre vecteur soit orthogonal à celui-ci. 
-Comme dans le contexte de la méthode matricielle, le vecteur u peut être associé au QLeft et v à Qright. Les quaternions peuvent être accumulés par multiplication pour obtenir plus de rotation. Les quaternions gauches et droites forment ainsi un plan de rotation, il est possible d'en avoir plusieurs.
+Les quaternions peuvent être accumulés par multiplication pour obtenir plus de rotation.
 
 
 
