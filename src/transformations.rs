@@ -479,6 +479,7 @@ https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix
 https://en.wikipedia.org/wiki/Transformation_matrix
 https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
 https://bibnum.publimath.fr/IST/IST83028.pdf
+https://chatgpt.com
 */
     
 
