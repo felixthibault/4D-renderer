@@ -29,7 +29,7 @@ Un plan de rotation arbitraire a ses composantes modifiées alors que l'élémen
 Comme il sera vu prochainement, en 4D il faudra parler de plan de rotation, alors autant commencer tout de suite.
 Les quaternions représentant la rotation dans un plan bidimensionnel sont les avatars des deux vecteurs unitaires et orthogonaux symbolisant le plan.
 Par souci de respect de la projection stéréographique d'un objet 3D, le quaternion QR doit être le quaternion transposé de QL ou QL^-1, autrement des déformations dans la 4e dimension serait visible et incohérent dans la rotation.
-La formule pour une rotation purement 3D ressemble donc à P' = QLeft*P*QLeft^-1. Le quaternion P' est le résultat après cette muliplication non-commutative.
+La formule pour une rotation purement 3D ressemble donc à P' = QLeft*P*QLeft^-1, qui est la formule de Hamilton-Cayley. Le quaternion P' est le résultat après cette muliplication non-commutative.
 La rotation est donc calculée par la valeur de QL seul et à partir d'un seul angle de rotation nommé θ (thêta).
 Ce quaternion est réalisé par la formule suivante: QLeft=cos(0.5*θ) +  i*Vx*sin(0,5*θ) + j*Vy*sin(0.5*θ) + k*Vz*sin(0.5*θ) où le facteur 0.5 provient de la mise en sandwich du quaternion P (donc il faut diviser par deux l'angle de rotation) et les Vx, Vy et Vz sont les coordonnées ou composantes de ce vecteur dans le plan de rotation.
 Comme dit, un plan (de rotation ou autre) est une entité bidimensionnelle composée de 2 vecteurs, mettons u et v qui sont des vecteurs orthogonaux, tridimensionnels et unitaires (norme de 1). 
