@@ -41,29 +41,41 @@ L'appellation d'axe de rotation n'est mathématiquement plus vrai ici. Ce n'est 
 Il existe donc 6 libertés de rotation en 4D contre 3 en 3D: "xy", "xz", "xw", "yz", "yw" et "zw".
 De plus, il y a la possibilité d'effectuer une simple ou double rotation par la présence de deux plans distincts. Il sera vu plus tard comment les formules changent selon le cas.
 La formule pour calculer la nouvelle position d'une entité quadridimensionnelle, telle que P=u+xi+yj+zk, est encore le sandwich P' = QLeft*P*QRight.
-Dans le cas d'une rotation simple, autour d'un plan lequel reste invariant sous la rotation, un seul angle de rotation est nécessaire et QL est encore orthogonal à QR. QL=QR^-1. 
-L'équation est quasiment la même qu'en 3D, soit QLeft=cos(θ) +  i*Ux*sin(θ) + j*Uy*sin(θ) + k*Uz*sin(θ)
+Dans le cas d'une rotation simple, autour d'un plan lequel reste invariant sous la rotation, un seul angle de rotation est réellement nécessaire pour définir entièrement le couple QL et QR, qui sont générallement aussi orthogonaux l'un à l'autre par le choix de u et v, même si plus obligés désormais.
+La différence entre une rotation double ou simple réside dans le choix des deux angles construisant les deux quaternions de rotation. 
+On peut constater par les calculs qu'avoir deux angles égaux en paramètre de la construction des quaternions donne le même résultat qu'avoir un seul angle.
+Par simplification l'équation décrivant le sandwich de quaternion est la formule suivante: QL​=cos(θ)+u*sin(θ),QR​=cos(θ)+v*sin(θ) où u et v définissent les plans de rotation et sont générallement orthogonaux. Il sera vu dans quelques lignes comment arriver à cette formule.
+Une rotation simple est un type de rotation double isocline où les deux angles ont la même valeur absolue à l'exception du signe. Si θ1=θ2, c'est une rotation isocline gauche, mais si θ1=-θ2, c'est une rotation isocline droite.
+À rappeler que le développement complet des quaternions en rotation simple est similaire qu'en 3D, soit QLeft=cos(θ) +  i*Ux*sin(θ) + j*Uy*sin(θ) + k*Uz*sin(θ), à l'exception qu'un seul côté des deux quaternions ne s'annule pas après calcul.
+Donc, il est possible que le résultat devienne P'=(cos(θ)+u*sin(θ))*P*1 ou bien P'=1*P*(cos(θ)+u*sin(θ)) tout dépend du signe et cela inversera la rotation.
+
 Dans le cas d'une rotation double, autour d'un point lequel reste invariant sous la rotation, deux angles de rotation sont nécessaires tels que [θ, ϕ]. 
-Les vecteurs u et v sont associables à QL et QR respectivement comme les anciennes formules et ne sont plus nécessairement ortogonaux même si toujours unitaires (à vérifier).
+Les vecteurs u et v sont associables à QL et QR respectivement comme les anciennes formules et ne sont plus ortogonaux même si toujours unitaires.
 Avec des quaternions, QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
-		et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
-où u et v sont des vecteurs quadridimensionnels créant le plan de rotation.
-Le calcul peut aussi se faire avec 2 matrices commutative ML*MR*P ou MR*ML*P.
-
-
-#Comme dit, les rotations s'effectuent dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4).
-Pour une matrice, cette représentation est décrit par R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
-								[sin(θ), cos(θ), 0, 0]
-								[0, 0, cos(ϕ), -sin(ϕ)]
-								[0, 0, sin(ϕ), cos(ϕ)] ]
-La formule de rotation simple est la suivante: R=I+(cos(θ)−1)(u*u^-1+v*v^-1)+sin(θ)(v*u^-1−u*v^-1)
-où u et v sont décrits plus bas, I est une matrice 4x4 ajustant les vecteurs : I= [[1,0,0,0],
-										   [0,1,0,0],
-										   [0,0,1,0],
-										   [0,0,0,1]]
+		   et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
+où u et v sont les mêmes vecteurs quadridimensionnels que précédemment. On remarque maintenant que si θ=±ϕ on  obtient une rotation simple ce qui était la pièce manquante de tantôt. On se sent mieux maintenant.
+Le calcul peut aussi se faire avec 2 matrices commutatives dans la formule suivante: ML*MR*P ou MR*ML*P. MLeft et MRight sont les matrices associables à QL et QR.
+Cette fonctionnalité est mieux connue en 3D, mais très abordable aussi en 4D puisque les seuls arguments vraiment importants sont les plans de rotation et les angles. 
+Si le plan de rotation est axé sur une liberté de rotation connue, comme "xy" ou "yw", il existe d'autres matrices 4x4 qu'on peut se rappeler en réflexe. 
+La formule générale pour une rotation arbitraire est décomposée en 2 sous-matrices de rotation 2D par simplicité, soit R1 et R2:
+			R1(θ) = [ [cos(θ), -sin(θ), 0, 0]		   R2(ϕ)= [ [1, 0, 0, 0]
+				  [sin(θ), cos(θ), 0, 0]			    [0, 1, 0, 0]	
+				  [0, 0, 1, 1]					    [0, 0, cos(ϕ), -sin(ϕ)]
+				  [0, 0, 0, 1] ]				    [0, 0, sin(ϕ), cos(ϕ)] ]
+Par multiplication des deux sous-groupes dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4), on obtient:
+			R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
+			          [sin(θ), cos(θ), 0, 0]
+				  [0, 0, cos(ϕ), -sin(ϕ)]
+				  [0, 0, sin(ϕ), cos(ϕ)] ]
+Ainsi, la formule cherchée pour effectuer la rotation de P chez les matrices est la suivante: P'=R(θ, ϕ)*P
+Il existe d'autres formes de formule pour les matrices (à vérifier): R=exp(θ​⋅QL​)⋅exp(ϕ⋅QR​) ou encore R=I+(cos(θ)−1)(u*u^-1+v*v^-1)+sin(θ)(v*u^-1−u*v^-1)
+où I est une matrice 4x4 ajustant les vecteurs : I= [[1,0,0,0],
+						     [0,1,0,0],
+						     [0,0,1,0],
+						     [0,0,0,1]]
 
 Les quaternions peuvent être accumulés par multiplication pour obtenir plus de rotation.
+Voilà. Lisez la sections des liens pertinents à la fin du document "transformations.rs", beaucoup de sources y sont présentes. Mettre ensemble toute l'information est une lourde tâche.
 
 
-
-
+"Biome Fest" et "The last stand" ont été écoutés lors de cette rédaction de 7h.
