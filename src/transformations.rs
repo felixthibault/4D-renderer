@@ -477,6 +477,7 @@ Les matrices peuvent se multiplier entre elles pour former une nouvelle matrice 
 Pour une rotation ou d'autres transformations similaires, transformer d'abord le point en matrice est pratique.
 https://web.archive.org/web/20091027131421/http://geocities.com/evilsnack/matrix.htm
 https://en.wikipedia.org/wiki/Transformation_matrix
+https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
 https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
 https://bibnum.publimath.fr/IST/IST83028.pdf
 https://chatgpt.com
@@ -488,7 +489,7 @@ pub(super) mod Transformation<S>{
     //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
     //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
     pub mod Matrice{
-        fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
+        pub fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
             //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
             let mut facteur:Vec<Vec<T>>=Vec::new();
             for dimension in 0..mesure.len(){
@@ -512,62 +513,76 @@ pub(super) mod Transformation<S>{
             }
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-
-        fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+        pub fn RotationDouble<T>(theta:T, phi:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+            //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
+            //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
+            /*For example a rotation of α in the xy-plane and β in the zw-plane is given by the matrix [[cos(α),-sin(α),0,0],[sin(α),cos(α),0,0],[0,0,cos(β),-sin(β)],[0,0,sin(β),cos(β)]] */
+        }
+        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
             //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
             //https://quaternions.online/
             //https://math.stackexchange.com/questions/1402362/can-rotations-in-4d-be-given-an-explicit-matrix-form
+            /*Une rotation dans un plan signifie que les composantes associées à ces dimensions dans une entité sont modifiés alors que les autres axes dimensions restent fixes.
+            Pour une rotation dans le plan xy, les composantes x et y des points seront modifiées alors que les z et w ne le seront pas. La différence avec le 3D est que deux axes (donc un plan) restent inchangés à la place d'un seul. */
             if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation",format!("{:?}",origine)}
             let mut facteur:Vec<Vec<T>>=Vec::new();
-            let sin:sin(angle as f32)
+            let sin:Trigo::sin(angle:T);
+            let cos:Trigo::cos(angle:T);
             match plan{
-                "zw"|"wz"=>facteur.push(vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
-                                        vec![Trigo::sin(angle),Trigo::cos(angle),0,0],
+                "xy"|"yx"=>facteur.push(vec![cos,-sin,0,0],
+                                        vec![sin,cos,0,0],
                                         vec![0,0,1,0],
                                         vec![0,0,0,1]),
                 
-                "yw"|"wy"=>facteur.push(vec![Trigo::cos(angle),0,-Trigo::sin(angle),0],
+                "xz"|"zx"=>facteur.push(vec![cos,0,-sin,0],
                                         vec![0,1,0,0],
-                                        vec![Trigo::sin(angle),0,Trigo::cos(angle),0],
+                                        vec![sin,0,cos,0],
                                         vec![0,0,0,1]),
                 
-                "yz"|"zy"=>facteur.push(vec![Trigo::cos(angle),0,0,-Trigo::sin(angle)],
+                "xw"|"wx"=>facteur.push(vec![cos,0,0,-sin],
                                         vec![0,1,0,0],
                                         vec![0,0,1,0],
-                                        vec![Trigo::sin(angle),0,0,Trigo::cos(angle)]),
+                                        vec![sin,0,0,cos]),
                 
-                "xw"|"wx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,Trigo::cos(angle),-Trigo::sin(angle),0],
-                                        vec![0,Trigo::sin(angle),Trigo::cos(angle),0],
+                "yz"|"zy"=>facteur.push(vec![1,0,0,0],
+                                        vec![0,cos,-sin,0],
+                                        vec![0,sin,cos,0],
                                         vec![0,0,0,1]),
 
-                "xz"|"zx"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,Trigo::cos(angle),Trigo::sin(angle),0],
+                "yw"|"wy"=>facteur.push(vec![1,0,0,0],
+                                        vec![0,cos,0,-sin],
                                         vec![0,0,1,0],
-                                        vec![0,Trigo::sin(angle),0,Trigo::cos(angle)]),
+                                        vec![0,sin,0,cos]),
 
-                "xy"|"yx"=>facteur.push(vec![1,0,0,0],
+                "zw"|"wz"=>facteur.push(vec![1,0,0,0],
                                         vec![0,1,0,0],
-                                        vec![0,0,Trigo::cos(angle),-Trigo::sin(angle)],
-                                        vec![0,0,Trigo::sin(angle),Trigo::cos(angle)]),
-                _=>ReportError("Plan de rotation incorrect ou incohérent",format!("{:?}",plan)
+                                        vec![0,0,cos,-sin],
+                                        vec![0,0,sin,cos]),
+                _=>ReportError("Plan de rotation incorrect ou incohérent",plan)
             }
                 
-            
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
-        fn Rotation2D<T>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
-            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation")}
-            let const facteur:Vec<Vec<T>>=vec![vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
-                                             vec![Trigo::sin(angle),-Trigo::cos(angle),0,0],
-                                             vec![0;4],//ou bien c'est 0,0,1,0
-                                             vec![0;4]] //et ici c'est 0,0,0,1
+                                 
+        pub fn RotationSimple: fn(f32,Vec<Vec<f32>>,&str,Vec<f32>)-> Vec<Vec<f32>>=RotationUnAxes;
+                                  
+        pub fn Rotation2D<T: std::fmt::Display>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
+            if origine.len()!=4{ ReportError("Nombre de dimensions incorrect à l'origine de rotation",origine)}
+            let const facteur:Vec<Vec<T>>=vec![ vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
+                                                vec![Trigo::sin(angle),Trigo::cos(angle),0,0],
+                                                vec![0,0,1,0],
+                                                vec![0,0,0,1]];
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
     }
+    pub mod Quaternion{
+        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<T>,plan:&str,origine:Vec<T>)->Vec<Vec<T>){
+            let quaternion_operator:f32=
+        }
+    }
     pub mod Entity{
-        fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
+        pub fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
             //Ajoute une quantité vectorielle de déplacement sur toute l'entité
             if json.Debugging==true{ assert_eq(mesure.len(),4);}
             else if mesure.len()!=4{
