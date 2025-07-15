@@ -1,0 +1,65 @@
+Volume pyramide à base triangulaire selon le type de faces
+Équilatérale:                                       Quelconque:
+Volume           Aire base      h                   Volume                                                             Aire base                                 	h
+sqrt(2)*C³/12    sqrt(3)*C²/4   sqrt(2/3)*C         sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²)            sqrt(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²)/4	    sqrt(( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) 
+                                                    +(C²+E²)(A²F²+B²D²-C²E²) -A²B²C²-A²D²E² -B²E²F²-C²D²F²)/12                                                      +(C²+E²)(A²F²+B²D²-C²E²) -A²(B²C²+D²E²) -F²(B²E²+C²D²))/(4*AireABC)²)
+Calculs:
+sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²(B²C²+D²E²) -F²(B²E²+C²D²))/12
+h=sqrt(F²+(   B²C²(-B1²-C1²)   +B1*C1*BC(B²+C²-A²)   )/(2*AireABC)²)
+sqrt((F²*(2*AireABC)²+   B²C²(-2F²+4(AireBEF)²/B²+4(AireDFC)²/C²)   + (B²+C²-A²)*(C²-D²+F²)*(B²-E²+F²)/4  )/(2*AireABC)²)
+sqrt(((F²(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²) +C²(-B^4-E^4-F^4+2B²E²+2B²F²+2E²F²)+ B²(-C^4-D^4-F^4+2C²D²+2C²F²+2D²F²)+ (B²+C²-A²)*(C²-D²+F²)*(B²-E²+F²)  )/4   -2B²C²F² )/(2*AireABC)²)
+sqrt(( 16F²*(AireABC)² +16C²*(AireBEF)²+ 16B²*(AireCDF)²+ (B²+C²-A²)*(C²-D²+F²)*(B²-E²+F²)  -8B²C²F² )/(4*AireABC)²)
+=sqrt((-A²F^4 -B²D^4 -C²E^4 -D²B^4 -E²C^4 -F²A^4 -A²B²C² + A²B²D² + A²B²F² + A²C²E² + A²C²F² -A²D²E²+ A²D²F² + A²E²F²+B²C²D² + B²C²E² + B²D²E² + B²D²F² -B²E²F²  +C²D²E² -C²D²F² + C²E²F²) /(4*AireABC)²)
+h=sqrt(( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²(B²C²+D²E²) -F²(B²E²+C²D²))/(4*AireABC)²)
+sqrt(( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²B²C²-A²D²E² -B²E²F²-C²D²F²)/(4*AireABC)²)
+
+V=AireABC*h/3
+sqrt(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²)*sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²(B²C²+D²E²) -F²(B²E²+C²D²))/12*(4*AireABC)
+sqrt(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²)*sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²(B²C²+D²E²) -F²(B²E²+C²D²))/(12*sqrt(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²))
+sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²(B²C²+D²E²) -F²(B²E²+C²D²))/12
+V=sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²) +(C²+E²)(A²F²+B²D²-C²E²) -A²B²C²-A²D²E² -B²E²F²-C²D²F²)/12
+
+apothème moitié du segment C=sqrt(A²/2+B²/2-C²/4)
+diamètre cercle circonscrit: D=4A/abc​
+Formule aire rectifiée Héron=sqrt(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²)/4   ou   sqrt(-(A-B-C)(A+B-C)(A-B+C)(A+B+C))/4
+
+Volume de la pyramide selon coordonnées points
+Volume                                  Aire base
+(Az(Bx(Cy-Dy)+Cx(Dy-By)+Dx(By-Cy))+     (Ax(By-Cy)+Bx(Cy-Ay)+Cx(Ay-By))/2
+Bz(Ax(Cy-Dy)+Cx(Dy-Ay)+Dx(Cy-Ay))+ 
+Cz(Ax(Dy-By)+Bx(Dy-Ay)+Dx(Ay-By))+ 
+Dz(Ax(By-Cy)+Bx(Cy-Ay)+Cx(Ay-By)))/6                
+
+Calculs:
+A(x1,y1,z1); B(x2,y2,z2); C(x3,y3,z3); D(x4,y4,z4)
+
+Aire base=(Ax(By-Cy)+Bx(Cy-Ay)+Cx(Ay-By))/2
+V=(Az(Bx(Cy-Dy)+Cx(Dy-By)+Dx(By-Cy))+ Bz(Ax(Cy-Dy)+Cx(Dy-Ay)+Dx(Cy-Ay))+ Cz(Ax(Dy-By)+Bx(Dy-Ay)+Dx(Ay-By))+ Dz(Ax(By-Cy)+Bx(Cy-Ay)+Cx(Ay-By)))/6
+Sinon il faut voir la formule comme une matrice
+Volume=[Ax,Ay,Az]
+       [Bx,By,Bz]
+       [Cx,Cy,Cz]
+       [Dx,Dy,Dz]/6
+
+Aire=[Ax,Ay]
+     [Bx,By]
+     [Cx,Cy]/2
+
+Ligne=[Ax]
+      [Bx]
+
+Matrice des vecteurs des coordonnées des sommets d'une pyramide
+Dimensions          Volume
+0                   0
+1                   [A_Bx]/1
+2                   [[A_Bx,A_By],[A_Cx,A_Cy]]/2
+3                   [[A_Bx,A_By,A_Bz],[A_Cx,A_Cy,A_Cz],[A_Dx,A_Dy,A_Dz]]/6
+4                   [[A_Bx,A_By,A_Bz,A_Bw],[A_Cx,A_Cy,A_Cz,A_Cw],[A_Dx,A_Dy,A_Dz,A_Dw],[A_Ex,A_Ey,A_Ez,A_Ew]]/24
+
+Ax-Bx=A_Bx
+Calcul du déterminant selon dimension
+Dimensions          Volume
+1                   A_Bx
+2                   (A_Bx*A_Cy-A_By*A_Cx)/2
+3                   (A_Bx*A_Cy*A_Dz+A_By*A_Cz*A_Dx+A_Bz*A_Cx*A_Dy-A_Bz*A_Cy*A_Dx-A_By*A_Cx*A_Dz-A_Bx*A_Cz*A_Dy)/6
+4         

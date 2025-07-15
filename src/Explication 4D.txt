@@ -1,0 +1,113 @@
+Volume d'une sphère n dimensions
+Dimensions  Volume
+0              1
+1              2R
+2              πR²
+3              2τR³/3
+4              π²R^4/2
+5              2τ²R^5/15
+6              π³R^6/6
+7              2τ³R^7/105
+n              π^(n/2)*R^n/Γ(n/2+1)
+
+Volume d'un cube n dimensions et s côté
+Dimensions  Volume
+0              1
+1              s
+2              s²
+3              s³
+4              s^4
+5              s^5
+n              s^n
+
+Volume d'un prisme n dimensions
+Dimensions  Volume
+0              1
+1              x
+2              x*y
+3              x*y*z
+4              x*y*z*w
+5              x*y*z*w*v
+
+Aire d'un prisme n dimensions
+*On prend l'unité de la dimension n-1
+Dimensions    Nom de la forme   Unité     Aire
+1             Point              1        1
+2             Ligne              cm       2(A+B)
+3             Rectangle          cm²      2(AB+CB+AC)      
+4             Cube               cm³      2(ABC+ABD+ACD+BCD)
+5             Tesseract          cm^4
+
+Aire pyramide n dimensions
+*On prend l'unité de la dimension n-1
+Dimensions        Aire      Unité
+0                   0           0
+1                   1           1
+2                 A+B+C         cm  
+3                   Aire        cm²
+4               16*Vpyramide    cm³
+5                               cm^4
+
+Volume d'une pyramide n dimensions pour une base et hauteur connues
+*On ajoute un simple point à la base en extrapolant vers une autre dimension. 
+Dimensions  Volume
+0              1
+1              h
+2              b*h/2
+3              x*y*h/3
+4              x*y*z*h/4
+n              A*h/n
+
+Volume pyramide n dimensions
+*On prend l'unité de la dimension n
+Équilatérale:                                               Quelconque:
+Dimensions      Unité   Volume                              Dimensions      Unité       Volume
+2               cm²     sqrt(3)*C²/4                        1               cm          (A+B)/2
+3               cm³     sqrt(2)*C³/12                       2               cm²         sqrt(-A^4-B^4-C^4+2A²B²+2A²C²+2B²C²)/4
+4               cm^4    sqrt(1/3)*C^4/24                    3               cm³         sqrt( (A²+F²)(-A²F²+B²D²+C²E²) +(B²+D²)(A²F²-B²D²+C²E²)+(C²+E²)(A²F²+B²D²-C²E²) -A²B²C²-A²D²E² -B²E²F²-C²D²F²)/12
+n               cm^n    sqrt(3)*sqrt(2/3)^(n-2)*C^n/(2C!)   4               cm^4
+
+Volume de la pyramide selon coordonnées points
+Volume                                      Aire base
+(Az(Bx(Cy-Dy)+Cx(Dy-By)+Dx(By-Cy))+         Ax(By-Cy)+Bx(Cy-Ay)+Cx(Ay-By)/2
+Bz(Ax(Cy-Dy)+Cx(Dy-Ay)+Dx(Cy-Ay))+ 
+Cz(Ax(Dy-By)+Bx(Dy-Ay)+Dx(Ay-By))+
+Dz(Ax(By-Cy)+Bx(Cy-Ay)+Cx(Ay-By)))/6
+
+Volume d'une pyramide à n dimensions selon matrice des points
+*Il faut prendre le déterminant de la matrice à partir des vecteurs des points
+Dimensions          Volume
+0                   0
+1                   [[Ax],[Bx]]/1
+2                   [[Ax,Ay],[Bx,By],[Cx,Cy]]/2
+3                   [[Ax,Ay,Az],[Bx,By,Bz],[Cx,Cy,Cz],[Dx,Dy,Dz]]/6
+4                   [[Ax,Ay,Az,Aw],[Bx,By,Bz,Bw],[Cx,Cy,Cz,Cw],[Dx,Dy,Dz,Dw],[Ex,Ey,Ez,Ew]]/24
+n                   [[Ax,Ay,Az...An],A...n+1]/n!
+
+Ax-Bx=A_Bx
+Calcul du déterminant/volume selon dimension
+Dimensions          Volume
+1                   A_Bx
+2                   (A_Bx*A_Cy-A_By*A_Cx)/2
+3                   (A_Bx*A_Cy*A_Dz+A_By*A_Cz*A_Dx+A_Bz*A_Cx*A_Dy-A_Bz*A_Cy*A_Dx-A_By*A_Cx*A_Dz-A_Bx*A_Cz*A_Dy)/6
+
+Conception d'un monde 4D: 
+Projections : Tout comme un objet tridimensionnel peut être projeté sur un écran 2D (par exemple, une photo d'un cube), 
+un objet en 4D peut être projeté sur un espace en 3D, puis cette projection peut à son tour être affichée en 2D. Par exemple, 
+un tesseract (l'hypercube en 4D) peut être projeté en 3D, et cette projection peut ensuite être affichée en 2D. Toutefois,
+comme pour les projections d’objets 3D sur 2D, la perte de certaines informations rend la visualisation incomplète.
+
+Tranches tridimensionnelles : Une autre approche consiste à prendre une "tranche" de l'objet 4D, similaire à une coupe d'un objet 3D.
+Dans le cas de la 4D, cela signifie sélectionner un sous-ensemble de l’espace à une valeur fixe de la quatrième dimension (comme 
+une coupe dans un objet en 3D à un moment donné). Cela permet de visualiser cette tranche en 3D et de la représenter en 2D sur un écran.
+
+De façon matriciel: Les objets sont des ensembles de points dans une matrice 4xN pour N points dans un objet défini. 
+Nous appliquons aux objets pour les représenter des matrices transformations pour manipuler la rotation à six axes, la translation
+à quatre axes et la mise à l'échelle par rapport aux autres points. L'objet étant une matrice de points, les transformations sont
+appliquées à tous les points.
+
+Matrice de transformation (mise à l'échelle, rotation, translation) dans un espace 4D:
+Les matrices de transformation seront 5x5 en 4D puisqu'ils sont 4x4 en 3D
+Les matrices de transformation sont appliqués sur les matrices des points
+
+Je vais tenter d'utuliser une approche matricielle a mes risques et périls

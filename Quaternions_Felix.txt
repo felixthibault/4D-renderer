@@ -1,9 +1,81 @@
-Q=((au-bx-cy-dz)+(ax+bu+dy-cz)i+(ay+bz+cu-dx)j+(az+cx+du-by)k)*(p,q,r,s)
+Une Entité quadridimensionnelle peut être représentée par un quaternion tel que P=u+xi+yj+zk.
 
-(a,b,c,d)->(p,q,r,s)=>Réels
-(u,x,y,z)->((au-bx-cy-dz),(ax+bu+dy-cz),(ay+bz+cu-dx),(az+cx+du-by))
+Un quaternion est tout d'abord un nombre quadridimensionnel pouvant servir à représenter les transformations de rotation en 3D, 4D efficacement.
+Cette entité comporte une partie scalaire "u" et trois parties vectorielles différenciées par leur notation(i,j,k).
+Les coefficients u,x,y,z sont assimilables aux composantes des quatre premières dimensions w,x,y,z. 
+La partie scalaire se comporte comme un scalaire et les trois notations i,j,k suivent la règle de multiplication non-commutative des quaternions: i*i=j*j=k*k=-1. Et aussi le cercle de multiplication i*j=k j*k=i k*i=j ou j*i=-k k*j=-i  i*k=-j.
+
+La rotation d'une entité 3D ou 4D autour l'origine se fait par la multiplication de 2 quaternions de rotation (attitude quaternions) à gauche et à droite du quaternion point dans une structure ressemblant à un sandwich.
+Les quaternions de rotation ont la même structure générale que le point: QLeft= a+bi+cj+dk et QRight= p+qi+rj+sk. 
+Il y a des différences dans la construction des des QLeft et QRight dépendemment du type de rotation. La multiplication de trois quaternions n'est pas commutative.
+Ainsi, il faut multiplier selon la formule QLeft*P*QRight qui doit ressembler au développement ci-dessous. Décidons que P' (après la rotation) => Q = (a,b,c,d)*(u,x,y,z)*(p,q,r,s)
+
+=((ua-xb-yc-zd)+(ub+xa+zc-yd)i+(uc+xd+ya-zb)j+(ud+yb+za-xc)k)*(p,q,r,s)
+
+=(uap-xpb-ypc-zpd-uqb-xqa-zqc+yqd-urc-xrd-yra+zrb-usd-ysb-zsa+xsc)+
+(upb+xpa+zpc-ypd+uqa-xqb-yqc-zqd+usc+xsd+ysa-zsb-urd-yrb-zra+xrc)i+
+(upc+xpd+ypa-zpb+uqd+yqb+zqa-xqc+ura-xrb-yrc-zrd-usb-xsa-zsc+ysd)j+
+(upd+ypb+zpa-xpc+urb+xra+zrc-yrd+usa-xsb-ysc-zsd-uqc-xqd-yqa+zqb)k
+
+Cette syntaxe est évidemment longue à calculer à la main!!!
+C'était horrible.
+Un oeil avisé s'aperçoit que toute les 4^3 possibilités de triplets sont présentes dans la structure, donc aucune combinaison ne se répète.
+Il est recommandé par l'auteur d'automatiser les calculs suivants cette démarche ultra-généraliste et d'emboîter le tout dans une fonction.
+La création de QL et QR est interreliée en 3D mais pas en 4D et est la conséquence du choix du plan de rotation.
+
+En trois dimension, le fait de parler d'axe de rotation n'est pas rigoureux mathématiquement comme technique, mais est vrai usuellement.
+La distinction est qu'un objet tourne autour d'un axe fixe pendant que son plan de rotation, lui, est modifié par la rotation.
+Un plan de rotation arbitraire a ses composantes modifiées alors que l'élément pivot invariant est une ligne.
+Comme il sera vu prochainement, en 4D il faudra parler de plan de rotation, alors autant commencer tout de suite.
+Les quaternions représentant la rotation dans un plan bidimensionnel sont les avatars des deux vecteurs unitaires et orthogonaux symbolisant le plan.
+Par souci de respect de la projection stéréographique d'un objet 3D, le quaternion QR doit être le quaternion transposé de QL ou QL^-1, autrement des déformations dans la 4e dimension serait visible et incohérent dans la rotation.
+La formule pour une rotation purement 3D ressemble donc à P' = QLeft*P*QLeft^-1, qui est la formule de Hamilton-Cayley. Le quaternion P' est le résultat après cette muliplication non-commutative.
+La rotation est donc calculée par la valeur de QL seul et à partir d'un seul angle de rotation nommé θ (thêta).
+Ce quaternion est réalisé par la formule suivante: QLeft=cos(0.5*θ) +  i*Vx*sin(0,5*θ) + j*Vy*sin(0.5*θ) + k*Vz*sin(0.5*θ) où le facteur 0.5 provient de la mise en sandwich du quaternion P (donc il faut diviser par deux l'angle de rotation) et les Vx, Vy et Vz sont les coordonnées ou composantes de ce vecteur dans le plan de rotation.
+Comme dit, un plan (de rotation ou autre) est une entité bidimensionnelle composée de 2 vecteurs, mettons u et v qui sont des vecteurs orthogonaux, tridimensionnels et unitaires (norme de 1). 
+Autrement dit, il est impératif que Vx²+Vy²+Vz²=1, que Ux²+Uy²+Uz²=1 et que u*v=0 (d'où la transposition de QR).
+Le quaternion P=(a,b,c,d) provient de la position vectorielle de l'objet et est réalisé par la formule suivante: P=0 + xi + yj + zk où le zéro est la coordonnées w ou u de la 4e dimension (d'un objet 3d).
+
+En quatre dimensions, il est toujours nécessaire d'avoir un plan de rotation, mais la dimension supplémentaire implique d'avoir un plan de rotation mobile et un plan fixe. 
+L'appellation d'axe de rotation n'est mathématiquement plus vrai ici. Ce n'est pas une ligne qui reste inchangée par la rotation, mais deux, ce qui forme un plan fixe ou indépendant.
+Il existe donc 6 libertés de rotation en 4D contre 3 en 3D: "xy", "xz", "xw", "yz", "yw" et "zw".
+De plus, il y a la possibilité d'effectuer une simple ou double rotation par la présence de deux plans distincts. Il sera vu plus tard comment les formules changent selon le cas.
+La formule pour calculer la nouvelle position d'une entité quadridimensionnelle, telle que P=u+xi+yj+zk, est encore le sandwich P' = QLeft*P*QRight.
+Dans le cas d'une rotation simple, autour d'un plan lequel reste invariant sous la rotation, un seul angle de rotation est réellement nécessaire pour définir entièrement le couple QL et QR, qui sont générallement aussi orthogonaux l'un à l'autre par le choix de u et v, même si plus obligés désormais.
+La différence entre une rotation double ou simple réside dans le choix des deux angles construisant les deux quaternions de rotation. 
+On peut constater par les calculs qu'avoir deux angles égaux en paramètre de la construction des quaternions donne le même résultat qu'avoir un seul angle.
+Par simplification l'équation décrivant le sandwich de quaternion est la formule suivante: QL​=cos(θ)+u*sin(θ),QR​=cos(θ)+v*sin(θ) où u et v définissent les plans de rotation et sont générallement orthogonaux. Il sera vu dans quelques lignes comment arriver à cette formule.
+Une rotation simple est un type de rotation double isocline où les deux angles ont la même valeur absolue à l'exception du signe. Si θ1=θ2, c'est une rotation isocline gauche, mais si θ1=-θ2, c'est une rotation isocline droite.
+À rappeler que le développement complet des quaternions en rotation simple est similaire qu'en 3D, soit QLeft=cos(θ) +  i*Ux*sin(θ) + j*Uy*sin(θ) + k*Uz*sin(θ), à l'exception qu'un seul côté des deux quaternions ne s'annule pas après calcul.
+Donc, il est possible que le résultat devienne P'=(cos(θ)+u*sin(θ))*P*1 ou bien P'=1*P*(cos(θ)+u*sin(θ)) tout dépend du signe et cela inversera la rotation.
+
+Dans le cas d'une rotation double, autour d'un point lequel reste invariant sous la rotation, deux angles de rotation sont nécessaires tels que [θ, ϕ]. 
+Les vecteurs u et v sont associables à QL et QR respectivement comme les anciennes formules et ne sont plus ortogonaux même si toujours unitaires.
+Avec des quaternions, QL deviendra QL=cos((θ+ϕ)/2​)+sin((θ+ϕ)/2​)*u
+		   et QR deviendra QR=cos((θ-ϕ)/2​)+sin((θ-ϕ)/2​)*v
+où u et v sont les mêmes vecteurs quadridimensionnels que précédemment. On remarque maintenant que si θ=±ϕ on  obtient une rotation simple ce qui était la pièce manquante de tantôt. On se sent mieux maintenant.
+Le calcul peut aussi se faire avec 2 matrices commutatives dans la formule suivante: ML*MR*P ou MR*ML*P. MLeft et MRight sont les matrices associables à QL et QR.
+Cette fonctionnalité est mieux connue en 3D, mais très abordable aussi en 4D puisque les seuls arguments vraiment importants sont les plans de rotation et les angles. 
+Si le plan de rotation est axé sur une liberté de rotation connue, comme "xy" ou "yw", il existe d'autres matrices 4x4 qu'on peut se rappeler en réflexe. 
+La formule générale pour une rotation arbitraire est décomposée en 2 sous-matrices de rotation 2D par simplicité, soit R1 et R2:
+			R1(θ) = [ [cos(θ), -sin(θ), 0, 0]		   R2(ϕ)= [ [1, 0, 0, 0]
+				  [sin(θ), cos(θ), 0, 0]			    [0, 1, 0, 0]	
+				  [0, 0, 1, 1]					    [0, 0, cos(ϕ), -sin(ϕ)]
+				  [0, 0, 0, 1] ]				    [0, 0, sin(ϕ), cos(ϕ)] ]
+Par multiplication des deux sous-groupes dans 2 plans orthogonaux simultanément tels que plan1=(x1,x2) et plan2=(x3,x4), on obtient:
+			R(θ, ϕ)=[ [cos(θ), -sin(θ), 0, 0]
+			          [sin(θ), cos(θ), 0, 0]
+				  [0, 0, cos(ϕ), -sin(ϕ)]
+				  [0, 0, sin(ϕ), cos(ϕ)] ]
+Ainsi, la formule cherchée pour effectuer la rotation de P chez les matrices est la suivante: P'=R(θ, ϕ)*P
+Il existe d'autres formes de formule pour les matrices (à vérifier): R=exp(θ​⋅QL​)⋅exp(ϕ⋅QR​) ou encore R=I+(cos(θ)−1)(u*u^-1+v*v^-1)+sin(θ)(v*u^-1−u*v^-1)
+où I est une matrice 4x4 ajustant les vecteurs : I= [[1,0,0,0],
+						     [0,1,0,0],
+						     [0,0,1,0],
+						     [0,0,0,1]]
+
+Les quaternions peuvent être accumulés par multiplication pour obtenir plus de rotation.
+Voilà. Lisez la sections des liens pertinents à la fin du document "transformations.rs", beaucoup de sources y sont présentes. Mettre ensemble toute l'information est une lourde tâche.
 
 
-Q=(p(au-bx-cy-dz)-q(ax+bu+dy-cz)-r(ay+bz+cu-dx)-s(az+cx+du-by))+(p(ax+bu+dy-cz)+q(au-bx-cy-dz)+s(ay+bz+cu-dx)-r(az+cx+du-by))i+(p(ay+bz+cu-dx)+q(az+cx+du-by)+r(au-bx-cy-dz)-s(ax+bu+dy-cz))j+(p(az+cx+du-by)+r(ax+bu+dy-cz)+s(au-bx-cy-dz)-q(ay+bz+cu-dx))k
-
-=(aup-bpx-cpy-dpz-aqx-bqu-dqy+cqz-ary-brz-cru+drx-asz-csx-dsu+bsy)+(apx+bpu+dpy-cpz+aqu-bqx-cqy-dqz+asy+bsz+csu-dsx-arz-crx-dru+bry)i+(apy+bpz+cpu-dpx+aqz+cqx+dqu-bqy+aru-brx-cry-drz-asx-bsu-dsy+csz)j+(p(az+cx+du-by)+r(ax+bu+dy-cz)+s(au-bx-cy-dz)-q(ay+bz+cu-dx))k
+"Biome Fest" et "The last stand" ont été écoutés lors de cette rédaction de 7h.

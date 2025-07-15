@@ -480,6 +480,7 @@ https://en.wikipedia.org/wiki/Transformation_matrix
 https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
 https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-matrices-de-transformation-m1432
 https://bibnum.publimath.fr/IST/IST83028.pdf
+https://chatgpt.com
 */
     
 
