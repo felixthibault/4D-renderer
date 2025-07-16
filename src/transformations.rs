@@ -5,12 +5,12 @@
 //! et l'intégration de toute les instances donne l'entité.
 
 #[cfg(not(target_arch = "wasm32"))]
-use std::*;
+//use std::*;
 use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, string::*};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
 use Option::Some;
-use num_traits::ToPrimitive;
+use num_traits::{ToPrimitive,Zero};
     
 #[path = "main.rs"]
 mod embarquation_b4d;
@@ -309,24 +309,34 @@ fn dereferencer(reference:String)->Option<Vec<String>>{
     return SousStructures
 }
 
-fn ScalableFloatMatrix(scalaire:f32,mut matrice:Vec<Vec<f32>>)->Vec<Vec<f32>>{
+fn ScalableFloatMatrix(scalaire:f32,mut matrice:Vec<Vec<f32>>)->&[&[f32]]{
     //Multiplication d'une matrice par un scalaire float. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des float.
     for mut j in &mut matrice{
         for i in 0..j.len(){
-        j[i]*=scalaire;
+            j[i]*=scalaire;
         }
     }
     return matrice
 }
 
-fn ScalableIntMatrix(scalaire:usize,mut matrice:Vec<Vec<usize>>)->Vec<Vec<usize>>{
+fn ScalableIntMatrix(scalaire:u32,mut matrice:Vec<Vec<usize>>)->&[&[usize]]{
     //Multiplication d'une matrice d'entiers par un scalaire int non signé. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des usize.
     for mut j in &mut matrice{
         for i in 0..j.len(){
-        j[i]*=scalaire;
+            j[i]*=scalaire;
         }
     }
-    matrice//return
+    matrice
+}
+
+fn scalable_matrix<T: Copy + AddAssign + Mul<Output=T>>(scalaire:T, mut matrice:Vec<Vec<T>>)->&[&[T]]{
+    //Multiplication d'une matrice de nombre par un scalaire de même nature. Retourne une matrice de même dimension.
+    for j in &matrice{
+        for mut i in &j{
+            i*=scalaire;
+        }
+    }
+    return matrice
 }
 
 pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f32>])->Vec<Vec<f32>>{
@@ -352,7 +362,7 @@ pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f3
     return matrice3
 }
 
-pub(super) fn MultiplicationIntMatrices(matrice1:Vec<Vec<usize>>,matrice2:Vec<Vec<usize>>)->Vec<Vec<usize>>{
+pub(super) fn MultiplicationIntMatrices(matrice1:&[Vec<usize>],matrice2:&[Vec<usize>])->Vec<Vec<usize>>{
     //Multiplie des matrices d'uX de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
     //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
     if matrice1[0].len()!=matrice2.len(){
@@ -375,32 +385,29 @@ pub(super) fn MultiplicationIntMatrices(matrice1:Vec<Vec<usize>>,matrice2:Vec<Ve
     return matrice3
 }
 
-pub(super) fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T>(matrice1:Vec<Vec<T>>,matrice2:Vec<Vec<T>>)->Vec<Vec<T>>{
+pub(super) fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T>>(matrice1:&[Vec<T>],matrice2:&[Vec<T>])->Result<Vec<Vec<T>>>{
     //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
     //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if matrice1[0].len()!=matrice2.len(){
+    if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
         print("Multiplication de matrices incompatibles");
         println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
         panik();
+        return Err("Incompatible matrix dimensions")
     }
-    let mut matrice3:Vec<Vec<T>>=Vec::new();
-    let mut calcul:T;
+    let mut matrice3:Vec<Vec<T>>=vec![vec![T::zero();matrice2[0].len()];matrice1.len()];
     for j in 0..matrice1.len(){
-        matrice3.push(Vec::new());
         for i in 0..matrice2[0].len(){
-            calcul=0;
             for case in 0..matrice1[j].len(){
-                calcul+=matrice1[j][case]*matrice2[case][i];
-            matrice3[j].push(calcul);
+                matrice3[j][i]+=matrice1[j][case]*matrice2[case][i];
             }    
         }
     }
-    return matrice3
+    return Ok(matrice3)
 }
 
-pub(super) fn completer_matrice_carre<T>(mut matrice:Vec<Vec<T>>,const longueur:i16)->Vec<Vec<T>>{
+pub(super) fn completer_matrice_carre<T>(mut matrice:&[Vec<T>],const longueur:i16)->Vec<Vec<T>>{
     for i in 0..longueur-matrice.len(){
-        matrice.push(vec![0;longueur]);
+        matrice.push(vec![T::zero();longueur]);
     }
     matrice
 }
