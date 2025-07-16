@@ -375,7 +375,7 @@ pub(super) fn MultiplicationIntMatrices(matrice1:Vec<Vec<usize>>,matrice2:Vec<Ve
     return matrice3
 }
 
-pub(super) fn MultiplicationTMatrices<T>(matrice1:Vec<Vec<T>>,matrice2:Vec<Vec<T>>)->Vec<Vec<T>>{
+pub(super) fn multiplication_matrices<T>(matrice1:Vec<Vec<T>>,matrice2:Vec<Vec<T>>)->Vec<Vec<T>>{
     //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
     //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
     if matrice1[0].len()!=matrice2.len(){
