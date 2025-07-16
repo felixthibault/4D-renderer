@@ -279,7 +279,7 @@ pub fn print(msg:&str){
     print!("{}",msg);
 }
 pub fn ReportError(message:&str,code:String){
-    //Afficher fenêtre contenant erreur mineure
+    //Afficher fenêtre contenant une erreur mineure
     //Pour l'instant:
     println!("{} {}.",message,code);
 }
@@ -309,39 +309,35 @@ fn dereferencer(reference:String)->Option<Vec<String>>{
     return SousStructures
 }
 
-fn ScalableFloatMatrix(scalaire:f32,mut matrice:Vec<Vec<f32>>)->&[&[f32]]{
-    //Multiplication d'une matrice par un scalaire float. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des float.
+fn ScalableFloatMatrix(scalaire:f32,mut matrice:&[&[f32]]){
+    //Multiplication d'une matrice par un scalaire float. Panique si les types ne sont pas tous des float.
     for mut j in &mut matrice{
         for i in 0..j.len(){
             j[i]*=scalaire;
         }
     }
-    return matrice
 }
 
-fn ScalableIntMatrix(scalaire:u32,mut matrice:Vec<Vec<usize>>)->&[&[usize]]{
-    //Multiplication d'une matrice d'entiers par un scalaire int non signé. Retourne une matrice de même dimension. Panique si les types ne sont pas tous des usize.
+fn ScalableIntMatrix(scalaire:u32,mut matrice:&[&[usize]]){
+    //Multiplication d'une matrice d'entiers par un scalaire int non signé. Panique si les types ne sont pas tous des usize.
     for mut j in &mut matrice{
         for i in 0..j.len(){
             j[i]*=scalaire;
         }
     }
-    matrice
 }
 
-fn scalable_matrix<T: Copy + AddAssign + Mul<Output=T>>(scalaire:T, mut matrice:Vec<Vec<T>>)->&[&[T]]{
-    //Multiplication d'une matrice de nombre par un scalaire de même nature. Retourne une matrice de même dimension.
+pub fn scalable_matrix<T: Copy + AddAssign + Mul<Output=T>>(scalaire:T, &mut matrice:&[&[T]]){
+    //Multiplication d'une matrice de nombre par un scalaire de même nature. Méthode ne retournant rien. Panique si les types ne sont pas tous les mêmes.
     for j in &matrice{
         for mut i in &j{
             i*=scalaire;
         }
     }
-    return matrice
 }
 
 pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f32>])->Vec<Vec<f32>>{
     //Multiplie des matrices f32 de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
     if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
         print("Multiplication de matrices incompatibles");
         println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
@@ -354,7 +350,7 @@ pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f3
         for i in 0..matrice2[0].len(){
             calcul=0.0;
             for case in 0..matrice1[j].len(){
-                calcul+=matrice1[j][case]*matrice2[case][i];
+                calcul+=a[j][case]*matrice2[case][i];
             matrice3[j].push(calcul);
             }    
         }
@@ -364,8 +360,7 @@ pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f3
 
 pub(super) fn MultiplicationIntMatrices(matrice1:&[Vec<usize>],matrice2:&[Vec<usize>])->Vec<Vec<usize>>{
     //Multiplie des matrices d'uX de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if matrice1[0].len()!=matrice2.len(){
+    if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
         print("Multiplication de matrices incompatibles");
         println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
         panik();
@@ -385,31 +380,31 @@ pub(super) fn MultiplicationIntMatrices(matrice1:&[Vec<usize>],matrice2:&[Vec<us
     return matrice3
 }
 
-pub(super) fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T>>(matrice1:&[Vec<T>],matrice2:&[Vec<T>])->Result<Vec<Vec<T>>>{
+pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T>>(a:&[&[T]],b:&[&[T]])->Result<Vec<Vec<T>>>{
     //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
     //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
+    if a.is_empty() || b.is_empty() || a[0].len()!=b.len(){
         print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
+        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",a[0].len(),b.len());
         panik();
         return Err("Incompatible matrix dimensions")
     }
-    let mut matrice3:Vec<Vec<T>>=vec![vec![T::zero();matrice2[0].len()];matrice1.len()];
-    for j in 0..matrice1.len(){
-        for i in 0..matrice2[0].len(){
-            for case in 0..matrice1[j].len(){
-                matrice3[j][i]+=matrice1[j][case]*matrice2[case][i];
+    let mut matrice_resultat:Vec<Vec<T>>=vec![vec![T::zero();b[0].len()];a.len()];
+    for j in 0..a.len(){
+        for i in 0..b[0].len(){
+            for case in 0..a[j].len(){
+                matrice_resultat[j][i]+=a[j][case]*b[case][i];
             }    
         }
     }
-    return Ok(matrice3)
+    return Ok(matrice_resultat)
 }
 
-pub(super) fn completer_matrice_carre<T>(mut matrice:&[Vec<T>],const longueur:i16)->Vec<Vec<T>>{
-    for i in 0..longueur-matrice.len(){
-        matrice.push(vec![T::zero();longueur]);
+pub fn completer_matrice_carre<T>(&mut matrice:&[[T]]){
+    //Méthode modifiant une matrice non-carrée envoyée en paramètre. Essentiellement transforme de matrice rectangulaire à matrice carrée en ajoutant des lignes de zéros#.
+    for i in 0..matrice[0].len()-matrice.len(){
+        matrice.push(vec![T::zero();i]);
     }
-    matrice
 }
 
 mod Trigo{
@@ -496,7 +491,7 @@ pub(super) mod Transformation<S>{
     //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
     //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
     pub mod Matrice{
-        pub fn Stretching<T>(const mesure:Vec<T>, const Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
+        pub fn Stretching<T>(const mesure:&[T], const Entite:&[&[T]])->Vec<Vec<T>>{
             //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
             let mut facteur:Vec<Vec<T>>=Vec::new();
             for dimension in 0..mesure.len(){
@@ -518,14 +513,23 @@ pub(super) mod Transformation<S>{
                 //Math is not mathing, please what is going on
                 panik();
             }
-            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
+            return MultiplicationTMatrices(facteur:&[&[T]],Entite:&[&[T]])
         }
-        pub fn RotationDouble<T>(theta:T, phi:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+        pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
             /*For example a rotation of α in the xy-plane and β in the zw-plane is given by the matrix [[cos(α),-sin(α),0,0],[sin(α),cos(α),0,0],[0,0,cos(β),-sin(β)],[0,0,sin(β),cos(β)]] */
+            
         }
-        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
+        pub fn rotation_arbitraire<T>(theta:&[T], &mut Entite:&[&[T]], origine:Vec<T>){
+            //Méthode effectuant une rotation multi-plans sur une entité constituée de points à la verticale, donc de hauteur 4. Theta devrait être de longueur 6, sinon sera ajusté, un angle par plan de rotation:6.
+            //Puisque l'on peut considérer qu'une rotation autour d'un plan arbitraire (vecteur non aligné sur une dimension spécifique) est une suite de rotation du nombre de plan possible, cette fonction effectue autant de rotation que spécifier en sautant les zéros.
+            //L'ordre des plans est comme suit: "xy","xz","xw","yz","yw","zw". Ainsi, ce sont des rotations simples (doubles isocliniques) qui sont effectuées ici. Renvoyer à rotation_simple.
+            //https://articulatedrobotics.xyz/tutorials/coordinate-transforms/rotations-3d/
+            
+            //Ne pas effectuer de rotation si l'angle est nul
+        }
+        pub fn rotation_un_axes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
             //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
             //https://quaternions.online/
