@@ -107,7 +107,7 @@ Nous appliquons aux objets pour les représenter des matrices transformations po
 appliquées à tous les points.
 
 Matrice de transformation (mise à l'échelle, rotation, translation) dans un espace 4D:
-Les matrices de transformation seront 5x5 en 4D puisqu'ils sont 4x4 en 3D
+Les matrices de transformation seront 4x4 en 4D puisqu'ils sont 3x3 en 3D
 Les matrices de transformation sont appliqués sur les matrices des points
 
-Je vais tenter d'utuliser une approche matricielle a mes risques et périls
+Je vais tenter d'utuliser une approche matricielle à mes risques et périls

@@ -10,7 +10,7 @@ use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, st
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
 use Option::Some;
-use num_traits::{ToPrimitive,Zero};
+use num_traits::{ToPrimitive,zero};
     
 #[path = "main.rs"]
 mod embarquation_b4d;
@@ -283,6 +283,7 @@ pub fn ReportError(message:&str,code:String){
     //Pour l'instant:
     println!("{} {}.",message,code);
 }
+
 pub fn panik() {
     println("crash ans burn");
     panic!("crash and burn");
@@ -295,7 +296,33 @@ pub fn unreachable(x: Void) -> ! {
 pub unsafe fn do_nothing(_:Void) -> !{
     return Void
 }
-
+pub mod Convert{
+    pub fn convert_f64_to_u64(x: f64) -> Option<u64> {
+        let y = x as u64;
+        if y as f64 == x {
+            Some(y)
+        } else {
+            None
+        }
+    }
+    pub fn convert_f32_to_u32<T:Into<f32> + Copy>(x: T) -> Option<u32> {
+        let y = x.into() as f32 as u32;
+        if y as f32 == x.into() as f32 {
+            Some(y)
+        } else {
+            None
+        }
+    }
+    pub fn convert_to_u16<T: Into<f64>>(x:T)->u16{
+        x.into() as u16
+    }
+    pub fn convert_to_usize<T: Into<f64>>(x:T)->usize{
+        x.into() as usize
+    }
+    pub fn convert_to_isize<T: Into<f64>>(x:T)->isize{
+        x.into() as isize
+    }
+}
 fn dereferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
     //Crée des structures temporaires de toutes les références
@@ -521,13 +548,16 @@ pub(super) mod Transformation<S>{
             /*For example a rotation of α in the xy-plane and β in the zw-plane is given by the matrix [[cos(α),-sin(α),0,0],[sin(α),cos(α),0,0],[0,0,cos(β),-sin(β)],[0,0,sin(β),cos(β)]] */
             
         }
-        pub fn rotation_arbitraire<T>(theta:&[T], &mut Entite:&[&[T]], origine:Vec<T>){
+        pub fn rotation_arbitraire<T>(thetas:&[T], &mut Entite:&[&[T]], origine:Vec<T>){
             //Méthode effectuant une rotation multi-plans sur une entité constituée de points à la verticale, donc de hauteur 4. Theta devrait être de longueur 6, sinon sera ajusté, un angle par plan de rotation:6.
-            //Puisque l'on peut considérer qu'une rotation autour d'un plan arbitraire (vecteur non aligné sur une dimension spécifique) est une suite de rotation du nombre de plan possible, cette fonction effectue autant de rotation que spécifier en sautant les zéros.
+            //Puisque l'on peut considérer qu'une rotation autour d'un plan arbitraire (vecteur non aligné sur une dimension spécifique) est une suite de rotation du nombre de plan possible, cette fonction effectue autant de rotation que spécifié en sautant les zéros.
             //L'ordre des plans est comme suit: "xy","xz","xw","yz","yw","zw". Ainsi, ce sont des rotations simples (doubles isocliniques) qui sont effectuées ici. Renvoyer à rotation_simple.
             //https://articulatedrobotics.xyz/tutorials/coordinate-transforms/rotations-3d/
-            
-            //Ne pas effectuer de rotation si l'angle est nul
+            for theta in thetas{
+                if convert_to_u16(theta)!=0{
+                    
+                }
+            }
         }
         pub fn rotation_un_axes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
