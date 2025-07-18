@@ -7,6 +7,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 //use std::*;
 use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, string::*};
+use std::ops::{Add,Mul};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
 use Option::Some;
@@ -407,7 +408,7 @@ pub(super) fn MultiplicationIntMatrices(matrice1:&[Vec<usize>],matrice2:&[Vec<us
     return matrice3
 }
 
-pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T>>(a:&[&[T]],b:&[&[T]])->Result<Vec<Vec<T>>>{
+pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T> + num::Zero>(a:&[&[T]],b:&[&[T]])->Result<Vec<Vec<T>>>{
     //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
     //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
     if a.is_empty() || b.is_empty() || a[0].len()!=b.len(){
@@ -426,8 +427,39 @@ pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T>>(a:&[&[T]],b:
     }
     return Ok(matrice_resultat)
 }
+pub fn addition_vecteurs<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=T>,{
+    //Retourne l'addition de deux slices dans un vecteur de même longueur. Retourne une erreur si les longueurs ne correspondent pas. Peut prendre des vecteurs vides.
+    if  a.len()!=b.len(){
+        if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
+        print("Addition de vecteurs incompatibles");
+        println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
+        return Err("Incompatible vector dimensions")
+    } else if a.is_empty(){ Ok(Vec::new()) } //Les deux sont vides
+    let mut resultat:Vec<T>=Vec::new();
+    for i in 0..a.len(){
+        resultat.push(a[i]+b[i]);
+    }
+    return Ok(resultat)
+}
+pub fn addition_matrices<T>(a:&[&[T]], b:&[&[T]])->Result<Vec<Vec<T>>> where T: Add<Output=T>,{
+    //Retourne l'addition de deux matrices dans une matrice de même longueur. Retourne une erreur si les longueurs ne correspondent pas.
+    if  a.len()!=b.len() || a[0].len()!=b[0].len(){
+        if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
+        print("Addition de matrice incompatibles");
+        println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
+        println!("Hauteur de vecteur 1:{}, hauteur de vecteur 2:{}",a[0].len(),b[0].len());
+        return Err("Incompatible matrix dimensions")
+    } else if b.is_empty(){ return Ok(Vec::new()) //Les deux sont vides}
+    let mut resultat:Vec<Vec<T>>=vec![vec![0;a[0].len()];a.len()];
+    for i in 0..a.len(){
+        for j in 0..a[0].len(){
+            resultat[i][j]+=a[i][j]+b[i][j];
+        }
+    }
+    return Ok(resultat)
+}
 
-pub fn completer_matrice_carre<T>(&mut matrice:&[[T]]){
+pub fn completer_matrice_carre<T: num::Zero>(&mut matrice:&[[T]]){
     //Méthode modifiant une matrice non-carrée envoyée en paramètre. Essentiellement transforme de matrice rectangulaire à matrice carrée en ajoutant des lignes de zéros#.
     for i in 0..matrice[0].len()-matrice.len(){
         matrice.push(vec![T::zero();i]);
@@ -436,8 +468,7 @@ pub fn completer_matrice_carre<T>(&mut matrice:&[[T]]){
 
 mod Trigo{
     pub(super)fn sin<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
-        //retourne le sin de theta radians
-        //Retourne une erreur si le type d'angle n'est pas f32, prend des floats ou integers
+        //Retourne le sin de theta radians. Panique si le type d'angle n'est pas f32. Prend des floats ou integers.
         print!("Receive sin function. Angle of {} degrees. ", theta);
         (theta.into() as f32).sin()
     } 
@@ -515,11 +546,51 @@ https://chatgpt.com
 
 
 pub(super) mod Transformation<S>{
-    //Pour l'instant essayer d'avoir en argument des matrices ou sclalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
+    //Pour l'instant essayer d'avoir en argument des matrices ou scalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
     //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
     pub mod Matrice{
-        pub fn Stretching<T>(const mesure:&[T], const Entite:&[&[T]])->Vec<Vec<T>>{
+        pub fn translation_simple<T: Add<Output=T>>(mesure:&[T], &mut point:&[T]){
+            //Méthode effectuant une translation simple sur un seul point. Format des vecteurs: x,y,z,w
+            let mut facteur=mesure;
+            if mesure.len()<4{
+                //Manque de dimensions, ajouter des 0
+                for dimension in 0..4-mesure.len(){facteur.push(0);}
+            } else if mesure.len()>4{
+                //Ce CAD est limité à 4 dimension calmdown!
+                while facteur.len()!=4{facteur.pop();}
+            }
+            if point.len()<4{
+                //Manque de dimensions, ajouter des 0
+                for dimension in 0..4-point.len(){point.push(0);}
+            }
+            let point=addition_vecteurs(point,facteur);
+        }
+        
+        pub fn translation<T: Into<f64> + Add<Output=T> + Mul<Output=T> + Clone + num::Zero>(mesure:&[S], &mut Entite:&[&[T]]){
+            //Méthode effectuant une translation sur une matrice de points vectoriels (donc des points étalés dans un vecteur à la verticale et les points sont alignés en longueurs).
+            //La matrice de translation est 5x5 donc Entite.len()==4
+
+            //Changer T en f64 puis revenir en T
+            let mut facteur=mesure.clone();
+            if mesure.len()<4{
+                //Manque de dimensions, ajouter des 0
+                for dimension in 0..4-mesure.len(){facteur.push(T::zero());}
+            } else if mesure.len()>4{
+                //Ce CAD est limité à 4 dimension calmdown!
+                while facteur.len()!=4{facteur.pop();}
+            }
+            let facteur:Vec<_>=vec![ vec![1,0,0,0,facteur[0]],
+                                     vec![0,1,0,0,facteur[1]],
+                                     vec![0,0,1,0,facteur[2]],
+                                     vec![0,0,0,1,facteur[3]],
+                                     vec![0,0,0,0,1] ];
+            
+        }
+        
+        pub fn stretching<T>(const mesure:&[T], const Entite:&[&[T]])->Vec<Vec<T>>{
             //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
+
+            // À RÉANALYSER
             let mut facteur:Vec<Vec<T>>=Vec::new();
             for dimension in 0..mesure.len(){
                 facteur.push(vec![0;4]);
@@ -527,7 +598,7 @@ pub(super) mod Transformation<S>{
             }
             if mesure.len()<4{
                 //Ajouter des zéros pour compléter en carré
-                const facteur=completer_matrice_carre(facteur,4);
+                let facteur=;
             }
             else if mesure.len()==4{
                 //On fait f*ckall c'est déjà bon
