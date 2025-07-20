@@ -285,6 +285,18 @@ pub fn ReportError(message:&str,code:String){
     println!("{} {}.",message,code);
 }
 
+type g64=f64;
+type g32=f32;
+
+pub fn is_float<S>(x:S)->bool
+    where S:Into<f64> + Copy,
+    f64: From<S>, {
+    /*Méthodes de vérification si generic.type ==float or integer. Prend des integers ou floats en paramètres. */
+    let y= f64::from(x).fract()!=0.0; //Méthode 1
+    //let y= f64::from(x)!=u32::from(x) as f64; //Méthode 2, less fonctionnal because u32: From<S> not always implemented.
+    return y
+}
+
 pub fn panik() {
     println("crash ans burn");
     panic!("crash and burn");
@@ -323,6 +335,25 @@ pub mod Convert{
     pub fn convert_to_isize<T: Into<f64>>(x:T)->isize{
         x.into() as isize
     }
+    pub fn convert_vec<T, U>(vector: Vec<T>) -> Vec<U>
+    where T: TryInto<U>, 
+    <T as std::convert::TryInto<U>>::Error: std::fmt::Display {
+        /// Try to convert `Vec<T>` to `Vec<U>`. Mentionner avant l'appel quel sera le type inféré.
+        /// Créé par Own_Sentence_6928 sur Reddit:https://www.reddit.com/r/learnrust/comments/11hyu0o/help_me_with_making_a_general_function_to_convert/
+        /// Exemple utilisation: let y:Vec<i16>=convert_vec(vec![7,8,9]);print!("{:?}",y);
+        vector
+            .into_iter()
+            .map(|value_t|match TryInto::try_into(value_t) {
+                    Ok(value_u) => value_u,
+                    Err(why) => {
+                        let t = std::any::type_name::<T>();
+                        let u = std::any::type_name::<U>();
+                        panic!("Error converting from {t} to {u}: {why}")
+                    }
+                }
+            )
+            .collect()
+    }  
 }
 fn dereferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
@@ -545,7 +576,7 @@ https://chatgpt.com
     
 
 
-pub(super) mod Transformation<S>{
+pub(super) mod Transformation{
     //Pour l'instant essayer d'avoir en argument des matrices ou scalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
     //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
     pub mod Matrice{
@@ -566,59 +597,82 @@ pub(super) mod Transformation<S>{
             let point=addition_vecteurs(point,facteur);
         }
         
-        pub fn translation<T: Into<f64> + Add<Output=T> + Mul<Output=T> + Clone + num::Zero>(mesure:&[S], &mut Entite:&[&[T]]){
+        pub fn translation<S,T>(mut mesure:Vec<S>, mut Entite:Vec<Vec<T>>)->Result<Vec<Vec<T>>>
+        where T: Into<f64> + Add<Output=T> + Mul<Output=T> + Clone + num::zero,
+              S: Into<f64> + Add<Output=S> + Mul<Output=S> + num::zero,
+              f64: From<S>+From<T> {
             //Méthode effectuant une translation sur une matrice de points vectoriels (donc des points étalés dans un vecteur à la verticale et les points sont alignés en longueurs).
             //La matrice de translation est 5x5 donc Entite.len()==4
-
-            //Changer T en f64 puis revenir en T
-            let mut facteur=mesure.clone();
+            //if type de T ==float or T==integer and S==float->renvoyer f64 sinon-> renvoyer type T
             if mesure.len()<4{
                 //Manque de dimensions, ajouter des 0
-                for dimension in 0..4-mesure.len(){facteur.push(T::zero());}
+                for dimension in 0..4-mesure.len(){mesure.push(S::zero());}
             } else if mesure.len()>4{
                 //Ce CAD est limité à 4 dimension calmdown!
-                while facteur.len()!=4{facteur.pop();}
+                while mesure.len()!=4{mesure.pop();}
             }
-            let facteur:Vec<_>=vec![ vec![1,0,0,0,facteur[0]],
-                                     vec![0,1,0,0,facteur[1]],
-                                     vec![0,0,1,0,facteur[2]],
-                                     vec![0,0,0,1,facteur[3]],
-                                     vec![0,0,0,0,1] ];
-            
+
+            if is_float(Entite[0][0]) || !is_float(Entite[0][0]) && is_float(mesure[0]){
+                //c'est des float
+                let facteur:Vec<_>=vec![ vec![1f64,0f64,0f64,0f64,f64::from(mesure[0])],
+                                         vec![0f64,1f64,0f64,0f64,f64::from(mesure[1])],
+                                         vec![0f64,0f64,1f64,0f64,f64::from(mesure[2])],
+                                         vec![0f64,0f64,0f64,1f64,f64::from(mesure[3])],
+                                         vec![0f64,0f64,0f64,0f64,1f64] ];
+                for mut slice in mut Entite{
+                    let slice:Vec<f64>=convert_vec(slice);
+                let a:Vec<f64>=vec![1.;Entite[0].len()];
+                Entite.push(a);
+                }
+            } else {
+                //c'est des entiers
+                let facteur:Vec<_>=vec![ vec![1,0,0,0,T::from(mesure[0])],
+                                         vec![0,1,0,0,T::from(mesure[1])],
+                                         vec![0,0,1,0,T::from(mesure[2])],
+                                         vec![0,0,0,01,T::from(mesure[3])],
+                                         vec![0,0,0,0,1] ];
+                //Entite reste dans son état
+                let a:Vec<T>=vec![1;Entite[0].len()];
+                Entite.push(a);
+            }
+            let Entite=multiplication_matrices(facteur,Entite);
+            Entite.pop();//Le dernier vecteur de 1
+            return Ok(Entite)
         }
         
-        pub fn stretching<T>(const mesure:&[T], const Entite:&[&[T]])->Vec<Vec<T>>{
+        pub fn stretching<T>(mesure:Vec<T>, Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
             //Le facteur de mise à l'échelle doit lui-même être une matrice de longueur entre 1 et 4.
-
-            // À RÉANALYSER
             let mut facteur:Vec<Vec<T>>=Vec::new();
             for dimension in 0..mesure.len(){
-                facteur.push(vec![0;4]);
+                facteur.push(vec![T::zero();4]);
                 facteur[dimension][dimension]=mesure[dimension];
             }
             if mesure.len()<4{
                 //Ajouter des zéros pour compléter en carré
-                let facteur=;
+                for dimension in 0..4-mesure.len(){facteur.push(vec![S::zero();4]);}
             }
             else if mesure.len()==4{
                 //On fait f*ckall c'est déjà bon
                 do_nothing()
             }
             else if mesure.len()>=4{
-                //Ce CAD est limité à 4 dimension calmdown!
-                ReportError("Trop de dimensions ajoutées dans cette mise en échelle", format!("{:?}",mesure));
-            else {
+                //Trop de dimensions ajoutées dans cette mise en échelle.
+                while mesure.len()!=4{mesure.pop();}
+            } else {
                 //Math is not mathing, please what is going on
                 panik();
             }
-            return MultiplicationTMatrices(facteur:&[&[T]],Entite:&[&[T]])
+            return multiplication_matrices(facteur,Entite)
         }
+        
+        pub fn reflexion<T>()
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
             /*For example a rotation of α in the xy-plane and β in the zw-plane is given by the matrix [[cos(α),-sin(α),0,0],[sin(α),cos(α),0,0],[0,0,cos(β),-sin(β)],[0,0,sin(β),cos(β)]] */
             
         }
+        
         pub fn rotation_arbitraire<T>(thetas:&[T], &mut Entite:&[&[T]], origine:Vec<T>){
             //Méthode effectuant une rotation multi-plans sur une entité constituée de points à la verticale, donc de hauteur 4. Theta devrait être de longueur 6, sinon sera ajusté, un angle par plan de rotation:6.
             //Puisque l'on peut considérer qu'une rotation autour d'un plan arbitraire (vecteur non aligné sur une dimension spécifique) est une suite de rotation du nombre de plan possible, cette fonction effectue autant de rotation que spécifié en sautant les zéros.
@@ -630,6 +684,7 @@ pub(super) mod Transformation<S>{
                 }
             }
         }
+        
         pub fn rotation_un_axes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
             //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
             //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
