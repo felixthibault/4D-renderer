@@ -458,6 +458,7 @@ pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T> + num::Zero>(
     }
     return Ok(matrice_resultat)
 }
+
 pub fn addition_vecteurs<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=T>,{
     //Retourne l'addition de deux slices dans un vecteur de même longueur. Retourne une erreur si les longueurs ne correspondent pas. Peut prendre des vecteurs vides.
     if  a.len()!=b.len(){
@@ -472,6 +473,7 @@ pub fn addition_vecteurs<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=
     }
     return Ok(resultat)
 }
+
 pub fn addition_matrices<T>(a:&[&[T]], b:&[&[T]])->Result<Vec<Vec<T>>> where T: Add<Output=T>,{
     //Retourne l'addition de deux matrices dans une matrice de même longueur. Retourne une erreur si les longueurs ne correspondent pas.
     if  a.len()!=b.len() || a[0].len()!=b[0].len(){
@@ -480,7 +482,7 @@ pub fn addition_matrices<T>(a:&[&[T]], b:&[&[T]])->Result<Vec<Vec<T>>> where T: 
         println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
         println!("Hauteur de vecteur 1:{}, hauteur de vecteur 2:{}",a[0].len(),b[0].len());
         return Err("Incompatible matrix dimensions")
-    } else if b.is_empty(){ return Ok(Vec::new()) //Les deux sont vides}
+    } else if b.is_empty(){ return Ok(Vec::new())} //Les deux sont vides
     let mut resultat:Vec<Vec<T>>=vec![vec![0;a[0].len()];a.len()];
     for i in 0..a.len(){
         for j in 0..a[0].len(){
@@ -665,7 +667,27 @@ pub(super) mod Transformation{
             return multiplication_matrices(facteur,Entite)
         }
         
-        pub fn reflexion<T>()
+        pub fn reflexion_point<T>(origine:Vec<T>, mut Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
+                if is_float(Entite[0][0]){
+                    for mut dimension in 0..Entite.len(){
+                    for mut point in mut Entite[dimension]{
+                        let point:T=2.*origine[dimension]-point;
+                        }
+                    }
+                } else {
+                    for mut dimension in 0..Entite.len(){
+                    for mut point in mut Entite[dimension]{
+                        let point:T=2*origine[dimension]-point;
+                        }
+                    }
+                }
+                
+        }
+
+        pub fn reflexion<T>(mut Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
+
+        }
+
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
