@@ -668,24 +668,26 @@ pub(super) mod Transformation{
         }
         
         pub fn reflexion_point<T>(origine:Vec<T>, mut Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
-                if is_float(Entite[0][0]){
-                    for mut dimension in 0..Entite.len(){
+            //Effectue la réflexion d'une entité (matrice de points) autour d'un origine de réflexion (point). Retourne une matrice de même dimension.
+            if is_float(Entite[0][0]){
+                for mut dimension in 0..Entite.len(){
                     for mut point in mut Entite[dimension]{
                         let point:T=2.*origine[dimension]-point;
-                        }
-                    }
-                } else {
-                    for mut dimension in 0..Entite.len(){
-                    for mut point in mut Entite[dimension]{
-                        let point:T=2*origine[dimension]-point;
-                        }
                     }
                 }
-                
+            } else {
+                for mut dimension in 0..Entite.len(){
+                    for mut point in mut Entite[dimension]{
+                        let point:T=2*origine[dimension]-point;
+                    }
+                }
+            }
+            return Entite    
         }
 
         pub fn reflexion<T>(mut Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
-
+            //Effectue la réflexion d'une entité (matrice de points) autour d'un objet à n dimension, préférablement entre 1 et 3 dimensions (ligne, plan ou volume). Retourne une matrice de même dimension.
+            //Le nombre de points d'origine de réflexion possibles fait partie des réels^n. Si n=0 il y a un seul point de réflexion et non une infinité. 
         }
 
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
