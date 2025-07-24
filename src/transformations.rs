@@ -11,7 +11,7 @@ use std::ops::{Add,Mul};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
 use Option::Some;
-use num_traits::{ToPrimitive,zero};
+use num_traits::{ToPrimitive,Zero,pow};
     
 #[path = "main.rs"]
 mod embarquation_b4d;
@@ -293,7 +293,7 @@ pub fn is_float<S>(x:S)->bool
     f64: From<S>, {
     /*Méthodes de vérification si generic.type ==float or integer. Prend des integers ou floats en paramètres. */
     let y= f64::from(x).fract()!=0.0; //Méthode 1
-    //let y= f64::from(x)!=u32::from(x) as f64; //Méthode 2, less fonctionnal because u32: From<S> not always implemented.
+    //let y= f64::from(x)!=i32::from(x) as f64; //Méthode 2, less fonctionnal because i32: From<S> not always implemented.
     return y
 }
 
@@ -310,16 +310,16 @@ pub unsafe fn do_nothing(_:Void) -> !{
     return Void
 }
 pub mod Convert{
-    pub fn convert_f64_to_u64(x: f64) -> Option<u64> {
-        let y = x as u64;
+    pub fn convert_f64_to_i64(x: f64) -> Option<i64> {
+        let y = x as i64;
         if y as f64 == x {
             Some(y)
         } else {
             None
         }
     }
-    pub fn convert_f32_to_u32<T:Into<f32> + Copy>(x: T) -> Option<u32> {
-        let y = x.into() as f32 as u32;
+    pub fn convert_f32_to_i32<T:Into<f32> + Copy>(x: T) -> Option<i32> {
+        let y = x.into() as f32 as i32;
         if y as f32 == x.into() as f32 {
             Some(y)
         } else {
@@ -355,6 +355,7 @@ pub mod Convert{
             .collect()
     }  
 }
+
 fn dereferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
     //Crée des structures temporaires de toutes les références
@@ -377,7 +378,7 @@ fn ScalableFloatMatrix(scalaire:f32,mut matrice:&[&[f32]]){
     }
 }
 
-fn ScalableIntMatrix(scalaire:u32,mut matrice:&[&[usize]]){
+fn ScalableIntMatrix(scalaire:i32,mut matrice:&[&[usize]]){
     //Multiplication d'une matrice d'entiers par un scalaire int non signé. Panique si les types ne sont pas tous des usize.
     for mut j in &mut matrice{
         for i in 0..j.len(){
@@ -685,11 +686,71 @@ pub(super) mod Transformation{
             return Entite    
         }
 
-        pub fn reflexion<T>(mut Entite:Vec<Vec<T>>)->Vec<Vec<T>>{
-            //Effectue la réflexion d'une entité (matrice de points) autour d'un objet à n dimension, préférablement entre 1 et 3 dimensions (ligne, plan ou volume). Retourne une matrice de même dimension.
-            //Le nombre de points d'origine de réflexion possibles fait partie des réels^n. Si n=0 il y a un seul point de réflexion et non une infinité. 
+        pub fn reflexion<T>(A:T, B:T, C:T, D:T, E:T, &Entite:&[&[T]])->Vec<Vec<f32>> 
+        where T: Into<f32> + Add<Output=T> + Mul<Output=T>,
+              f32: From<T> {
+            //Effectue la réflexion d'une entité (matrice de points) autour d'un objet à n dimension, préférablement entre 1 et 3 dimensions (ligne, plan ou volume). Retourne une matrice de f32 de même dimension.
+            //Le nombre de points d'origine de réflexion possibles fait partie des réels^n. Si n=0 il y a un seul point de réflexion et non une infinité.
+            //L'espace de réflexion est donné par la règle Ax+By+Cz+Dw+E=0 et se comporte comme un plan en 3D, mais le volume délimite deux tranches de la 4D.
+            //Les formules ci-dessous sont simulées dans desmos. 
+            /*  réflexion 1D: https://www.desmos.com/calculator/5z9m4uiqjt?lang=fr
+                réflexion 2D: https://www.desmos.com/calculator/x0ru3lts4o?lang=fr
+                réflexion 3D: https://www.desmos.com/3d/xtwdh9l3tc?lang=fr
+                réflexion 4D: https://www.desmos.com/3d/pdnpl6cqre?lang=fr
+            */
+            let longueur_matrice:u16=Entite[0].len();
+            let mut image_entite:Vec<Vec<f32>>=vec![vec![f32::zero();longueur_matrice];4];
+            for point in 0..longueur_matrice{
+                //Modifier chacun des points pour obtenir le point image.
+                image_entite[0][point]=x(&Entite[0][point],&Entite[1][point],&Entite[2][point],&Entite[3][point]);
+                image_entite[1][point]=y(&Entite[0][point],&Entite[1][point],&Entite[2][point],&Entite[3][point]);
+                image_entite[2][point]=z(&Entite[0][point],&Entite[1][point],&Entite[2][point],&Entite[3][point]);
+                image_entite[3][point]=w(&Entite[0][point],&Entite[1][point],&Entite[2][point],&Entite[3][point]);
+            }
+            fn x<T>(alpha:T, phi:T,theta:T, beta:T)->&f32{
+                if is_float(alpha){
+                    ((-pow(A,2)*alpha+pow(B,2)*alpha+pow(C,2)*alpha+pow(D,2)*alpha-2.*A*B*phi-2.*A*C*theta-2.*A*D*beta-2.*A*E)/(pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2))) as f32
+                } else {
+                    f32::from((-pow(A,2)*alpha+pow(B,2)*alpha+pow(C,2)*alpha+pow(D,2)*alpha-2*A*B*phi-2*A*C*theta-2*A*D*beta-2*A*E))/f32::from((pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2)))
+                }  
+            }
+            fn y<T>(alpha:T, phi:T,theta:T, beta:T)->&f32{
+                if is_float(alpha){
+                    ((pow(A,2)*phi-pow(B,2)*phi+pow(C,2)*phi+pow(D,2)*phi-2.*B*A*alpha-2.*B*C*theta-2.*B*D*beta-2.*B*E)/(pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2))) as f32
+                } else {
+                    f32::from((pow(A,2)*phi-pow(B,2)*phi+pow(C,2)*phi+pow(D,2)*phi-2*B*A*alpha-2*B*C*theta-2*B*D*beta-2*B*E))/f32::from((pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2)))
+                }
+            }
+            fn z<T>(alpha:T, phi:T,theta:T, beta:T)->&f32{
+                if is_float(alpha){
+                    ((pow(A,2)*theta+pow(B,2)*theta-pow(C,2)*theta+pow(D,2)*theta-2.*C*A*alpha-2.*C*B*phi-2.*C*D*beta-2.*C*E)/(pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2))) as f32
+                } else {
+                    f32::from((pow(A,2)*theta+pow(B,2)*theta-pow(C,2)*theta+pow(D,2)*theta-2*C*A*alpha-2*C*B*phi-2*C*D*beta-2*C*E))/f32::from((pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2)))
+                }
+            }
+            fn w<T>(alpha:T, phi:T,theta:T, beta:T)->&f32{
+                if is_float(alpha){
+                    ((pow(A,2)*beta+pow(B,2)*beta+pow(C,2)*beta-pow(D,2)*beta-2.*D*A*alpha-2.*D*B*phi-2.*D*C*theta-2.*D*E)/(pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2))) as f32
+                } else {
+                    f32::from((pow(A,2)*beta+pow(B,2)*beta+pow(C,2)*beta-pow(D,2)*beta-2*D*A*alpha-2*D*B*phi-2*D*C*theta-2*D*E))/f32::from((pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2)))
+                }
+            }
+            return image_entite
         }
 
+        pub fn homothetie<T>(k:T, &mut Entite:Vec<Vec<T>>, &origine:&[T])->Result<Vec<Vec<T>>>{
+            //Effectue une homothétie (agrandissement ou réduction) d'une entité. Retourne une matrice de même dimension.
+            //Une homothétie transforme un vecteur SX'->kSX où k est le rapport d'homothétie, S le centre d'homothétie et X le point à déplacer.
+            //Les rapports d'angles, de segments et des relations dans l'entité sont préservés par l'homothétie, et ce dans n'importe quelle dimension.  
+            //https://en.wikipedia.org/wiki/Homothety
+            let facteur:Vec<Vec<T>>= vec![  vec![k, T::zero(), T::zero(), T::zero(), (1-k)*origine[0]],
+                                            vec![T::zero(), k, T::zero(), T::zero(), (1-k)*origine[1]],
+                                            vec![T::zero(), k, T::zero(), T::zero(), (1-k)*origine[2]],
+                                            vec![T::zero(), k, T::zero(), T::zero(), (1-k)*origine[3]],
+                                            vec![T::zero(), k, T::zero(), T::zero(), T::from(1)],];
+            Entite.push(vec![T::from(1);Entite[0].len()])//Ajoute des 1 à la fin
+            Ok(multiplication_matrices(facteur, Entite).pop());
+        }
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
