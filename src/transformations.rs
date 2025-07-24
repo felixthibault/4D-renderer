@@ -751,6 +751,7 @@ pub(super) mod Transformation{
             Entite.push(vec![T::from(1);Entite[0].len()])//Ajoute des 1 à la fin
             Ok(multiplication_matrices(facteur, Entite).pop());
         }
+        
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
