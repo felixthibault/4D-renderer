@@ -685,7 +685,7 @@ pub(super) mod Transformation{
             }
             return Entite    
         }
-
+        /*
         pub fn reflexion<T>(A:T, B:T, C:T, D:T, E:T, &Entite:&[&[T]])->Vec<Vec<f32>> 
         where T: Into<f32> + Add<Output=T> + Mul<Output=T>,
               f32: From<T> {
@@ -697,7 +697,7 @@ pub(super) mod Transformation{
                 réflexion 2D: https://www.desmos.com/calculator/x0ru3lts4o?lang=fr
                 réflexion 3D: https://www.desmos.com/3d/xtwdh9l3tc?lang=fr
                 réflexion 4D: https://www.desmos.com/3d/pdnpl6cqre?lang=fr
-            */
+            /*/
             let longueur_matrice:u16=Entite[0].len();
             let mut image_entite:Vec<Vec<f32>>=vec![vec![f32::zero();longueur_matrice];4];
             for point in 0..longueur_matrice{
@@ -737,7 +737,53 @@ pub(super) mod Transformation{
             }
             return image_entite
         }
+        */
+        pub fn reflexion<T>(A:T, B:T, C:T, D:T, E:T, &Entite:Vec<Vec<T>>)->Result<Vec<Vec<f32>>>
+            where T: Into<f32>, Add<Output=T> + Mul<Output=T>,
+                f32: From<T>{
+            //Effectue la réflexion d'une entité (matrice de points) autour d'un objet à n dimension, préférablement entre 1 et 3 dimensions (ligne, plan ou volume). Retourne une matrice de même dimension.
+            //Retourne une erreur si A²+B²+C²+D²≠1.
+            //Le nombre de points d'origine de réflexion possibles ∈ ℝ^n (réels). Si n=0 il y a un seul point de réflexion et non une ou plusieurs infinités.
+            //L'espace de réflexion est donné par la règle Ax+By+Cz+Dw+E=0 et se comporte comme un plan en 3D, mais le volume délimite deux tranches de la 4D.
+            //Les formules ci-dessous sont simulées dans desmos. 
+            /*  réflexion 1D: https://www.desmos.com/calculator/5z9m4uiqjt?lang=fr
+                réflexion 2D: https://www.desmos.com/calculator/x0ru3lts4o?lang=fr
+                réflexion 3D: https://www.desmos.com/3d/xtwdh9l3tc?lang=fr
+                réflexion 4D: https://www.desmos.com/3d/pdnpl6cqre?lang=fr
+            */
+            if f32::from(pow(A,2)+pow(B,2)+pow(C,2)+pow(D,2)) != 1f32{ return Err("Reçu vecteur non unitaire");}
+            let mut image_entite:Vec<Vec<T>>=Entite; 
+            if Entite.len()<4{
+                //Manque de dimension dans cette réflexion
+                for dimension in 0..4-Entite.len(){image_entite.push(vec![T::zero();image_entite[0].len()]);}
+            } else if Entite.len()>4{
+                //Trop de dimension. Surement une erreur, le surplus sera tronqué
+                while image_entite.len()!=4{image_entite.pop();}
+            } else {
+                //On fait f*ckall c'est déjà bon
+                do_nothing()
+            } 
+            assert_eq(4, image_entite.len());
+            if is_float(image_entite[0][0]){
+                image_entite.push(vec![1.;image_entite[0].len()]);
+                let facteur:Vec<Vec<T>>= vec![ vec![1.-2.*pow(A,2),-2.*A*B,-2.*A*C,-2.*A*D,-2.*A*E],
+                                               vec![1.-2.*pow(B,2),-2.*B*A,-2.*B*C,-2.*B*D,-2.*B*E],
+                                               vec![1.-2.*pow(C,2),-2.*C*A,-2.*C*B,-2.*C*D,-2.*C*E],
+                                               vec![1.-2.*pow(A,2),-2.*D*A,-2.*D*B,-2.*D*C,-2.*D*E],
+                                               vec![T::zero(),T::zero(),T::zero(),T::zero(),1.] ];
+            } else{
+                image_entite.push(vec![1;image_entite[0].len()]);
+                let facteur:Vec<Vec<T>>= vec![ vec![1-2*pow(A,2),-2*A*B,-2*A*C,-2*A*D,-2*A*E],
+                                               vec![1-2*pow(B,2),-2*B*A,-2*B*C,-2*B*D,-2*B*E],
+                                               vec![1-2*pow(C,2),-2*C*A,-2*C*B,-2*C*D,-2*C*E],
+                                               vec![1-2*pow(A,2),-2*D*A,-2*D*B,-2*D*C,-2*D*E],
+                                               vec![T::zero(),T::zero(),T::zero(),T::zero(),1] ];
+            }
 
+            let image_entite=multiplication_matrices(facteur,image_entite);
+            return Ok(image_entite.pop())//Enlève le surplus de 1 ajouté
+        }
+        
         pub fn homothetie<T>(k:T, &mut Entite:Vec<Vec<T>>, &origine:&[T])->Result<Vec<Vec<T>>>{
             //Effectue une homothétie (agrandissement ou réduction) d'une entité. Retourne une matrice de même dimension.
             //Une homothétie transforme un vecteur SX'->kSX où k est le rapport d'homothétie, S le centre d'homothétie et X le point à déplacer.
