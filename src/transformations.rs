@@ -309,52 +309,6 @@ pub fn unreachable(x: Void) -> ! {
 pub unsafe fn do_nothing(_:Void) -> !{
     return Void
 }
-pub mod Convert{
-    pub fn convert_f64_to_i64(x: f64) -> Option<i64> {
-        let y = x as i64;
-        if y as f64 == x {
-            Some(y)
-        } else {
-            None
-        }
-    }
-    pub fn convert_f32_to_i32<T:Into<f32> + Copy>(x: T) -> Option<i32> {
-        let y = x.into() as f32 as i32;
-        if y as f32 == x.into() as f32 {
-            Some(y)
-        } else {
-            None
-        }
-    }
-    pub fn convert_to_u16<T: Into<f64>>(x:T)->u16{
-        x.into() as u16
-    }
-    pub fn convert_to_usize<T: Into<f64>>(x:T)->usize{
-        x.into() as usize
-    }
-    pub fn convert_to_isize<T: Into<f64>>(x:T)->isize{
-        x.into() as isize
-    }
-    pub fn convert_vec<T, U>(vector: Vec<T>) -> Vec<U>
-    where T: TryInto<U>, 
-    <T as std::convert::TryInto<U>>::Error: std::fmt::Display {
-        /// Try to convert `Vec<T>` to `Vec<U>`. Mentionner avant l'appel quel sera le type inféré.
-        /// Créé par Own_Sentence_6928 sur Reddit:https://www.reddit.com/r/learnrust/comments/11hyu0o/help_me_with_making_a_general_function_to_convert/
-        /// Exemple utilisation: let y:Vec<i16>=convert_vec(vec![7,8,9]);print!("{:?}",y);
-        vector
-            .into_iter()
-            .map(|value_t|match TryInto::try_into(value_t) {
-                    Ok(value_u) => value_u,
-                    Err(why) => {
-                        let t = std::any::type_name::<T>();
-                        let u = std::any::type_name::<U>();
-                        panic!("Error converting from {t} to {u}: {why}")
-                    }
-                }
-            )
-            .collect()
-    }  
-}
 
 fn dereferencer(reference:String)->Option<Vec<String>>{
     //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
@@ -499,6 +453,66 @@ pub fn completer_matrice_carre<T: num::Zero>(&mut matrice:&[[T]]){
         matrice.push(vec![T::zero();i]);
     }
 }
+
+pub mod Convert{
+    pub fn convert_f64_to_i64(x: f64) -> Option<i64> {
+        let y = x as i64;
+        if y as f64 == x {
+            Some(y)
+        } else {
+            None
+        }
+    }
+    pub fn convert_f32_to_i32<T:Into<f32> + Copy>(x: T) -> Option<i32> {
+        let y = x.into() as f32 as i32;
+        if y as f32 == x.into() as f32 {
+            Some(y)
+        } else {
+            None
+        }
+    }
+    pub fn convert_to_u16<T: Into<f64>>(x:T)->u16{
+        x.into() as u16
+    }
+    pub fn convert_to_usize<T: Into<f64>>(x:T)->usize{
+        x.into() as usize
+    }
+    pub fn convert_to_isize<T: Into<f64>>(x:T)->isize{
+        x.into() as isize
+    }
+    pub fn convert_vec<T, U>(vector: Vec<T>) -> Vec<U>
+        where T: TryInto<U>, 
+        <T as std::convert::TryInto<U>>::Error: std::fmt::Display {
+        /// Try to convert `Vec<T>` to `Vec<U>`. Mentionner avant l'appel quel sera le type inféré.
+        /// Créé par Own_Sentence_6928 sur Reddit:https://www.reddit.com/r/learnrust/comments/11hyu0o/help_me_with_making_a_general_function_to_convert/
+        /// Exemple utilisation: let y:Vec<i16>=convert_vec(vec![7,8,9]);print!("{:?}",y);
+        vector
+            .into_iter()
+            .map(|value_t|match TryInto::try_into(value_t) {
+                    Ok(value_u) => value_u,
+                    Err(why) => {
+                        let t = std::any::type_name::<T>();
+                        let u = std::any::type_name::<U>();
+                        panic!("Error converting from {t} to {u}: {why}")
+                    }
+                }
+            )
+            .collect()
+    }
+    pub fn convert_matrix<T,U>(matrix:Vec<Vec<T>>) -> Vec<Vec<U>>
+        where T: TryInto<U>, 
+        <T as std::convert::TryInto<U>>::Error: std::fmt::Display {
+        //Try to convert `Vec<<Vec<T>>` to `Vec<Vec<U>>`. Mentionner avant l'appel quel sera le type inféré.
+        //Inspiré par la fonction convert_vec citée plus haut.
+        //Exemple utilisation: let x:Vec<Vec<i16>>=convert_matrix(vec![vec![7,8,9];4]);print!("{:?}",y);
+        matrix
+            matrix
+            .into_iter()
+            .map(convert_vec)
+            .collect()
+    }
+}
+
 
 mod Trigo{
     pub(super)fn sin<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
@@ -799,26 +813,37 @@ pub(super) mod Transformation{
         }
         
         pub fn rotation_2d<T>(theta:T, Entite:Vec<Vec<T>>, &origine:&[T])->Result<Vec<Vec<f32>>>
-            where T: Into<f32>, Add<Output=T> + Mul<Output=T>,
+            where T: Into<f32> + Add<Output=T> + Mul<Output=T>,
                 f32: From<T>{
             //Effectue la rotation d'une entite 2D autour d'un point (x,y). 
             //Prend des angles en radians. Fonction ne devrait pas être appelée dans ce cad puisque limitée au 2d.
             //Si le x du point à tourner est < à origine[0], ajouter +pi à thêta.
-            let &a:T=origine[0]; let &b:T=origine[1];
+            let &A:T=origine[0]; let &B:T=origine[1];
             let mut image_entite:Vec<Vec<f32>>=vec![vec![0f32;Entite[0].len()];2]
             for i in 0..Entite[0].len(){
-                if Entite[0][i]<a{
-                    image_entite[0][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::cos(theta+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
-                    image_entite[1][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::sin(theta+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
+                if Entite[0][i]<A{
+                    image_entite[0][i]=(f32::from(pow(Entite[0][i]-A,2)+pow(Entite[1][i]-B,2))).sqrt()*Trigo::cos(theta+Trigo::arctan(f32::from(Entite[1][i]-B)/f32::from(Entite[0][i]-A)));
+                    image_entite[1][i]=(f32::from(pow(Entite[0][i]-A,2)+pow(Entite[1][i]-B,2))).sqrt()*Trigo::sin(theta+Trigo::arctan(f32::from(Entite[1][i]-B)/f32::from(Entite[0][i]-A)));
                 } else {
-                    image_entite[0][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::cos(
-                        theta+3.141592653589793238462643383f32+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
-                    image_entite[1][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::sin(
-                        theta+3.141592653589793238462643383f32+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
+                    image_entite[0][i]=(f32::from(pow(Entite[0][i]-A,2)+pow(Entite[1][i]-B,2))).sqrt()*Trigo::cos(
+                        theta+3.141592653589793238462643383f32+Trigo::arctan(f32::from(Entite[1][i]-B)/f32::from(Entite[0][i]-A)));
+                    image_entite[1][i]=(f32::from(pow(Entite[0][i]-A,2)+pow(Entite[1][i]-B,2))).sqrt()*Trigo::sin(
+                        theta+3.141592653589793238462643383f32+Trigo::arctan(f32::from(Entite[1][i]-B)/f32::from(Entite[0][i]-A)));
                 }
             }
             return Ok(image_entite)
         }
+        pub fn rotation_2d_mieux<T>(theta:T, &Entite:Vec<Vec<T>>, &origine:&[T])->Result<Vec<Vec<f32>>>
+            where T: Into<f32>, f32: From<T>{
+            //Effectue la rotation d'une entite 2D autour d'un point (x,y). Prend des angles en radians. Retourne une matrice de mêmes dimensions de f32.
+            //Forme plus linéaire et fonctionnelle que rotation_2d. Fonction ne devrait pas être appelée dans ce cad puisque limitée au 2d.
+            let A:g32=f32::from(origine[0]); let B:g32=f32::from(origine[1]);
+            let facteur:Vec<Vec<f32>>=vec![ vec![Trigo::cos(theta),-Trigo::sin(theta),-A*Trigo::cos(theta)+B*Trigo::sin(theta)+A],
+                                            vec![Trigo::sin(theta),Trigo::cos(theta), -A*Trigo::sin(theta)-B*Trigo::cos(theta)+B],
+                                            vec![0f32,0f32,1f32] ];
+            let mut image_entite:Vec<Vec<f32>>=Convert::convert_matrix(Entite);
+            image_entite.push(vec![1f32;Entite[0].len()]);
+            Ok(multiplication_matrices(facteur,image_entite).pop())
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
@@ -886,7 +911,7 @@ pub(super) mod Transformation{
         }
                                  
         pub fn RotationSimple: fn(f32,Vec<Vec<f32>>,&str,Vec<f32>)-> Vec<Vec<f32>>=RotationUnAxes;
-                                  
+        /*                         
         pub fn Rotation2D<T: std::fmt::Display>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
             if origine.len()!=4{ ReportError("Nombre de dimensions incorrect à l'origine de rotation",origine)}
             let const facteur:Vec<Vec<T>>=vec![ vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
@@ -895,9 +920,11 @@ pub(super) mod Transformation{
                                                 vec![0,0,0,1]];
             return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
         }
+        */
+    }
     }
     pub mod Quaternion{
-        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<T>,plan:&str,origine:Vec<T>)->Vec<Vec<T>){
+        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<T>,plan:&str,origine:Vec<T>)->Vec<Vec<T>{
             let quaternion_operator:f32=
         }
     }
