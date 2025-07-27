@@ -604,7 +604,7 @@ pub(super) mod Transformation{
         where T: Into<f64> + Add<Output=T> + Mul<Output=T> + Clone + num::zero,
               S: Into<f64> + Add<Output=S> + Mul<Output=S> + num::zero,
               f64: From<S>+From<T> {
-            //Méthode effectuant une translation sur une matrice de points vectoriels (donc des points étalés dans un vecteur à la verticale et les points sont alignés en longueurs).
+            //Fonction effectuant une translation sur une matrice de points vectoriels (donc des points étalés dans un vecteur à la verticale et les points sont alignés en longueurs).
             //La matrice de translation est 5x5 donc Entite.len()==4
             //if type de T ==float or T==integer and S==float->renvoyer f64 sinon-> renvoyer type T
             if mesure.len()<4{
@@ -693,11 +693,11 @@ pub(super) mod Transformation{
             //Le nombre de points d'origine de réflexion possibles fait partie des réels^n. Si n=0 il y a un seul point de réflexion et non une infinité.
             //L'espace de réflexion est donné par la règle Ax+By+Cz+Dw+E=0 et se comporte comme un plan en 3D, mais le volume délimite deux tranches de la 4D.
             //Les formules ci-dessous sont simulées dans desmos. 
-            /*  réflexion 1D: https://www.desmos.com/calculator/5z9m4uiqjt?lang=fr
+                réflexion 1D: https://www.desmos.com/calculator/5z9m4uiqjt?lang=fr
                 réflexion 2D: https://www.desmos.com/calculator/x0ru3lts4o?lang=fr
                 réflexion 3D: https://www.desmos.com/3d/xtwdh9l3tc?lang=fr
                 réflexion 4D: https://www.desmos.com/3d/pdnpl6cqre?lang=fr
-            /*/
+            
             let longueur_matrice:u16=Entite[0].len();
             let mut image_entite:Vec<Vec<f32>>=vec![vec![f32::zero();longueur_matrice];4];
             for point in 0..longueur_matrice{
@@ -798,6 +798,27 @@ pub(super) mod Transformation{
             Ok(multiplication_matrices(facteur, Entite).pop());
         }
         
+        pub fn rotation_2d<T>(theta:T, Entite:Vec<Vec<T>>, &origine:&[T])->Result<Vec<Vec<f32>>>
+            where T: Into<f32>, Add<Output=T> + Mul<Output=T>,
+                f32: From<T>{
+            //Effectue la rotation d'une entite 2D autour d'un point (x,y). 
+            //Prend des angles en radians. Fonction ne devrait pas être appelée dans ce cad puisque limitée au 2d.
+            //Si le x du point à tourner est < à origine[0], ajouter +pi à thêta.
+            let &a:T=origine[0]; let &b:T=origine[1];
+            let mut image_entite:Vec<Vec<f32>>=vec![vec![0f32;Entite[0].len()];2]
+            for i in 0..Entite[0].len(){
+                if Entite[0][i]<a{
+                    image_entite[0][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::cos(theta+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
+                    image_entite[1][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::sin(theta+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
+                } else {
+                    image_entite[0][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::cos(
+                        theta+3.141592653589793238462643383f32+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
+                    image_entite[1][i]=(f32::from(pow(Entite[0][i]-a,2)+pow(Entite[1][i]-b,2))).sqrt()*Trigo::sin(
+                        theta+3.141592653589793238462643383f32+Trigo::arctan(f32::from(Entite[1][i]-b)/f32::from(Entite[0][i]-a)));
+                }
+            }
+            return Ok(image_entite)
+        }
         pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
             //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
             //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
