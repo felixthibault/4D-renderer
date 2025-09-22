@@ -1,0 +1,21 @@
+https://www.desmos.com/3d/bweaese70a?lang=fr
+{e1,e2,e3,e4,e5,e6,θ,φ,x,y,z,w} ∈ ℝ
+b1=(e1+e2+e3,e4+e5,e6,0)	symbols:θ,φ
+b2=(0,e1,e2+e4,e3+e5+e6)	× :scalar multiplication
+b3=(e5,e2+e3+e6,0,e1+e4)	* :dot product ou inner product
+b4=(e4+e6,0,e1+e3+e5,e2)
+
+p0=(x,y,z,w) =>origine de rotation
+
+A=(b1)/||b1||
+B=(b2-(b2*A)×A)/||b2-(b2*A)×A||
+C=(b3-(b3*A)×A-(b3*B)×B)/||b3-(b3*A)×A-(b3*B)×B||
+D=(b4-(b4*A)×A-(b4*B)×B-(b4*C)×C)/||(b4-(b4*A)×A-(b4*B)×B-(b4*C)×C)||
+  [1,0,0,0|
+I=|0,1,0,0|
+  |0,0,1,0|
+  |0,0,0,1]
+
+R(θ,φ)=e^( θ*(BA^T-AB^T)+φ*(DC^T-CD^T) )
+      =(I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ))*(I+(CC^T+DD^T)×(cos(φ)-1)+(DC^T-CD^T)×sin(φ))
+f(p)=R(θ,φ)*(p-p0)+p0
