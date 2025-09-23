@@ -323,136 +323,8 @@ fn dereferencer(reference:String)->Option<Vec<String>>{
     return SousStructures
 }
 
-fn ScalableFloatMatrix(scalaire:f32,mut matrice:&[&[f32]]){
-    //Multiplication d'une matrice par un scalaire float. Panique si les types ne sont pas tous des float.
-    for mut j in &mut matrice{
-        for i in 0..j.len(){
-            j[i]*=scalaire;
-        }
-    }
-}
 
-fn ScalableIntMatrix(scalaire:i32,mut matrice:&[&[usize]]){
-    //Multiplication d'une matrice d'entiers par un scalaire int non signé. Panique si les types ne sont pas tous des usize.
-    for mut j in &mut matrice{
-        for i in 0..j.len(){
-            j[i]*=scalaire;
-        }
-    }
-}
 
-pub fn scalable_matrix<T: Copy + AddAssign + Mul<Output=T>>(scalaire:T, &mut matrice:&[&[T]]){
-    //Multiplication d'une matrice de nombre par un scalaire de même nature. Méthode ne retournant rien. Panique si les types ne sont pas tous les mêmes.
-    for j in &matrice{
-        for mut i in &j{
-            i*=scalaire;
-        }
-    }
-}
-
-pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f32>])->Vec<Vec<f32>>{
-    //Multiplie des matrices f32 de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
-        print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
-        panik();
-    }
-    let mut matrice3:Vec<Vec<f32>>=Vec::new();
-    let mut calcul:f32;
-    for j in 0..matrice1.len(){
-        matrice3.push(Vec::new());
-        for i in 0..matrice2[0].len(){
-            calcul=0.0;
-            for case in 0..matrice1[j].len(){
-                calcul+=a[j][case]*matrice2[case][i];
-            matrice3[j].push(calcul);
-            }    
-        }
-    }
-    return matrice3
-}
-
-pub(super) fn MultiplicationIntMatrices(matrice1:&[Vec<usize>],matrice2:&[Vec<usize>])->Vec<Vec<usize>>{
-    //Multiplie des matrices d'uX de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
-        print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
-        panik();
-    }
-    let mut matrice3:Vec<Vec<usize>>=Vec::new();
-    let mut calcul:usize;
-    for j in 0..matrice1.len(){
-        matrice3.push(Vec::new());
-        for i in 0..matrice2[0].len(){
-            calcul=0;
-            for case in 0..matrice1[j].len(){
-                calcul+=matrice1[j][case]*matrice2[case][i];
-            matrice3[j].push(calcul);
-            }    
-        }
-    }
-    return matrice3
-}
-
-pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T> + num::Zero>(a:&[&[T]],b:&[&[T]])->Result<Vec<Vec<T>>>{
-    //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
-    //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
-    if a.is_empty() || b.is_empty() || a[0].len()!=b.len(){
-        print("Multiplication de matrices incompatibles");
-        println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",a[0].len(),b.len());
-        panik();
-        return Err("Incompatible matrix dimensions")
-    }
-    let mut matrice_resultat:Vec<Vec<T>>=vec![vec![T::zero();b[0].len()];a.len()];
-    for j in 0..a.len(){
-        for i in 0..b[0].len(){
-            for case in 0..a[j].len(){
-                matrice_resultat[j][i]+=a[j][case]*b[case][i];
-            }    
-        }
-    }
-    return Ok(matrice_resultat)
-}
-
-pub fn addition_vecteurs<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=T>,{
-    //Retourne l'addition de deux slices dans un vecteur de même longueur. Retourne une erreur si les longueurs ne correspondent pas. Peut prendre des vecteurs vides.
-    if  a.len()!=b.len(){
-        if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
-        print("Addition de vecteurs incompatibles");
-        println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
-        return Err("Incompatible vector dimensions")
-    } else if a.is_empty(){ Ok(Vec::new()) } //Les deux sont vides
-    let mut resultat:Vec<T>=Vec::new();
-    for i in 0..a.len(){
-        resultat.push(a[i]+b[i]);
-    }
-    return Ok(resultat)
-}
-
-pub fn addition_matrices<T>(a:&[&[T]], b:&[&[T]])->Result<Vec<Vec<T>>> where T: Add<Output=T>,{
-    //Retourne l'addition de deux matrices dans une matrice de même longueur. Retourne une erreur si les longueurs ne correspondent pas.
-    if  a.len()!=b.len() || a[0].len()!=b[0].len(){
-        if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
-        print("Addition de matrice incompatibles");
-        println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
-        println!("Hauteur de vecteur 1:{}, hauteur de vecteur 2:{}",a[0].len(),b[0].len());
-        return Err("Incompatible matrix dimensions")
-    } else if b.is_empty(){ return Ok(Vec::new())} //Les deux sont vides
-    let mut resultat:Vec<Vec<T>>=vec![vec![0;a[0].len()];a.len()];
-    for i in 0..a.len(){
-        for j in 0..a[0].len(){
-            resultat[i][j]+=a[i][j]+b[i][j];
-        }
-    }
-    return Ok(resultat)
-}
-
-pub fn completer_matrice_carre<T: num::Zero>(&mut matrice:&[[T]]){
-    //Méthode modifiant une matrice non-carrée envoyée en paramètre. Essentiellement transforme de matrice rectangulaire à matrice carrée en ajoutant des lignes de zéros#.
-    for i in 0..matrice[0].len()-matrice.len(){
-        matrice.push(vec![T::zero();i]);
-    }
-}
 
 pub mod Convert{
     pub fn convert_f64_to_i64(x: f64) -> Option<i64> {
@@ -513,8 +385,152 @@ pub mod Convert{
     }
 }
 
+pub mod  Matrix{
+    fn ScalableFloatMatrix(scalaire:f32,mut matrice:&[&[f32]]){
+        //Multiplication d'une matrice par un scalaire float. Panique si les types ne sont pas tous des float.
+        for mut j in &mut matrice{
+            for i in 0..j.len(){
+                j[i]*=scalaire;
+            }
+        }
+    }
+    
+    fn ScalableIntMatrix(scalaire:i32,mut matrice:&[&[usize]]){
+        //Multiplication d'une matrice d'entiers par un scalaire int non signé. Panique si les types ne sont pas tous des usize.
+        for mut j in &mut matrice{
+            for i in 0..j.len(){
+                j[i]*=scalaire;
+            }
+        }
+    }
+    
+    pub fn scalable_matrix<T: Copy + AddAssign + Mul<Output=T>>(scalaire:T, &mut matrice:&[&[T]]){
+        //Multiplication d'une matrice de nombre par un scalaire de même nature. Méthode ne retournant rien. Panique si les types ne sont pas tous les mêmes.
+        for j in &matrice{
+            for mut i in &j{
+                i*=scalaire;
+            }
+        }
+    }
+    
+    pub(super) fn MultiplicationFloatMatrices(matrice1:&[Vec<f32>],matrice2:&[Vec<f32>])->Vec<Vec<f32>>{
+        //Multiplie des matrices f32 de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+        if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
+            print("Multiplication de matrices incompatibles");
+            println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
+            panik();
+        }
+        let mut matrice3:Vec<Vec<f32>>=Vec::new();
+        let mut calcul:f32;
+        for j in 0..matrice1.len(){
+            matrice3.push(Vec::new());
+            for i in 0..matrice2[0].len(){
+                calcul=0.0;
+                for case in 0..matrice1[j].len(){
+                    calcul+=a[j][case]*matrice2[case][i];
+                matrice3[j].push(calcul);
+                }    
+            }
+        }
+        return matrice3
+    }
+    
+    pub(super) fn MultiplicationIntMatrices(matrice1:&[Vec<usize>],matrice2:&[Vec<usize>])->Vec<Vec<usize>>{
+        //Multiplie des matrices d'uX de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+        if matrice1.is_empty() || matrice2.is_empty() || matrice1[0].len()!=matrice2.len(){
+            print("Multiplication de matrices incompatibles");
+            println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",matrice1[0].len(),matrice2.len());
+            panik();
+        }
+        let mut matrice3:Vec<Vec<usize>>=Vec::new();
+        let mut calcul:usize;
+        for j in 0..matrice1.len(){
+            matrice3.push(Vec::new());
+            for i in 0..matrice2[0].len(){
+                calcul=0;
+                for case in 0..matrice1[j].len(){
+                    calcul+=matrice1[j][case]*matrice2[case][i];
+                matrice3[j].push(calcul);
+                }    
+            }
+        }
+        return matrice3
+    }
+    
+    pub fn multiplication_matrices<T: Copy + AddAssign + Mul<Output=T> + num::Zero>(a:&[&[T]],b:&[&[T]])->Result<Vec<Vec<T>>>{
+        //Multiplie des matrices d'unités inconnues de longueurs quelconques ensemble. Retourne matrice1*matrice2. Panique abruptement si les dimensions ne correspondent pas.
+        //https://www.alloprof.qc.ca/fr/eleves/bv/mathematiques/les-operations-sur-les-matrices-m1467#multiplication
+        if a.is_empty() || b.is_empty() || a[0].len()!=b.len(){
+            print("Multiplication de matrices incompatibles");
+            println!("Longueur de matrice 1:{}, hauteur de matrice 2:{}",a[0].len(),b.len());
+            panik();
+            return Err("Incompatible matrix dimensions")
+        }
+        let mut matrice_resultat:Vec<Vec<T>>=vec![vec![T::zero();b[0].len()];a.len()];
+        for j in 0..a.len(){
+            for i in 0..b[0].len(){
+                for case in 0..a[j].len(){
+                    matrice_resultat[j][i]+=a[j][case]*b[case][i];
+                }    
+            }
+        }
+        return Ok(matrice_resultat)
+    }
+    
+    pub fn addition_vecteurs<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=T>,{
+        //Retourne l'addition de deux slices dans un vecteur de même longueur. Retourne une erreur si les longueurs ne correspondent pas. Peut prendre des vecteurs vides.
+        if  a.len()!=b.len(){
+            if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
+            print("Addition de vecteurs incompatibles");
+            println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
+            return Err("Incompatible vector dimensions")
+        } else if a.is_empty(){ Ok(Vec::new()) } //Les deux sont vides
+        let mut resultat:Vec<T>=Vec::new();
+        for i in 0..a.len(){
+            resultat.push(a[i]+b[i]);
+        }
+        return Ok(resultat)
+    }
+    
+    pub fn addition_matrices<T>(a:&[&[T]], b:&[&[T]])->Result<Vec<Vec<T>>> where T: Add<Output=T>,{
+        //Retourne l'addition de deux matrices dans une matrice de même longueur. Retourne une erreur si les longueurs ne correspondent pas.
+        if  a.len()!=b.len() || a[0].len()!=b[0].len(){
+            if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
+            print("Addition de matrice incompatibles");
+            println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
+            println!("Hauteur de vecteur 1:{}, hauteur de vecteur 2:{}",a[0].len(),b[0].len());
+            return Err("Incompatible matrix dimensions")
+        } else if b.is_empty(){ return Ok(Vec::new())} //Les deux sont vides
+        let mut resultat:Vec<Vec<T>>=vec![vec![0;a[0].len()];a.len()];
+        for i in 0..a.len(){
+            for j in 0..a[0].len(){
+                resultat[i][j]+=a[i][j]+b[i][j];
+            }
+        }
+        return Ok(resultat)
+    }
 
-mod Trigo{
+    pub fn completer_matrice_carre<T: num::Zero>(&mut matrice:&[[T]]){
+        //Méthode modifiant une matrice non-carrée envoyée en paramètre. Essentiellement transforme de matrice rectangulaire à matrice carrée en ajoutant des lignes de zéros#.
+        for i in 0..matrice[0].len()-matrice.len(){
+            matrice.push(vec![T::zero();i]);
+        }
+    }
+
+    pub fn transpose<T>(&mut matrice:Vec<Vec<T>>){
+        let mut transpose:Vec<Vec<T>>=vec![[0;matrice.len()];matrice[0].len()]; //On crée une nouvelle matrice vide transposée
+        transpose.into_iter().map().collect();
+        for i in transpose.len(){
+            for j in transpose[0].len(){
+                transpose[i][j]=matrice[j][i];
+            }
+        }
+        matrice=transpose;       
+    }
+    
+}
+
+pub mod Trigo{
     pub(super)fn sin<S: Into<f64> + std::fmt::Display>(theta:S)->f32{
         //Retourne le sin de theta radians. Panique si le type d'angle n'est pas f32. Prend des floats ou integers.
         print!("Receive sin function. Angle of {} degrees. ", theta);
@@ -940,14 +956,15 @@ pub(super) mod Transformation{
                                vec![0,1,0,0],
                                vec![0,0,1,0],
                                vec![0,0,0,1], ]; //Matrice identité 4x4 adaptée
+            //Formule en texte: R(θ)=e^(θ×(BA^T-AB^T)=I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ)
+            I+
+            
             
         }
     
     }
     pub mod Quaternion{
-        pub fn RotationUnAxes<T>(angle:T,Entite:Vec<T>,plan:&str,origine:Vec<T>)->Vec<Vec<T>{
-            let quaternion_operator:f32=
-        }
+        do_nothing(1);
     }
     pub mod Entity{
         pub fn TranslationLineaire(mut mesure:Vec<f32>,objet:Entity){
