@@ -815,7 +815,7 @@ pub(super) mod Transformation{
         pub fn rotation_2d<T>(theta:T, Entite:Vec<Vec<T>>, &origine:&[T])->Result<Vec<Vec<f32>>>
             where T: Into<f32> + Add<Output=T> + Mul<Output=T>,
                 f32: From<T>{
-            //Effectue la rotation d'une entite 2D autour d'un point (x,y). 
+            //Effectue la rotation d'une entité 2D autour d'un point (x,y). 
             //Prend des angles en radians. Fonction ne devrait pas être appelée dans ce cad puisque limitée au 2d.
             //Si le x du point à tourner est < à origine[0], ajouter +pi à thêta.
             let &A:T=origine[0]; let &B:T=origine[1];
@@ -922,6 +922,27 @@ pub(super) mod Transformation{
         }
         */
     }
+
+        pub fn rotation_4d<T>()->Result<Vec<Vec<f32>>>{
+            //Effectue la rotation quadridimensionnelle d'une entité selon les angles m1 et m2 sur deux plans orthogonaux.
+            //Prend des angles en radians. Retourne une matrice de mêmes dimensions de f32.
+            //Se référer au desmos https://www.desmos.com/3d/bweaese70a?lang=fr pour trouver les formules originales.
+            //Se référer au fichier Explication rotation 4D.txt pour comprendre l'origine des formules et de la matrice exponentielle.
+
+        }
+        pub fn rotation_matrix<T>(angle:T, &vecteur:&[T], &wecteur:&[T])->Result<Vec<Vec<f32>>>
+            where T: Into<f32>, f32: From<T>{
+            //Renvoie une matrice de rotation réutilisable pour une transformation plus complexe où il y a plusieurs plans et angles.
+            //Nécessite un angle et un plan, défini par six variables ou deux vecteurs connus, vector 1 et vector 2.
+            //Idéalement envoyer à la fonction génératrice de plan les 6 variables avant d'envoyer les vecteurs ici.
+            //Il faut vraiment que le produit scalaire de vecteur et wecteur=0 pour éviter les réponses absurdes...
+            I:Vec<Vec<T>=vec![ vec![1,0,0,0],
+                               vec![0,1,0,0],
+                               vec![0,0,1,0],
+                               vec![0,0,0,1], ]; //Matrice identité 4x4 adaptée
+            
+        }
+    
     }
     pub mod Quaternion{
         pub fn RotationUnAxes<T>(angle:T,Entite:Vec<T>,plan:&str,origine:Vec<T>)->Vec<Vec<T>{

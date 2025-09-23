@@ -1,21 +1,68 @@
 https://www.desmos.com/3d/bweaese70a?lang=fr
-{e1,e2,e3,e4,e5,e6,θ,φ,x,y,z,w} ∈ ℝ
-b1=(e1+e2+e3,e4+e5,e6,0)	symbols:θ,φ
-b2=(0,e1,e2+e4,e3+e5+e6)	× :scalar multiplication
-b3=(e5,e2+e3+e6,0,e1+e4)	* :dot product ou inner product
-b4=(e4+e6,0,e1+e3+e5,e2)
 
+Variables nécessaires pour une rotation double en 4D avec un point: {e1,e2,e3,e4,e5,e6,θ,φ,x,y,z,w} ∈ ℝ
+- Les nombres de e1 à e6 représentent d'une certaine façon les projections des plans de rotation.
+Donc, en ordre, les plans {e1,e2,e3,e4,e5,e6} correspondent aux plans {xy,xz,xw,yz,yw,zw}.
+Cela fait qu'une rotation strictement 3D a ses plans de valeurs (e1,e2,0,e4,0,0)/sqrt(e1²+e2²+e4²) où {e1,e2,e4}∈ ℝ
+- Les angles θ et φ (theta et phi) que je nomme des fois m1 et m2 sont les symboles des angles de rotation dans la rotation double décrite plus bas. 
+Il n'est nécessaire d'avoir qu'un seul angle par rotation, mais une infinité de rotation cumulée est possible, simplement maximum 2 plans peuvent être orthogonaux en 4D.
+θ s'applique au plan 1 et φ, au plan 2. Aussi, pour éviter de tourner en rond, on peut limiter les angles de -2π à 2π.
+- {x,y,z,w} sont les positions d'un point donné dont on veut trouver la position image après rotation. w est le symbole de la 4e dimension.
+Pour effectuer la rotation d'une entité, il faut prendre un point à la fois d'une entité puisque les points images ne dépendent par définition que de leur origine.
+Il est de plus défini que p0 correspond au pivot (origine) de rotation, seul point où les deux plans orthogonaux se touchent. Donc tout tourne autour de lui.
+1. 
+symboles utilisés: θ,φ,π,∈,ℝ,∞
+× :scalar multiplication (produit d'un vecteur par un scalaire)
+* :dot product ou inner product (produit scalaire entre vecteurs)
+^ :exponentielle
 p0=(x,y,z,w) =>origine de rotation
-
-A=(b1)/||b1||
-B=(b2-(b2*A)×A)/||b2-(b2*A)×A||
-C=(b3-(b3*A)×A-(b3*B)×B)/||b3-(b3*A)×A-(b3*B)×B||
-D=(b4-(b4*A)×A-(b4*B)×B-(b4*C)×C)/||(b4-(b4*A)×A-(b4*B)×B-(b4*C)×C)||
+≠ : pas égal à
+||→v|| :norme du vecteur
+→v^T :transpose du vecteur
+→u→v^T :matrice antisymétrique(une forme de vecteur si on veut)
   [1,0,0,0|
-I=|0,1,0,0|
+I=|0,1,0,0| :matrice identitaire 4x4 (multiplier cette matrice avec une autre revient à multiplier par 1)
   |0,0,1,0|
   |0,0,0,1]
 
-R(θ,φ)=e^( θ*(BA^T-AB^T)+φ*(DC^T-CD^T) )
-      =(I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ))*(I+(CC^T+DD^T)×(cos(φ)-1)+(DC^T-CD^T)×sin(φ))
-f(p)=R(θ,φ)*(p-p0)+p0
+2.
+Les vecteurs générateurs des plans de rotation (dans cette rotation double) s'écrivent comme:
+(J'ai beaucoup cherché pour trouver cette forme!!)
+b1=(e1+e2+e3,e4+e5,e6,0)	
+b2=(0,e1,e2+e4,e3+e5+e6)	
+b3=(e5,e2+e3+e6,0,e1+e4)	
+b4=(e4+e6,0,e1+e3+e5,e2) 
+On remarque que ces vecteurs ne sont pas parfaitement orthogonaux entre eux pour l'instant. En effet, b1*b2≠0 et ||b1||≠1
+Il faut tout orthogonaliser et normaliser à la fois avec la méthode de Gram-Schmidt. Il résultera des vecteurs utilisables.
+
+3. 
+On applique la procédure de Gram-Schmidt 4 fois et chaque formule est plus longue que la précédente. Au moins, on n'est pas en 7D!
+De façon schématique, on divise un vecteur par sa norme pour le rendre unitaire et on enlève cette quantité aux autres vecteurs pour qu'ils deviennent orthogonaux.
+Définissons: A=(b1)/||b1||
+B=(b2-(b2*A)×A)/||b2-(b2*A)×A||
+C=(b3-(b3*A)×A-(b3*B)×B)/||b3-(b3*A)×A-(b3*B)×B||
+D=(b4-(b4*A)×A-(b4*B)×B-(b4*C)×C)/||(b4-(b4*A)×A-(b4*B)×B-(b4*C)×C)||.
+
+Ainsi, A,B,C et D sont quatre vecteurs orthonormaux générateurs linéairement indépendants.
+Aussi, A*A=1, A*{B,C,D}=0, B*B=1, B*{A,C,D}=0, C*C=1, C*{A,B,D}=0, D*D=1, D*{A,B,C}=0 et →v=k1×A+k2×B+k3×C+k4×D pour tout →v ∈ ℝ^4.
+
+4.
+La matrice de rotation pour une simple rotation autour d'un plan est essentiellement une matrice exponentielle et se calcule comme un exponential map.
+R(θ)=e^(θ×(BA^T-AB^T) )
+Cela se calcul avec la série de Taylor de e^x=/sum_{n=0}^{∞} x^n/n!=1+x+x²/2+x³/6+...+x^n/n! où x est une matrice par abus de notation.
+Par simplification à l'aide d'une matrice identitaire, du fonctionnement d'une matrice diagonale  et de la magie de Wikipédia, on peut simplifier cette série.
+R(θ)=e^(θ×(BA^T-AB^T) )= (I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ)) et malheureusement, ce mess ne se simplifie pas...
+Bon, pour ajouter de multiples dimensions, il faut multiplier chaque matrice exponentielle avec les autres selon l'ordre des angles.
+R(θ1,θ2,...,θ_n)=/prod_{n=1}^{∞} e^(θ_n* plan_n) Pour deux plans et deux angles, cela revient plus simplement à :
+R(θ,φ)=e^(θ×(BA^T-AB^T) )*e^(φ×(DC^T-CD^T) )=e^(θ×(BA^T-AB^T)+φ×(DC^T-CD^T))
+=(I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ))*(I+(CC^T+DD^T)×(cos(φ)-1)+(DC^T-CD^T)×sin(φ)) Et c'est le plus loin qu'on va aller! Au moins on rentre en une ligne!
+
+5.
+Une fois la matrice de transformation finale connue, on peut effectuer la translation inverse du point modifié jusqu'à l'origine.
+Cela permet d'avoir une rotation ayant une vrai origine de rotation, de ce qu'il semble. Tout se fait en une étape.
+f(p)=R(θ,φ)*(p-p0)+p0 où p=point tourné et p0=point d'origine (axe virtuel)
+
+La fonction est meilleure si automatisée avec de la programmation et un style de matrice numpy. 
+N'essayez jamais de construire des matrices et de les multiplier avec desmos! Surtout pas en 4D. Jamais.
+
+Au moins desmos supporte les lignes de + de 2800 caractères...
