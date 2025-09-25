@@ -525,7 +525,22 @@ pub mod  Matrix{
                 transpose[i][j]=matrice[j][i];
             }
         }
-        matrice=transpose;       
+        /*
+        transpose(&mut matrice);
+        pub fn transpose<T>(matrice:&mut Vec<Vec<T>>){
+            let mut transpose=vec![Vec::new();matrice[0].len()]; //On crée une nouvelle matrice vide transposée
+            //transpose.into_iter().map().collect();
+            for i in 0..matrice.len(){
+                for j in 0..matrice[i].len(){
+                    transpose[i].push(matrice[j][i]);
+                }
+            }
+            *matrice=transpose;
+            print!("done");  
+        }
+        */
+    }
+    let matrice=transpose;   
     }
     
 }
@@ -860,84 +875,7 @@ pub(super) mod Transformation{
             let mut image_entite:Vec<Vec<f32>>=Convert::convert_matrix(Entite);
             image_entite.push(vec![1f32;Entite[0].len()]);
             Ok(multiplication_matrices(facteur,image_entite).pop())
-        pub fn RotationDouble<T>(theta:T, phi:T,Entite:&[&[T]],plan1:&[&[T]],plan1:&[&[T]],origine:Vec<T>)->Vec<Vec<T>>{
-            //https://fr.wikipedia.org/wiki/Rotation_en_quatre_dimensions
-            //https://en.wikipedia.org/wiki/Plane_of_rotation#Double_rotations
-            /*For example a rotation of α in the xy-plane and β in the zw-plane is given by the matrix [[cos(α),-sin(α),0,0],[sin(α),cos(α),0,0],[0,0,cos(β),-sin(β)],[0,0,sin(β),cos(β)]] */
-            
         }
-        
-        pub fn rotation_arbitraire<T>(thetas:&[T], &mut Entite:&[&[T]], origine:Vec<T>){
-            //Méthode effectuant une rotation multi-plans sur une entité constituée de points à la verticale, donc de hauteur 4. Theta devrait être de longueur 6, sinon sera ajusté, un angle par plan de rotation:6.
-            //Puisque l'on peut considérer qu'une rotation autour d'un plan arbitraire (vecteur non aligné sur une dimension spécifique) est une suite de rotation du nombre de plan possible, cette fonction effectue autant de rotation que spécifié en sautant les zéros.
-            //L'ordre des plans est comme suit: "xy","xz","xw","yz","yw","zw". Ainsi, ce sont des rotations simples (doubles isocliniques) qui sont effectuées ici. Renvoyer à rotation_simple.
-            //https://articulatedrobotics.xyz/tutorials/coordinate-transforms/rotations-3d/
-            for theta in thetas{
-                if convert_to_u16(theta)!=0{
-                    
-                }
-            }
-        }
-        
-        pub fn rotation_un_axes<T>(angle:T,Entite:Vec<Vec<T>>,plan:&str,origine:Vec<T>)->Vec<Vec<T>>{
-            //Panique si l'origine de rotation n'est pas de longueur 4 ou que l'angle n'a pas la même unité que l'entité.
-            //Retourne une matrice de même dimension que l'originale. L'angle doit être en radian and l'axe doit être un plan deux dimensions
-            //https://quaternions.online/
-            //https://math.stackexchange.com/questions/1402362/can-rotations-in-4d-be-given-an-explicit-matrix-form
-            /*Une rotation dans un plan signifie que les composantes associées à ces dimensions dans une entité sont modifiés alors que les autres axes dimensions restent fixes.
-            Pour une rotation dans le plan xy, les composantes x et y des points seront modifiées alors que les z et w ne le seront pas. La différence avec le 3D est que deux axes (donc un plan) restent inchangés à la place d'un seul. */
-            if origine.len()!=4{ReportError("Nombre de dimensions incorrect à l'origine de rotation",format!("{:?}",origine)}
-            let mut facteur:Vec<Vec<T>>=Vec::new();
-            let sin:Trigo::sin(angle:T);
-            let cos:Trigo::cos(angle:T);
-            match plan{
-                "xy"|"yx"=>facteur.push(vec![cos,-sin,0,0],
-                                        vec![sin,cos,0,0],
-                                        vec![0,0,1,0],
-                                        vec![0,0,0,1]),
-                
-                "xz"|"zx"=>facteur.push(vec![cos,0,-sin,0],
-                                        vec![0,1,0,0],
-                                        vec![sin,0,cos,0],
-                                        vec![0,0,0,1]),
-                
-                "xw"|"wx"=>facteur.push(vec![cos,0,0,-sin],
-                                        vec![0,1,0,0],
-                                        vec![0,0,1,0],
-                                        vec![sin,0,0,cos]),
-                
-                "yz"|"zy"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos,-sin,0],
-                                        vec![0,sin,cos,0],
-                                        vec![0,0,0,1]),
-
-                "yw"|"wy"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,cos,0,-sin],
-                                        vec![0,0,1,0],
-                                        vec![0,sin,0,cos]),
-
-                "zw"|"wz"=>facteur.push(vec![1,0,0,0],
-                                        vec![0,1,0,0],
-                                        vec![0,0,cos,-sin],
-                                        vec![0,0,sin,cos]),
-                _=>ReportError("Plan de rotation incorrect ou incohérent",plan)
-            }
-                
-            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
-        }
-                                 
-        pub fn RotationSimple: fn(f32,Vec<Vec<f32>>,&str,Vec<f32>)-> Vec<Vec<f32>>=RotationUnAxes;
-        /*                         
-        pub fn Rotation2D<T: std::fmt::Display>(angle:T, Entite:Vec<Vec<T>>,origine:Vec<T>)->Vec<Vec<T>>{
-            if origine.len()!=4{ ReportError("Nombre de dimensions incorrect à l'origine de rotation",origine)}
-            let const facteur:Vec<Vec<T>>=vec![ vec![Trigo::cos(angle),-Trigo::sin(angle),0,0],
-                                                vec![Trigo::sin(angle),Trigo::cos(angle),0,0],
-                                                vec![0,0,1,0],
-                                                vec![0,0,0,1]];
-            return MultiplicationTMatrices(facteur:Vec<Vec<T>>,Entite:Vec<Vec<T>>)
-        }
-        */
-    }
 
         pub fn rotation_4d<T>()->Result<Vec<Vec<f32>>>{
             //Effectue la rotation quadridimensionnelle d'une entité selon les angles m1 et m2 sur deux plans orthogonaux.
@@ -956,7 +894,7 @@ pub(super) mod Transformation{
                                vec![0,1,0,0],
                                vec![0,0,1,0],
                                vec![0,0,0,1], ]; //Matrice identité 4x4 adaptée
-            //Formule en texte: R(θ)=e^(θ×(BA^T-AB^T)=I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ)
+            // Formule en texte: R(θ)=e^(θ×(BA^T-AB^T)=I+(AA^T+BB^T)×(cos(θ)-1)+(BA^T-AB^T)×sin(θ)
             I+
             
             
