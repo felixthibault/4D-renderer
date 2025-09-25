@@ -386,6 +386,7 @@ pub mod Convert{
 }
 
 pub mod  Matrix{
+    //inspiration: https://github.com/IgorSusmelj/rustynum/blob/main/docs/tutorials/better-matrix-operations.md
     fn ScalableFloatMatrix(scalaire:f32,mut matrice:&[&[f32]]){
         //Multiplication d'une matrice par un scalaire float. Panique si les types ne sont pas tous des float.
         for mut j in &mut matrice{
