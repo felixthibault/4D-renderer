@@ -15,7 +15,10 @@ use num_traits::{ToPrimitive,Zero,pow};
     
 #[path = "main.rs"]
 mod embarquation_b4d;
+mod matrix_core;
 use embarquation_b4d::*;
+use matrix_core::*;
+
 
 
 
