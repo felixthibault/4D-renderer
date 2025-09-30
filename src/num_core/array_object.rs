@@ -11,37 +11,48 @@ use num_traits::Zero;
 use num::ParseIntError;
 
 mod Array{
-    
+    enum MatrixKind{
+        Eq, //Equation Matrix type
+        Trans, //Transformation Matrix type
+        Point, //Matrix of points (x,4) where points are placed vertically
+        Line, //Matrix of lines (x,2) where 2 references(point) are placed vertically. The number in each square correspond to the position of this point in the matrix of points.
+        Plg, //Matrix of polygons (x,y) where each polygon is displaced vertically. The number in each square correspond to the position of the line in the matrix of lines.
+        Ple, //Matrix of polyhedrons(polyèdres) (x,y) where each polyhedron is displaced vertically. The number in each square correspond to the position of the polygon in the matrix of polygon.
+        Plc, //Matrix of 4-polytope(polychore) (x,y) where each 4-polytope is displaced vertically. The number in each square correspond to the position of the polyhedron in the matrix of polyhedrons.
+    }
     pub struct RustArray<H>{
         /*Construction de l'objet matriciel en rust
         -Arguments nécessaires à la formation d'un array simple: une liste de valeurs de type T
         -Arguments nécessaires à la création d'une matrice complète: array simple + tuple(shape) */
         data: Vec<H>,//J'espère implenter tous les types si possible.
         shape: Option<(usize, usize)>,//La forme d'une matrice est strictement positive, bien que l'argument d'entrée ne le soit pas.
-        equation: bool,//La matrice peut représenter un système d'équations linéaires(true) ou un tableau de points(false).
+        //equation: bool,//La matrice peut représenter un système d'équations linéaires(true) ou un tableau de points(false).
+        kind: MatrixKind,// La matrice peut représenter une transformation linéaire, un système d'équations linéaires ou des objets.
     }
-    impl<H,U> RustArray<H,U>{
-        pub const fn new() -> RustArray<H> {//Crée une nouvelle matrice vierge, dynamique et sous forme de matrice de points.
+    impl<H> RustArray<H>{
+        pub const fn new() -> RustArray<H> {
+            //Crée une nouvelle matrice vierge, dynamique et sous forme de matrice de transformation.
             RustArray{
                 data: Vec::new(),
                 shape: None,
-                equation: false,
+                kind: MatrixKind::Trans,
             }
         }
         pub fn with_capacity(capacite:usize) -> RustArray<H> {
+            //Crée une nouvelle matrice de transformation vierge, mais avec une capacité prédéfinie si elle est connue
             RustArray{
                 data: Vec::with_capacity(capacite),
                 shape: None,
-                equation: false,
+                kind: MatrixKind::Trans,
             }
         }
-        pub fn zeros<U: num::Zero>(shapes:(usize, usize)) -> RustArray<H,U> {
-            //Crée un array de 0 de type U de forme shapes
+        pub fn zeros<H: num::Zero>(shapes:(usize, usize)) -> RustArray<H> {
+            //Crée un array de 0 de type H de forme shapes
             let longueur=shapes.0*shapes.1;
             RustArray{
-                data: vec![U::zero();longueur],
+                data: vec![H::zero();longueur],
                 shape: shapes,
-                equation: false,}
+                kind: MatrixKind::Trans,}
         }
         pub fn reshape(&mut self, Option<shape:(usize, usize)>) -> Result<(), ParseIntError>{
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
@@ -72,11 +83,18 @@ mod Array{
         }
         pub fn flatten(&mut self){ 
             //Rend un objet RustArray multidimensionnel à une forme 1D aplatie
-            
+            self.shape=None;
         }
-        pub fn shape(&self) -> Option<(usize, usize)> {
-            //Retourne la forme de la matrice RustArray
+        pub fn get_data<H>(&self) -> Vec<H>{
+            self.data
+        }
+        pub fn get_shape(&self) -> Option<(usize, usize)> {
+            //Retourne la forme (shape) de la matrice RustArray
             self.shape
+        }
+        pub fn get_kind(&self) -> MatrixKind {
+            //Retourne le type (kind) de la matrice RustArray
+            self.kind
         }
     }
     
