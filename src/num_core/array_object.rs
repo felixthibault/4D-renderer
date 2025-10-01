@@ -7,6 +7,7 @@
     
     par/by Félix Thibault 2025
 */
+#![allow(unused)]
 use num_traits::Zero;
 use num::ParseIntError;
 
@@ -46,15 +47,15 @@ mod Array{
                 kind: MatrixKind::Trans,
             }
         }
-        pub fn zeros<H: num::Zero>(shapes:(usize, usize)) -> RustArray<H> {
+        pub fn zeros(shapes:(usize, usize)) -> RustArray<H> where H: num::Zero + std::clone::Clone + Copy {
             //Crée un array de 0 de type H de forme shapes
             let longueur=shapes.0*shapes.1;
             RustArray{
                 data: vec![H::zero();longueur],
-                shape: shapes,
+                shape: Some(shapes),
                 kind: MatrixKind::Trans,}
         }
-        pub fn reshape(&mut self, Option<shape:(usize, usize)>) -> Result<(), ParseIntError>{
+        pub fn reshape(&mut self, shape:Option<(usize, usize)>) -> Option<shape> {
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
             Si la matrice a déjà une forme=!(x,0), la fonction va vérifier ce qui est possible de modifier.
             Nécessite un tuple de 2 arguments.
@@ -62,40 +63,78 @@ mod Array{
             self: vecteur-style à être reformé
             shape: tuple(usize ou u32)
             */
-            if shape==None{Err(-1);}
+            let x=self.data;
+            if shape==None || x.len() != shape.unwrap().0*shape.unwrap().1 {
+                //Forme est nulle ou longueur du vecteur inadaptée pour le volume de la matrice
+                -1
+            }
             else{
-                //Reshape et chercher
+                self.shape=shape;
+                return shape
             }
         }
-        pub fn unknown_reshape(&mut self, shape:(isize,isize)) -> Result<(), ParseIntError>{
+        pub fn unknown_reshape(&mut self, shape:Option<(isize,isize)>) -> Option<shape> {
             /*Reforme une matrice unidimensionnelle ou avec une forme en une matrice multidimensionnelle.
-            Puisque un des nombres du tuple est supposé être -1 (donc que sa mesure est inconnue), deux nombres sera refusé.
+            Puisque un des nombres du tuple est supposé être -1 (donc que sa mesure est inconnue), deux inconnus sera refusé.
             Nécessite un tuple de 2 arguments. Si deux nombres>1=>reshape()
             Le programme va essayer de voir quelles combinaisons sont possibles.
             self: vecteur-style à être reformé
             shape: tuple(isize ou i32)
             */
-            if shape.0 >=0 && shape.1 >=0 {reshape(&mut self, (shape.0 as usize, shape.1 as usize));}
-            if shape.0 ==-1 && shape.1 >=0 || shape.0 >=0 && shape.1 ==-1{
-                //Reshape et chercher
-                Ok()
-            } else {Err(-1);}
+            let x=self.data;
+            if shape.0 >=0 && shape.1 >=0 {(&mut self).reshape(Some(shape.0 as usize, shape.1 as usize));}
+            else if shape.0 ==-1 && shape.1 >=0 {
+                //Reshape et chercher longueur
+                if shape!=self.shape && (self.data.len() as f32/shape.1 as f32-(self.data.len()/shape.1) as f32)==0.{
+                    self.shape=Some( (self.data.len()/shape.1,shape.1) );
+                }
+                return Some(shape)
+            } 
+            else if shape.0 >=0 && shape.1 ==-1 {
+                //Reshape et chercher hauteur
+                if shape!=self.shape && (self.data.len() as f32/shape.0 as f32-(self.data.len()/shape.0) as f32)==0.{
+                    self.shape=Some( (shape.0,self.data.len()/shape.0) );
+                }
+                return Some(shape)
+            }
+            else {return -1 //aucune combinaison gagnante (mauvais envoi ou deux inconnus}
         }
         pub fn flatten(&mut self){ 
             //Rend un objet RustArray multidimensionnel à une forme 1D aplatie
             self.shape=None;
         }
-        pub fn get_data<H>(&self) -> Vec<H>{
-            self.data
+        pub fn push_col(&mut self, col: Vec<H>)->Option<col>{
+            //Pousse une colonne dans un objet RustArray. Retourne une erreur si la colonne ne correspond pas à shape.1
+            if col.len()!=self.shape.1{Some(col)}
+            //Ajouter la colonne selon la forme de self
+            let x=self.shape.1;
+            for money in 0..col.len(){
+                self.data.insert((money+1)*(x+1),col[money]);
+            }
+            Some(col)
         }
-        pub fn get_shape(&self) -> Option<(usize, usize)> {
+        pub fn push_col(&mut self, row: Vec<H>)->Option<row>{
+            //Pousse une ligne dans un objet RustArray. Retourne une errur si la ligne ne correspond pas à shape.0
+            if row.len()!=self.shape.0{Some(row)}
+            //Ajouter la ligne selon la forme de self
+            self.data.push(row);
+            
+            Some(col)
+        }
+        pub fn get_data(&self) -> &Vec<H>{
+            &self.data
+        }
+        pub fn get_shape(&self) -> &Option<(usize, usize)> {
             //Retourne la forme (shape) de la matrice RustArray
-            self.shape
+            &self.shape
         }
-        pub fn get_kind(&self) -> MatrixKind {
+        pub fn get_kind(&self) -> &MatrixKind {
             //Retourne le type (kind) de la matrice RustArray
-            self.kind
+            &self.kind
         }
+    }
+    pub fn test(){
+        print!("test");
     }
     
 //se référer à numpy.ndarray pour trouver des idées de fonctions: https://numpy.org/doc/1.22/reference/generated/numpy.ndarray.html?
@@ -137,4 +176,3 @@ pub fn test_exemple(){
     let matrix= matrix_data.reshape(4,4);
     println!("{}\n{}",matrix_data,matrix);
 }
-Vec::with_capacity(9)
