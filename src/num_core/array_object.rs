@@ -97,7 +97,7 @@ mod Array{
                 }
                 return Some(shape)
             }
-            else {return -1 //aucune combinaison gagnante (mauvais envoi ou deux inconnus}
+            else {return -1}//aucune combinaison gagnante (mauvais envoi ou deux inconnus) 
         }
         pub fn flatten(&mut self){ 
             //Rend un objet RustArray multidimensionnel à une forme 1D aplatie
@@ -121,6 +121,65 @@ mod Array{
             
             Some(col)
         }
+        pub fn swap(&mut self, a:isize, b:isize) where H: Copy{
+            //Swap deux éléments dans un array depuis les index a et b
+            let mut data=self.data;
+            let len =data.len() as isize;
+            let c= if a<0 {x+a} else {a}; 
+            let d= if b<0 {x+b} else {b};
+            
+            // Vérifie que les indices sont valides
+            assert!(c >= 0 && c < len, "Index a invalide");
+            assert!(d >= 0 && d < len, "Index b invalide");
+            let c=c as usize;
+            let d=d as usize;
+            let temp=data[c];
+            
+            //Change les valeurs
+            data[c]=data[d];
+            data[d]=temp;
+        }
+        pub unsafe fn unsafe_swap(&mut self, a:usize, b:usize){
+            assert_unsafe_precondition!(
+                check_library_ub,
+                "slice::swap_unchecked requires that the indices are within the slice",
+                (
+                    len: usize = self.len(),
+                    a: usize = a,
+                    b: usize = b,
+                ) => a < len && b < len,
+            );
+            let x=self.data;
+            unsafe{
+                x[a]=x[a]^x[b];
+                x[b]=x[b]^x[a];
+                x[a]=x[a]^x[b];//si tout fonctionne, devrait fonctionner
+            }
+
+        }
+        pub fn transpose(&mut self){
+            ///Take a square matrix and transpose it so that its columns become
+            ///his rows.
+
+            //Vérifier si forme existe
+            assert!(self.shape=!None);
+            let data=&self.data;
+            //Transposer sur une nouvelle matrice
+            let row=self.shape.0;
+            let col=self.shape.1;
+            let mut data_temp={
+                let x:Vec<H>=Vec::new(); 
+                for i in 0..row{
+                    for j in i+1..row{
+                        x.push(data[j*col]);//Vérifier le calcul
+                    }
+                }
+                x
+            }
+            let temp=RustArray{data:data_temp, shape:(self.shape.1,self.shape.0),kind:self.kind};
+            ///Idée de correction, changer la vision de la matrice à la place des valeurs.
+        }
+        
         pub fn get_data(&self) -> &Vec<H>{
             &self.data
         }
@@ -132,12 +191,16 @@ mod Array{
             //Retourne le type (kind) de la matrice RustArray
             &self.kind
         }
+        pub const fn as_mut_ptr(&mut self) -> *mut T {
+            self as *mut [T] as *mut T
+        }
     }
     pub fn test(){
         print!("test");
     }
     
 //se référer à numpy.ndarray pour trouver des idées de fonctions: https://numpy.org/doc/1.22/reference/generated/numpy.ndarray.html?
+// ainsi qu'à vec.Vec: https://doc.rust-lang.org/stable/std/vec/struct.Vec.html
 }
 /*
 mod Reshape{
@@ -175,4 +238,8 @@ pub fn test_exemple(){
     let matrix_data = rnp.RustArray(range(0,16)); // 0 to 15
     let matrix= matrix_data.reshape(4,4);
     println!("{}\n{}",matrix_data,matrix);
+}
+
+pub fn from_elem<H: Clone>(elem: H, n: usize) -> RustArray<H> {
+    <H as SpecFromElem>::from_elem(elem, n, Global)
 }
