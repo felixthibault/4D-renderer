@@ -29,7 +29,13 @@ mod Array{
         shape: Option<(usize, usize)>,//La forme d'une matrice est strictement positive, bien que l'argument d'entrée ne le soit pas.
         //equation: bool,//La matrice peut représenter un système d'équations linéaires(true) ou un tableau de points(false).
         kind: MatrixKind,// La matrice peut représenter une transformation linéaire, un système d'équations linéaires ou des objets.
-    }
+        view: Option<String>, //On peut voir une matrice verticalement(C, valeur par défaut) ou horizontalement(F).
+        buffer: Option<buffer>, //Un nombre connu de bytes peut être inséré en valeur de l'array.
+        offset: usize, //Il peut y avoir un décalage de x octets dans la lecture du buffer (Offset of array data in buffer).
+                       //Si une structure est présente dans la mémoire, ses bytes seront sautées de l'array.
+        strides: Option<(usize,usize)>, //Le décalage d'octets dans le buffer peut être spécifié pour une quantité dans chaque dimension.
+                                        //Permet un contrôle encore plus fin de la mémoire que strides. Utile pour les vues non-contiguës, transposées.
+                                    }
     impl<H> RustArray<H>{
         pub const fn new() -> RustArray<H> {
             //Crée une nouvelle matrice vierge, dynamique et sous forme de matrice de transformation.
@@ -37,6 +43,10 @@ mod Array{
                 data: Vec::new(),
                 shape: None,
                 kind: MatrixKind::Trans,
+                view: None,
+                buffer: None,
+                offset: 0usize,
+                strides: None,
             }
         }
         pub fn with_capacity(capacite:usize) -> RustArray<H> {
@@ -45,6 +55,10 @@ mod Array{
                 data: Vec::with_capacity(capacite),
                 shape: None,
                 kind: MatrixKind::Trans,
+                view: None,
+                buffer: None,
+                offset: 0usize,
+                strides: None,
             }
         }
         pub fn zeros(shapes:(usize, usize)) -> RustArray<H> where H: num::Zero + std::clone::Clone + Copy {
@@ -160,7 +174,7 @@ mod Array{
         pub fn transpose(&mut self){
             ///Take a square matrix and transpose it so that its columns become
             ///his rows.
-
+            /*
             //Vérifier si forme existe
             assert!(self.shape=!None);
             let data=&self.data;
@@ -178,6 +192,15 @@ mod Array{
             }
             let temp=RustArray{data:data_temp, shape:(self.shape.1,self.shape.0),kind:self.kind};
             ///Idée de correction, changer la vision de la matrice à la place des valeurs.
+            */
+
+            //Correction: changer la valeur de view
+            if self.view=="F".to_string(){
+                self.view="C".to_string(); //Set the alue in Column view style
+            }
+            else{
+                self.view="F".to_string(); //Set the view in a Fortran style
+            }
         }
         
         pub fn get_data(&self) -> &Vec<H>{
