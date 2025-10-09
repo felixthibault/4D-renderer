@@ -67,9 +67,14 @@ mod Array{
             RustArray{
                 data: vec![H::zero();longueur],
                 shape: Some(shapes),
-                kind: MatrixKind::Trans,}
+                kind: MatrixKind::Trans,
+                view: None,
+                buffer: None,
+                offset: 0usize,
+                strides: None,
+            }
         }
-        pub fn reshape(&mut self, shape:Option<(usize, usize)>) -> Option<shape> {
+        pub fn reshape(&mut self, shape:(usize, usize)) -> Option<i8> {
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
             Si la matrice a déjà une forme=!(x,0), la fonction va vérifier ce qui est possible de modifier.
             Nécessite un tuple de 2 arguments.
@@ -78,16 +83,16 @@ mod Array{
             shape: tuple(usize ou u32)
             */
             let x=self.data;
-            if shape==None || x.len() != shape.unwrap().0*shape.unwrap().1 {
+            if x.len() != shape.0*shape.1 {
                 //Forme est nulle ou longueur du vecteur inadaptée pour le volume de la matrice
-                -1
+                None
             }
             else{
-                self.shape=shape;
-                return shape
+                self.shape=Some(shape);
+                return 1
             }
         }
-        pub fn unknown_reshape(&mut self, shape:Option<(isize,isize)>) -> Option<shape> {
+        pub fn unknown_reshape(&mut self, shape:(isize,isize)) ->Option<i8>{
             /*Reforme une matrice unidimensionnelle ou avec une forme en une matrice multidimensionnelle.
             Puisque un des nombres du tuple est supposé être -1 (donc que sa mesure est inconnue), deux inconnus sera refusé.
             Nécessite un tuple de 2 arguments. Si deux nombres>1=>reshape()
@@ -95,39 +100,49 @@ mod Array{
             self: vecteur-style à être reformé
             shape: tuple(isize ou i32)
             */
-            let x=self.data;
+            let x=&self.data;
             if shape.0 >=0 && shape.1 >=0 {(&mut self).reshape(Some(shape.0 as usize, shape.1 as usize));}
             else if shape.0 ==-1 && shape.1 >=0 {
                 //Reshape et chercher longueur
-                if shape!=self.shape && (self.data.len() as f32/shape.1 as f32-(self.data.len()/shape.1) as f32)==0.{
-                    self.shape=Some( (self.data.len()/shape.1,shape.1) );
+                if shape!=self.shape.unwrap() && (x.len() as f32/shape.1 as f32-(x.len()/shape.1) as f32)==0.{
+                    self.shape=Some( (x.len()/shape.1,shape.1) );
                 }
-                return Some(shape)
+                return None
             } 
             else if shape.0 >=0 && shape.1 ==-1 {
                 //Reshape et chercher hauteur
-                if shape!=self.shape && (self.data.len() as f32/shape.0 as f32-(self.data.len()/shape.0) as f32)==0.{
-                    self.shape=Some( (shape.0,self.data.len()/shape.0) );
+                if shape!=self.shape.unwrap() && (x.len() as f32/shape.0 as f32-(x.len()/shape.0) as f32)==0.{
+                    self.shape=Some( (shape.0,x.len()/shape.0) );
                 }
-                return Some(shape)
+                return Some(1)
             }
-            else {return -1}//aucune combinaison gagnante (mauvais envoi ou deux inconnus) 
+            else {
+                //aucune combinaison gagnante (mauvais envoi ou deux inconnus)
+                return None
+            }
         }
         pub fn flatten(&mut self){ 
             //Rend un objet RustArray multidimensionnel à une forme 1D aplatie
-            self.shape=None;
+            self.shape=None;//ou self.shape=Some((self.data.len(),1));
         }
-        pub fn push_col(&mut self, col: Vec<H>)->Option<col>{
+        pub fn push_col(&mut self, col: Vec<H>)->Option<i8>{
             //Pousse une colonne dans un objet RustArray. Retourne une erreur si la colonne ne correspond pas à shape.1
-            if col.len()!=self.shape.1{Some(col)}
-            //Ajouter la colonne selon la forme de self
-            let x=self.shape.1;
+            if col.len()!=self.shape.1{
+                //Colonne de longueur incorrecte
+                None
+            }
+            match self.view{
+                //Ajouter la colonne selon la forme de self et la vue (Fortran ou par colonne)
+                "C".to_string()=>{}
+                "F".to_string()=>
+                let x=self.shape.1;
             for money in 0..col.len(){
                 self.data.insert((money+1)*(x+1),col[money]);
             }
-            Some(col)
+            Some(-1)
+            }
         }
-        pub fn push_col(&mut self, row: Vec<H>)->Option<row>{
+        pub fn push_row(&mut self, row: Vec<H>)->Option<row>{
             //Pousse une ligne dans un objet RustArray. Retourne une errur si la ligne ne correspond pas à shape.0
             if row.len()!=self.shape.0{Some(row)}
             //Ajouter la ligne selon la forme de self
