@@ -29,13 +29,25 @@ mod Array{
         shape: Option<(usize, usize)>,//La forme d'une matrice est strictement positive, bien que l'argument d'entrée ne le soit pas.
         //equation: bool,//La matrice peut représenter un système d'équations linéaires(true) ou un tableau de points(false).
         kind: MatrixKind,// La matrice peut représenter une transformation linéaire, un système d'équations linéaires ou des objets.
-        view: Option<String>, //On peut voir une matrice verticalement(C, valeur par défaut) ou horizontalement(F).
+        view: Option<String>, /*On peut voir une matrice verticalement(C, valeur par défaut) ou horizontalement(F).
+                        On peut définir la vue en colonne (C) et une vue Fortran selon la façon que l'on perçoit une matrice.
+            La matrice  [a  b  c|
+                        |d  e  f|
+                        |g  h  i] par l'array de tuple [(a,b,c), (d,e,f), (g,h,i)]. Selon ce que l'on préfère, on peut compter
+            le nombre d'éléments dans chaque tuple et ensuite compter le nombre de tuples et afficher cela dans un nouveau nombre:
+            (n,m). n et m ne signifient donc pas la longueur et la hauteur de façon absolue. Dans la vue Fortran, n devient la hauteur
+            alors que dans la vue en colonnes, n est la longueur. Dans tous les cas, n est la longueur d'un tuple et m est la longueur
+            de la liste de tuples, même si on ne sait jamais vraiment qu'est ce qui est m ou n sans regarder si view est "C" ou "F".
+            Dans la vue en colonne (C), la visualisation affichée est (n,m) ou (longueur, hauteur).
+            Dans la vue Fortran (F), la visualisation affichée est (m,n) ou (hauteur, longueur).
+            */
         buffer: Option<buffer>, //Un nombre connu de bytes peut être inséré en valeur de l'array.
         offset: usize, //Il peut y avoir un décalage de x octets dans la lecture du buffer (Offset of array data in buffer).
                        //Si une structure est présente dans la mémoire, ses bytes seront sautées de l'array.
         strides: Option<(usize,usize)>, //Le décalage d'octets dans le buffer peut être spécifié pour une quantité dans chaque dimension.
                                         //Permet un contrôle encore plus fin de la mémoire que strides. Utile pour les vues non-contiguës, transposées.
                                     }
+
     impl<H> RustArray<H>{
         pub const fn new() -> RustArray<H> {
             //Crée une nouvelle matrice vierge, dynamique et sous forme de matrice de transformation.
@@ -125,48 +137,80 @@ mod Array{
             //Rend un objet RustArray multidimensionnel à une forme 1D aplatie
             self.shape=None;//ou self.shape=Some((self.data.len(),1));
         }
-        pub fn push_col(&mut self, col: Vec<H>)->Option<i8>{
-            //Pousse une colonne dans un objet RustArray. Retourne une erreur si la colonne ne correspond pas à shape.1
-            if col.len()!=self.shape.1{
+        pub fn push_col(&mut self, col: Vec<H>)-> Option<i8> {
+            //Pousse une colonne dans un objet RustArray. Retourne une erreur si la colonne ne correspond pas à la hauteur de la matrice.
+            let mut shape_unwraped=&self.shape.unwrap();
+            let (column,position_array)=match self.view{
+                //column: Vérification selon le type de visualisation l'élément colonne du tuple de shape
+                //position_array: Ajouter la colonne selon la forme de self et la vue (Fortran ou par colonne)
+                "C".to_string()=>(shape_unwraped.1,shape_unwraped.0),
+                "F".to_string()=>(shape_unwraped.0,shape_unwraped.1),
+                None=>(shape_unwraped.1,shape_unwraped.0),
+            };
+
+            if col.len()!=column{
                 //Colonne de longueur incorrecte
                 None
             }
-            match self.view{
-                //Ajouter la colonne selon la forme de self et la vue (Fortran ou par colonne)
-                "C".to_string()=>{}
-                "F".to_string()=>
-                let x=self.shape.1;
-            for money in 0..col.len(){
-                self.data.insert((money+1)*(x+1),col[money]);
-            }
-            Some(-1)
-            }
-        }
-        pub fn push_row(&mut self, row: Vec<H>)->Option<row>{
-            //Pousse une ligne dans un objet RustArray. Retourne une errur si la ligne ne correspond pas à shape.0
-            if row.len()!=self.shape.0{Some(row)}
-            //Ajouter la ligne selon la forme de self
-            self.data.push(row);
             
-            Some(col)
+            for money in 0..col.len(){
+                self.data.insert(position_array*(money+1)+money,col[money]);
+            }
+            match self.view{
+                //Mofidier shape_unwraped selon l'ajout
+                "C".to_string()=>shape_unwraped=(position_array+1,shape_unwraped.1),
+                "F".to_string()=>shape_unwraped=(shape_unwraped.0,position_array+1),
+                None=>{shape_unwraped=(position_array+1,shape_unwraped.1);self.view="C".to_string()},
+            }
+            assert_eq(self.data.len(),shape_unwraped.0*shape_unwraped.1);
+            None
+        }
+        pub fn push_row(&mut self, row: Vec<H>)-> Option<i8> {
+            //Pousse une ligne dans un objet RustArray. Retourne une erreur si la ligne ne correspond pas à la longueur de la matrice.
+            let mut shape_unwraped=&self.shape.unwrap();
+            let (rangee,position_array)=match self.view{
+                //rangee: Vérification selon le type de visualisation l'élément rangée du tuple de shape
+                //position_array: Ajouter la ligne selon la forme de self et la vue (Fortran ou par colonne)
+                "C".to_string()=>(shape_unwraped.0,shape_unwraped.1),
+                "F".to_string()=>(shape_unwraped.1,shape_unwraped.0),
+                None=>(shape_unwraped.0,shape_unwraped.1),
+            };
+
+            if row.len()!=rangee{
+                //Rangée de longueur incorrecte
+                None
+            }
+            
+            for money in 0..row.len(){
+                self.data.insert(position_array*(money+1)+money,row[money]);
+            }
+            match self.view{
+                //Mofidier shape_unwraped selon l'ajout
+                "C".to_string()=>shape_unwraped=(shape_unwraped.0,position_array+1),
+                "F".to_string()=>shape_unwraped=(position_array+1,shape_unwraped.1),
+                None=>{shape_unwraped=(shape_unwraped.0,position_array+1);self.view="C".to_string()},
+            }
+            assert_eq(self.data.len(),shape_unwraped.0*shape_unwraped.1);
+            None
         }
         pub fn swap(&mut self, a:isize, b:isize) where H: Copy{
             //Swap deux éléments dans un array depuis les index a et b
-            let mut data=self.data;
-            let len =data.len() as isize;
-            let c= if a<0 {x+a} else {a}; 
-            let d= if b<0 {x+b} else {b};
+            let mut data=&self.data;
+            let len =data.len() as isize;//Attribution des références au valeurs
+            
+            let c= if a<0 {len+a} else {a}; 
+            let d= if b<0 {len+b} else {b};//Si a ou b est négatif, on reréfère à l'index à la fin de la liste
             
             // Vérifie que les indices sont valides
             assert!(c >= 0 && c < len, "Index a invalide");
             assert!(d >= 0 && d < len, "Index b invalide");
             let c=c as usize;
             let d=d as usize;
-            let temp=data[c];
+            let temp=data[c];//Attribution de la valeur de a temporairement
             
             //Change les valeurs
-            data[c]=data[d];
-            data[d]=temp;
+            data[c]=data[d];//Déplacement de b dans a
+            data[d]=temp;//Déplacement de a dans b
         }
         pub unsafe fn unsafe_swap(&mut self, a:usize, b:usize){
             assert_unsafe_precondition!(
@@ -216,9 +260,13 @@ mod Array{
             else{
                 self.view="F".to_string(); //Set the view in a Fortran style
             }
+            //Ici shape n'est pas modifiée puisque la forme n'est pas absolue et dépend de la visualisation.
+            //Si une matrice est de longueur 3(n) et de hauteur 5(m), sa transpose est de longueur 5(m) et 
+            //de hauteur 3(n). La forme serait cependant toujours Some((3,5)).
         }
         
         pub fn get_data(&self) -> &Vec<H>{
+            //Retourne les données (data) contenues dans la matrice RustArray 
             &self.data
         }
         pub fn get_shape(&self) -> &Option<(usize, usize)> {
@@ -229,9 +277,44 @@ mod Array{
             //Retourne le type (kind) de la matrice RustArray
             &self.kind
         }
-        pub const fn as_mut_ptr(&mut self) -> *mut T {
-            self as *mut [T] as *mut T
+        pub fn get_view(&self) -> &Option<String>{
+            //Retourne la visualisation (view) de la matrice RustArray
+            &self.view
         }
+        pub fn get_buffer(&self) -> &Option<buffer>{
+            //Retourne le stockage prérempli (buffer) de la matrice RustArray
+            &self.buffer
+        }
+        pub fn get_offset(&self) -> &usize{
+            //Retourne le décalage (offset) dans la lecture du buffer de la matrice RustArray
+            &self.offset
+        }
+        pub fn get_strides(&self) -> &Option<(usize,usize)>{
+            //Retourne le recul horizontal et vertical (strides) du buffer de la matrice RustArray
+            &self.strides
+        }
+        pub fn as_arr_mut_ptr(&mut self) -> *mut T {//Même chose que as_mut_ptr, mais pour une matrice
+            //Take self (&mut self) as a mutable reference and returns a mutable raw pointer to
+            //the first element in the internal slice of T.
+            self.data as *mut [T] as *mut T
+        }
+        
+        //Opérations mathématiques sur les matrices de base non spécifiées. 
+        //Cette section comporte: l'addition, le produit de deux matrices, le produit d'une 
+        //série de matrices, la multiplication par un scalaire.
+        pub fn scalable_matrix
+        pub fn add_matrix
+        pub fn produit_matrices
+        pub fn produit_multi_matrices
+
+        //Opérations de Gauss et Élémentaires Lignes pour les matrices équations.
+        //Cette section comporte: les opérations élémentaires ligne (OEL) la résolution complète
+        //de matrices, le nombre de pivots, le nombre d'équations, le nombre de variables, 
+        //l'échelonnage de matrice de Gauss (SEL), l'échelonnage de matrice de Gauss-Jordan (SELH).
+
+
+        //Opérations systèmes pour les matrices de structures comme des objets multidimensionnels.
+
     }
     pub fn test(){
         print!("test");
@@ -239,6 +322,7 @@ mod Array{
     
 //se référer à numpy.ndarray pour trouver des idées de fonctions: https://numpy.org/doc/1.22/reference/generated/numpy.ndarray.html?
 // ainsi qu'à vec.Vec: https://doc.rust-lang.org/stable/std/vec/struct.Vec.html
+//inspiration: https://github.com/IgorSusmelj/rustynum/blob/main/docs/tutorials/better-matrix-operations.md
 }
 /*
 mod Reshape{
@@ -280,4 +364,10 @@ pub fn test_exemple(){
 
 pub fn from_elem<H: Clone>(elem: H, n: usize) -> RustArray<H> {
     <H as SpecFromElem>::from_elem(elem, n, Global)
+}
+
+pub const fn as_mut_ptr(&mut self) -> *mut T {//Aucune idée de ce truc
+    //Take self (&mut self) as a mutable reference and returns a mutable raw pointer (ptr) to
+    //the first element in the internal slice of T.
+    self as *mut [T] as *mut T
 }
