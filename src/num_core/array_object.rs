@@ -48,7 +48,7 @@ mod Array{
                                         //Permet un contrôle encore plus fin de la mémoire que strides. Utile pour les vues non-contiguës, transposées.
                                     }
 
-    impl<H> RustArray<H>{
+    impl<H,T> RustArray<H,T>{
         pub const fn new() -> RustArray<H> {
             //Crée une nouvelle matrice vierge, dynamique et sous forme de matrice de transformation.
             RustArray{
@@ -73,6 +73,20 @@ mod Array{
                 strides: None,
             }
         }
+        pub const fn array(data:Vec<H>) -> RustArray<H> {
+            //Crée une nouvelle matrice de transformation avec les données contenues dans data.
+            //Note: Make sure that data.len() is not a prime number before to send it. 
+            //Otherwise, it's impossible to reshape it.
+            RustArray{
+                data: data,
+                shape: None,
+                kind: MatrixKind::Trans,
+                view: None,
+                buffer: None,
+                offset: 0usize,
+                strides: None,
+            }
+        }
         pub fn zeros(shapes:(usize, usize)) -> RustArray<H> where H: num::Zero + std::clone::Clone + Copy {
             //Crée un array de 0 de type H de forme shapes
             let longueur=shapes.0*shapes.1;
@@ -89,7 +103,7 @@ mod Array{
         pub fn reshape(&mut self, shape:(usize, usize)) -> Option<i8> {
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
             Si la matrice a déjà une forme=!(x,0), la fonction va vérifier ce qui est possible de modifier.
-            Nécessite un tuple de 2 arguments.
+            Nécessite un tuple de 2 arguments. *Faire attention que data.len() n'égale pas un nombre premier.
             Pour des cas particuliers où une dimension est inconnue, envoyer à , unknown_reshape.
             self: vecteur-style à être reformé
             shape: tuple(usize ou u32)
@@ -267,6 +281,7 @@ mod Array{
         
         pub fn get_data(&self) -> &Vec<H>{
             //Retourne les données (data) contenues dans la matrice RustArray 
+            //*Pour la lecture d'une variable, si x=array{data=[...]}; data= x.data
             &self.data
         }
         pub fn get_shape(&self) -> &Option<(usize, usize)> {
@@ -302,10 +317,24 @@ mod Array{
         //Opérations mathématiques sur les matrices de base non spécifiées. 
         //Cette section comporte: l'addition, le produit de deux matrices, le produit d'une 
         //série de matrices, la multiplication par un scalaire.
-        pub fn scalable_matrix
+        pub fn scalable_matrix<T>(&mut self, scalaire:T) where T:Clone+ One+ Mul, H:Clone+ One+ Mul, {
+            //Multiplie une matrice par un scalaire. Ce produit est commutatif.
+            //La fonction ne retourne rien pour l'instant. 
+            //self and scalaire must be numbers tho.
+            let mut x=&mut self.data;
+            for donnee in x{
+                donnee*=scalaire;
+            }
+        }
+        impl 
         pub fn add_matrix
-        pub fn produit_matrices
-        pub fn produit_multi_matrices
+        pub fn produit_matrix
+        pub fn produit_multi_matrix
+        pub fn T(&mut self){
+            //Autre façon d'écrire transpose d'une matrice
+            /*let x=RustArray::new */
+            transpose(&mut self);
+        }
 
         //Opérations de Gauss et Élémentaires Lignes pour les matrices équations.
         //Cette section comporte: les opérations élémentaires ligne (OEL) la résolution complète
