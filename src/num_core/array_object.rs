@@ -10,8 +10,9 @@
 #![allow(unused)]
 use num_traits::Zero;
 use num::ParseIntError;
+use std::fmt::{self, Display, Debug};
 
-mod Array{
+pub mod(super) Array{
     enum MatrixKind{
         Eq, //Equation Matrix type
         Trans, //Transformation Matrix type
@@ -73,12 +74,12 @@ mod Array{
                 strides: None,
             }
         }
-        pub const fn array(data:Vec<H>) -> RustArray<H> {
+        pub const fn array(data:[H]) -> RustArray<H> {
             //Crée une nouvelle matrice de transformation avec les données contenues dans data.
             //Note: Make sure that data.len() is not a prime number before to send it. 
             //Otherwise, it's impossible to reshape it.
             RustArray{
-                data: data,
+                data: data.to_vec(),
                 shape: None,
                 kind: MatrixKind::Trans,
                 view: None,
@@ -100,6 +101,7 @@ mod Array{
                 strides: None,
             }
         }
+        
         pub fn reshape(&mut self, shape:(usize, usize)) -> Option<i8> {
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
             Si la matrice a déjà une forme=!(x,0), la fonction va vérifier ce qui est possible de modifier.
@@ -278,7 +280,12 @@ mod Array{
             //Si une matrice est de longueur 3(n) et de hauteur 5(m), sa transpose est de longueur 5(m) et 
             //de hauteur 3(n). La forme serait cependant toujours Some((3,5)).
         }
-        
+        pub fn T(&mut self){
+            //Autre façon d'écrire transpose d'une matrice
+            /*let x=RustArray::new */
+            transpose(&mut self);
+        }
+
         pub fn get_data(&self) -> &Vec<H>{
             //Retourne les données (data) contenues dans la matrice RustArray 
             //*Pour la lecture d'une variable, si x=array{data=[...]}; data= x.data
@@ -308,46 +315,101 @@ mod Array{
             //Retourne le recul horizontal et vertical (strides) du buffer de la matrice RustArray
             &self.strides
         }
+        
         pub fn as_arr_mut_ptr(&mut self) -> *mut T {//Même chose que as_mut_ptr, mais pour une matrice
             //Take self (&mut self) as a mutable reference and returns a mutable raw pointer to
             //the first element in the internal slice of T.
             self.data as *mut [T] as *mut T
         }
         
-        //Opérations mathématiques sur les matrices de base non spécifiées. 
-        //Cette section comporte: l'addition, le produit de deux matrices, le produit d'une 
-        //série de matrices, la multiplication par un scalaire.
-        pub fn scalable_matrix<T>(&mut self, scalaire:T) where T:Clone+ One+ Mul, H:Clone+ One+ Mul, {
-            //Multiplie une matrice par un scalaire. Ce produit est commutatif.
-            //La fonction ne retourne rien pour l'instant. 
-            //self and scalaire must be numbers tho.
-            let mut x=&mut self.data;
-            for donnee in x{
-                donnee*=scalaire;
+    }
+    
+    impl<H: Display> Display for RustArray<H> {
+        pub fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            //Imprime les valeurs contenues dans la matrice selon le formatage de shape 
+            //et la visualisation Fortran ou par colonne
+            ///Permet de faire print!("{}", x); ou println!("{}", x);
+            let shaped:Vec<Vec<H>>= match self.view {
+                "F".to_string()=> Fortran_into_vec(&self)
+                "C".to_string()=> Column_into_vec(&self)
             }
+            write!(f, "Donnée: {}", shaped)
         }
-        impl 
-        pub fn add_matrix
-        pub fn produit_matrix
-        pub fn produit_multi_matrix
-        pub fn T(&mut self){
-            //Autre façon d'écrire transpose d'une matrice
-            /*let x=RustArray::new */
-            transpose(&mut self);
+        pub fn fortran_into_vec(&self) -> Vec<Vec<H>{
+            let big_vec:Vec<Vec<H>>=Vec::new();
+            let forme=self.shape.unwrap();
+            for &donnee in self.data{
+                let mut n:usize=0
+                let mut vec=Vec::new();
+                while n<forme.1{
+                    //Si nombre de ligne n'est pas atteint, on continu
+                    vec.add(donnee);
+                    n+=1
+                }
+                big_vec.add(vec);
+            }
+            big_vec
         }
-
-        //Opérations de Gauss et Élémentaires Lignes pour les matrices équations.
-        //Cette section comporte: les opérations élémentaires ligne (OEL) la résolution complète
-        //de matrices, le nombre de pivots, le nombre d'équations, le nombre de variables, 
-        //l'échelonnage de matrice de Gauss (SEL), l'échelonnage de matrice de Gauss-Jordan (SELH).
-
-
-        //Opérations systèmes pour les matrices de structures comme des objets multidimensionnels.
-
+        pub fn column_into_vec(&self) -> Vec<Vec<H>{
+            let big_vec:Vec<Vec<H>>=Vec::new();
+            let forme=self.shape.unwrap();
+            for &donnee in self.data{
+                let mut n:usize=0
+                let mut vec=Vec::new();
+                while n<forme.0{
+                    //Si nombre de ligne n'est pas atteint, on continu
+                    vec.add(donnee);
+                    n+=1
+                }
+                big_vec.add(vec);
+            }
+            big_vec
+        }
     }
+
+    impl<H: Debug> Debug for RustArray<H> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            //Imprime les valeurs contenues dans data sans regarder la forme
+            //Permet de faire dbg!(x);
+            f.debug_struct("RustArray")
+                .field("data", &self.data)
+                .finish()
+        }
+    }
+    
+    pub fn afficher(&self)
+            where H: Display, {
+            //Imprime les valeurs stockées dans la matrice
+            print!("Données: {}",self.data);
+        }
+    pub fn sort(&mut self)
+        where H:Ord,{
+            //Trie les valeurs dans l'ordre alphabétique à l'intérieur d'une nouvelle array.
+            ///Exemple d'utilisation: 
+            /*
+                let mut v = Rarray::array([4, -5, 1, -3, 2]);
+                v.sort();
+                assert_eq!(v.data, [-5, -3, 1, 2, 4].to_vec());
+            */
+            self.data.sort();
+        }
+    pub fn sort_unstable(&mut self)
+        where H:Ord,{
+            //Trie les valeurs dans l'ordre alphabétique à l'intérieur d'une array.
+            //Fonction typiquement plus rapide que sort, mais peut paniquer.
+            //Dans le cas des f32 et f64, où f32::Nan!=f32::Nan, il faut utiliser cette fonction.
+            ///Exemple d'utilisation: 
+            /*
+                let mut v = Rarray::array([4, -5, 1, -3, 2]);
+                v.sort_unstable();
+                assert_eq!(v.data, [-5, -3, 1, 2, 4].to_vec());
+            */
+            self.data.sort_unstable();
+        }
     pub fn test(){
-        print!("test");
-    }
+            print!("test");
+        }
+
     
 //se référer à numpy.ndarray pour trouver des idées de fonctions: https://numpy.org/doc/1.22/reference/generated/numpy.ndarray.html?
 // ainsi qu'à vec.Vec: https://doc.rust-lang.org/stable/std/vec/struct.Vec.html
