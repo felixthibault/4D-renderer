@@ -13,6 +13,7 @@
     opérations de systèmes d'équations, objets multidimensionnels.
 */
 
+use array_object::Array;
 //! Structure de la classe des matrices compilées en rust
 #[derive(Debug)]
 pub fn test(){
@@ -34,13 +35,37 @@ trait TraitAddition{
 
 }
 
-/*impl TraitAddition for i32 {
-    add_matrix
-} */
-pub fn add_matrix<H>(&matrice1:RustArray<H>, &matrice2:RustArray<H>) -> Option<RustArray<H>> 
-    where H:Add, {
-    if matrice1.data.len()!=matrice2.data.len(){None}
-    else { let (m1,m2)=(matrice1,matrice2);}
+pub fn add_matrix<H>(&mut matrice1:RustArray<H>, &matrice2:RustArray<H>) -> Option<RustArray<H>> 
+    where H:Add, Copy{
+    /// Si la matrice 1 n'est pas du même type que la matrice2, on doit convertir de l'un à l'autre.
+    /// Par souci de structure fixe, la première matrice est défini pour contenir l'espace de stockage
+    /// ou les données sont accumulées. Donc, si les visualisations ne sont pas identiques, la matrice res
+    /// restante est convertie pour être lue (précisément ce mot) dans le même type que la matrice1. En 
+    /// principe cependant, passer d'une vue en colonne à une vue Fortran est le même procédé que
+    /// l'inverse, c'est une simple transpose de mémoire.
+    /// ATTENTION: si la forme des deux matrices additionnées n'est pas la même, tout en ayant 
+    /// matrice1.data.len()=matrice2.data.len(), ceci est un Undefined_behavior, puisque le
+    /// comportement varie selon shape.
+    if matrice1.data.len()!=matrice2.data.len(){
+        None //Impossibilité fondamentale d'additionner pour éviter des memory leaks
+    }
+    else {
+        //On continue
+        //Lorsqu'on fait Vec+Vec, on ne doit pas faire vec.extend()
+        let (matrice1_shape,matrice2_shape)=(matrice1.shape,matrice2.shape);
+        if matrice1_shape!=matrice2_shape{
+            //Vérifier si shape est simplement un None avec un "C"
+            if matrice1_shape.unwrap()=="F" || matrice2_shape.unwrap()=="F" {
+                //Les matrices n'ont pas la même visualisation, il faut transposer la deuxième.
+                //On peut envoyer simplement matrice2.data à to_fortran()
+                let copy=
+            }
+            else{//Rien
+            }
+        }
+        else{//Rien
+        }
+    }
 }
 pub fn scalable_matrix(&mut self, scalaire:T) where T:Clone+ One+ Mul, H:Clone+ One+ Mul, {
     //Multiplie une matrice par un scalaire. Ce produit est commutatif.
@@ -75,3 +100,9 @@ pub fn produit_multi_matrix
 
 
 //Opérations systèmes pour les matrices de structures comme des objets multidimensionnels.
+
+
+/*Implémentation d'un trait selon le type:
+impl Trait_trait for T{
+    pub fn Myfunc(){}
+} */

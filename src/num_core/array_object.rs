@@ -50,6 +50,7 @@ pub mod(super) Array{
                                     }
 
     impl<H,T> RustArray<H,T>{
+        //Create new arrays
         pub const fn new() -> RustArray<H> {
             //Crée une nouvelle matrice vierge, dynamique et sous forme de matrice de transformation.
             RustArray{
@@ -102,6 +103,7 @@ pub mod(super) Array{
             }
         }
         
+        //Change formatting
         pub fn reshape(&mut self, shape:(usize, usize)) -> Option<i8> {
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
             Si la matrice a déjà une forme=!(x,0), la fonction va vérifier ce qui est possible de modifier.
@@ -285,7 +287,16 @@ pub mod(super) Array{
             /*let x=RustArray::new */
             transpose(&mut self);
         }
-
+        pub fn to_fortran(&mut Vec<H>){
+            //On peut envoyer simplement la variable data, et non l'array au complet
+            //Convertie une visualisation par colonne en fortran
+        }
+        pub fn to_column(&mut Vec<H>){
+            //Même chose que de passer de colonne à fortran
+            to_fortran(&mut Vec<H>);
+        }
+        
+        //Get the values
         pub fn get_data(&self) -> &Vec<H>{
             //Retourne les données (data) contenues dans la matrice RustArray 
             //*Pour la lecture d'une variable, si x=array{data=[...]}; data= x.data
@@ -316,6 +327,7 @@ pub mod(super) Array{
             &self.strides
         }
         
+        //Get pointer to elements in data
         pub fn as_arr_mut_ptr(&mut self) -> *mut T {//Même chose que as_mut_ptr, mais pour une matrice
             //Take self (&mut self) as a mutable reference and returns a mutable raw pointer to
             //the first element in the internal slice of T.
