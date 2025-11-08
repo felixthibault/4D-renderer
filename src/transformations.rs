@@ -481,13 +481,13 @@ pub mod  Matrix{
         return Ok(matrice_resultat)
     }
     
-    pub fn addition_vecteurs<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=T>,{
+    pub fn addition_slices<T>(a:&[T], b:&[T])->Result<Vec<T>> where T: Add<Output=T>,{
         //Retourne l'addition de deux slices dans un vecteur de même longueur. Retourne une erreur si les longueurs ne correspondent pas. Peut prendre des vecteurs vides.
         if  a.len()!=b.len(){
             if a.is_empty(){ Ok(b) } else if b.is_empty() { Ok(a) }
-            print("Addition de vecteurs incompatibles");
+            print!("Addition de vecteurs incompatibles");
             println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
-            return Err("Incompatible vector dimensions")
+            return Err("Vecteurs de dimensions incompatibles")
         } else if a.is_empty(){ Ok(Vec::new()) } //Les deux sont vides
         let mut resultat:Vec<T>=Vec::new();
         for i in 0..a.len(){

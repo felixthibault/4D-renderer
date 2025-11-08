@@ -1,24 +1,20 @@
 //use bevy::render::{renderer::RenderAdapter, RenderDebugFlags};
 #[cfg(not(target_arch = "wasm32"))]
 use bevy::{pbr::wireframe::{WireframeConfig,},prelude::*};
-use std::process::exit;
-use std::*;
+//use std::process::exit;
+
 use tetra::window;
 
-mod transformations;
-mod embarquation_b4d;
-use crate::embarquation_b4d::*;
-use crate::transformations::*;
+//mod transformations;
+//mod embarquation_b4d;
+//use crate::embarquation_b4d::*;
+//use crate::transformations::*;
 fn main() {
     App::new()
         .add_plugins((#[cfg(not(target_arch = "wasm32"))]
                     MinimalPlugins,))
-        .add_systems(
-            Startup, setup,)
-        .add_systems(
-            FixedUpdate,
-            (#[cfg(not(target_arch = "wasm32"))]
-                toggle_wireframe,))
+        .add_systems(Startup, setup, Update, 
+            ( #[cfg(not(target_arch = "wasm32"))] toggle_wireframe,) )
         .run();
     println!("Entité triangle générée");
     exit(0x0);

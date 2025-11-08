@@ -10,11 +10,11 @@
 #![allow(unused)]
 use num_traits::Zero;
 use num::ParseIntError;
-use std::fmt::{self, Display, Debug};
+use std::{fmt::{self, Display, Debug,}, mem,};
 
 pub mod(super) Array{
     enum MatrixKind{
-        Eq, //Equation Matrix type
+        Eq, //Equation Matrix type, système d'équations linéaires
         Trans, //Transformation Matrix type
         Point, //Matrix of points (x,4) where points are placed vertically
         Line, //Matrix of lines (x,2) where 2 references(point) are placed vertically. The number in each square correspond to the position of this point in the matrix of points.
@@ -28,26 +28,28 @@ pub mod(super) Array{
         -Arguments nécessaires à la création d'une matrice complète: array simple + tuple(shape) */
         data: Vec<H>,//J'espère implenter tous les types si possible.
         shape: Option<(usize, usize)>,//La forme d'une matrice est strictement positive, bien que l'argument d'entrée ne le soit pas.
-        //equation: bool,//La matrice peut représenter un système d'équations linéaires(true) ou un tableau de points(false).
         kind: MatrixKind,// La matrice peut représenter une transformation linéaire, un système d'équations linéaires ou des objets.
         view: Option<String>, /*On peut voir une matrice verticalement(C, valeur par défaut) ou horizontalement(F).
                         On peut définir la vue en colonne (C) et une vue Fortran selon la façon que l'on perçoit une matrice.
             La matrice  [a  b  c|
                         |d  e  f|
-                        |g  h  i] par l'array de tuple [(a,b,c), (d,e,f), (g,h,i)]. Selon ce que l'on préfère, on peut compter
-            le nombre d'éléments dans chaque tuple et ensuite compter le nombre de tuples et afficher cela dans un nouveau nombre:
-            (n,m). n et m ne signifient donc pas la longueur et la hauteur de façon absolue. Dans la vue Fortran, n devient la hauteur
-            alors que dans la vue en colonnes, n est la longueur. Dans tous les cas, n est la longueur d'un tuple et m est la longueur
-            de la liste de tuples, même si on ne sait jamais vraiment qu'est ce qui est m ou n sans regarder si view est "C" ou "F".
-            Dans la vue en colonne (C), la visualisation affichée est (n,m) ou (longueur, hauteur).
-            Dans la vue Fortran (F), la visualisation affichée est (m,n) ou (hauteur, longueur).
+                        |g  h  i] peut être lue comme un array de tuples [(a,b,c), (d,e,f), (g,h,i)]. Selon ce que l'on préfère, on 
+            peut compter le nombre d'éléments dans chaque tuple et ensuite compter le nombre de tuples et afficher cela dans un nouveau
+            nombre: (n,m) ou (i,j). n et m signifient respectivement le nombre de lignes et le nombre de colonnes (de façon absolue).
+            Dans la vue Fortran, on lit les éléments de haut en bas et ensuite de gauche à droite, alors que dans la vue en colonnes,
+            on lit de gauche à droite et ensuite de haut en bas. Selon le cas, n et m peuvent être le nombre de tuple dans la liste ou
+            le nombre d'éléments dans un tuple. Selon la visualisation, l'ordre des données n'est pas la même, donc que la lecture en
+            tuple va aussi changer. Pour l'exemple plus haut, il est aussi possible de lire la matrice comme l'array 
+            [(a,d,g), (b,e,h), (c,f,i)], pour une vue de style Fortran. La forme est cependant indépendante de view= "C" ou "F".
+            Dans la vue en colonne (C), la visualisation affichée est horizontale.
+            Dans la vue Fortran (F), la visualisation affichée est verticale.
             */
         buffer: Option<buffer>, //Un nombre connu de bytes peut être inséré en valeur de l'array.
         offset: usize, //Il peut y avoir un décalage de x octets dans la lecture du buffer (Offset of array data in buffer).
                        //Si une structure est présente dans la mémoire, ses bytes seront sautées de l'array.
         strides: Option<(usize,usize)>, //Le décalage d'octets dans le buffer peut être spécifié pour une quantité dans chaque dimension.
                                         //Permet un contrôle encore plus fin de la mémoire que strides. Utile pour les vues non-contiguës, transposées.
-                                    }
+        }
 
     impl<H,T> RustArray<H,T>{
         //Create new arrays
@@ -102,7 +104,10 @@ pub mod(super) Array{
                 strides: None,
             }
         }
-        
+        pub fn copy(&self)-> self {
+            self//À vérifier comment créer une copie d'une instance d'array
+        }
+
         //Change formatting
         pub fn reshape(&mut self, shape:(usize, usize)) -> Option<i8> {
             /*Reforme une matrice unidimensionnelle à une forme multidimensionnelle.
@@ -119,96 +124,148 @@ pub mod(super) Array{
             }
             else{
                 self.shape=Some(shape);
-                return 1
+                return Some(1)
             }
         }
         pub fn unknown_reshape(&mut self, shape:(isize,isize)) ->Option<i8>{
             /*Reforme une matrice unidimensionnelle ou avec une forme en une matrice multidimensionnelle.
             Puisque un des nombres du tuple est supposé être -1 (donc que sa mesure est inconnue), deux inconnus sera refusé.
-            Nécessite un tuple de 2 arguments. Si deux nombres>1=>reshape()
+            Nécessite un tuple de 2 arguments. Si deux nombres>1 =>reshape()
             Le programme va essayer de voir quelles combinaisons sont possibles.
             self: vecteur-style à être reformé
-            shape: tuple(isize ou i32)
+            shape: tuple(isize)
             */
             let x=&self.data;
-            if shape.0 >=0 && shape.1 >=0 {(&mut self).reshape(Some(shape.0 as usize, shape.1 as usize));}
+            if shape.0 >=0 && shape.1 >=0 {(&mut self).reshape(shape.0 as usize, shape.1 as usize)}
             else if shape.0 ==-1 && shape.1 >=0 {
-                //Reshape et chercher longueur
-                if shape!=self.shape.unwrap() && (x.len() as f32/shape.1 as f32-(x.len()/shape.1) as f32)==0.{
-                    self.shape=Some( (x.len()/shape.1,shape.1) );
+                //Reshape et chercher hauteur
+                //Il faut vérifier que la forme est divisable en entier et que self.shape!=None
+                if self.shape!=None{
+                    if shape.1==self.shape.unwrap().1{None}
+                }
+                let shapes=&shape.1 as usize;
+                if calcul(shapes) {
+                    //Si ça passe, on peut changer self.shape
+                    self.shape=Some( (x.len()/shapes,shapes) );
+                    return Some(1)
                 }
                 return None
             } 
             else if shape.0 >=0 && shape.1 ==-1 {
-                //Reshape et chercher hauteur
-                if shape!=self.shape.unwrap() && (x.len() as f32/shape.0 as f32-(x.len()/shape.0) as f32)==0.{
-                    self.shape=Some( (shape.0,x.len()/shape.0) );
+                //Reshape et chercher longueur
+                //Il faut vérifier que la forme est divisable en entier et que self.shape!=None
+                if self.shape!=None{
+                    if shape.0==self.shape.unwrap().0{None}
                 }
-                return Some(1)
+                let shapes=&shape.0 as usize;
+                if calcul(shapes) {
+                    //Si ça passe, on peut changer self.shape
+                    self.shape=Some( (shapes,x.len()/shapes) );
+                    return Some(1)
+                }
+                return None
             }
             else {
                 //aucune combinaison gagnante (mauvais envoi ou deux inconnus)
                 return None
             }
+            fn calcul (&shape:usize) -> bool {
+                //if shape!=self.shape.unwrap() && (x.len() as f32/shape.1 as f32-(x.len()/shape.1) as f32)==0.
+                return x.len() % shape==0
+                //On retourne faux si la longueur de data n'est pas divisable par shape
+            }
         }
         pub fn flatten(&mut self){ 
             //Rend un objet RustArray multidimensionnel à une forme 1D aplatie
-            self.shape=None;//ou self.shape=Some((self.data.len(),1));
+            self.shape=None;//ou self.shape=Some((1,self.data.len()));
         }
         pub fn push_col(&mut self, col: Vec<H>)-> Option<i8> {
-            //Pousse une colonne dans un objet RustArray. Retourne une erreur si la colonne ne correspond pas à la hauteur de la matrice.
+            ///Pousse une colonne dans un objet RustArray. 
+            ///Retourne une erreur si la colonne ne correspond pas à la hauteur de la matrice.
+            /// Panique si shape=None
             let mut shape_unwraped=&self.shape.unwrap();
-            let (column,position_array)=match self.view{
-                //column: Vérification selon le type de visualisation l'élément colonne du tuple de shape
-                //position_array: Ajouter la colonne selon la forme de self et la vue (Fortran ou par colonne)
-                "C".to_string()=>(shape_unwraped.1,shape_unwraped.0),
-                "F".to_string()=>(shape_unwraped.0,shape_unwraped.1),
-                None=>(shape_unwraped.1,shape_unwraped.0),
-            };
+            let (column,position_array)=
+                //column: Longueur de l'élément colonne du tuple de shape
+                //position_array: Ajouter la colonne selon la forme de self (correspond à j)
+                (&shape_unwraped.0,&shape_unwraped.1);
 
             if col.len()!=column{
                 //Colonne de longueur incorrecte
-                None
+                Some(-1)
             }
             
-            for money in 0..col.len(){
-                self.data.insert(position_array*(money+1)+money,col[money]);
-            }
+            
             match self.view{
-                //Mofidier shape_unwraped selon l'ajout
-                "C".to_string()=>shape_unwraped=(position_array+1,shape_unwraped.1),
-                "F".to_string()=>shape_unwraped=(shape_unwraped.0,position_array+1),
-                None=>{shape_unwraped=(position_array+1,shape_unwraped.1);self.view="C".to_string()},
+                //Mofidier shape_unwraped selon la visualisation et l'ajout
+                "C".to_string()=>{
+                    for money in 0..col.len(){
+                        self.data.insert(position_array*(money+1)+money+1,col[money]);
+                        //Fonctionne en "C", mais pas en "F"
+                    };
+                    },
+                "F".to_string()=>{
+                    for money in col{
+                        //Insérer à la fin de data
+                        self.data.push(money);
+                    };
+                    },
+                None=>{
+                    for money in 0..col.len(){
+                        self.data.insert(position_array*(money+1)+money+1,col[money]);
+                        //Fonctionne en "C", mais pas en "F"
+                    };
+                    self.view="C".to_string();
+                    },
             }
+            shape_unwraped=(&shape_unwraped.0,&shape_unwraped.1+1);
+
             assert_eq(self.data.len(),shape_unwraped.0*shape_unwraped.1);
+            self.shape=Some(shape_unwraped);
             None
         }
         pub fn push_row(&mut self, row: Vec<H>)-> Option<i8> {
-            //Pousse une ligne dans un objet RustArray. Retourne une erreur si la ligne ne correspond pas à la longueur de la matrice.
+            ///Pousse une ligne dans un objet RustArray. 
+            ///Retourne une erreur si la ligne ne correspond pas à la longueur de la matrice.
+            /// Panique si shape==None
             let mut shape_unwraped=&self.shape.unwrap();
-            let (rangee,position_array)=match self.view{
-                //rangee: Vérification selon le type de visualisation l'élément rangée du tuple de shape
-                //position_array: Ajouter la ligne selon la forme de self et la vue (Fortran ou par colonne)
-                "C".to_string()=>(shape_unwraped.0,shape_unwraped.1),
-                "F".to_string()=>(shape_unwraped.1,shape_unwraped.0),
-                None=>(shape_unwraped.0,shape_unwraped.1),
-            };
+            let (rangee,position_array)=
+                //rangee: Longueur de l'élément ligne du tuple de shape
+                //position_array: Ajouter la ligne selon la forme de self (correspond à i)
+                (&shape_unwraped.1,&shape_unwraped.0);
 
             if row.len()!=rangee{
-                //Rangée de longueur incorrecte
-                None
+                //Ligne de longueur incorrecte
+                Some(-1)
             }
             
-            for money in 0..row.len(){
-                self.data.insert(position_array*(money+1)+money,row[money]);
-            }
+            
             match self.view{
-                //Mofidier shape_unwraped selon l'ajout
-                "C".to_string()=>shape_unwraped=(shape_unwraped.0,position_array+1),
-                "F".to_string()=>shape_unwraped=(position_array+1,shape_unwraped.1),
-                None=>{shape_unwraped=(shape_unwraped.0,position_array+1);self.view="C".to_string()},
+                //Mofidier shape_unwraped selon la visualisation et l'ajout
+                "C".to_string()=>{
+                    for money in row{
+                        //Insérer à la fin de data
+                        self.data.push(money);
+                        //Fonctionne en "C", mais pas en "F"
+                    };
+                    },
+                "F".to_string()=>{
+                    for money in 0..row.len(){
+                        self.data.insert(position_array*(money+1)+money+1,row[money]);
+                    };
+                    },
+                None=>{
+                    for money in row{
+                        //Insérer à la fin de data
+                        self.data.push(money);
+                        //Fonctionne en "C", mais pas en "F"
+                    };
+                    self.view="C".to_string();
+                    },
             }
+            shape_unwraped=(&shape_unwraped.0+1,&shape_unwraped.1);
+
             assert_eq(self.data.len(),shape_unwraped.0*shape_unwraped.1);
+            self.shape=Some(shape_unwraped);
             None
         }
         pub fn swap(&mut self, a:isize, b:isize) where H: Copy{
@@ -271,29 +328,59 @@ pub mod(super) Array{
             ///Idée de correction, changer la vision de la matrice à la place des valeurs.
             */
 
-            //Correction: changer la valeur de view
+            //Correction: changer la valeur de view et de shape
             if self.view=="F".to_string(){
-                self.view="C".to_string(); //Set the alue in Column view style
+                self.view="C".to_string(); //Set the view in Column view style
             }
             else{
                 self.view="F".to_string(); //Set the view in a Fortran style
             }
-            //Ici shape n'est pas modifiée puisque la forme n'est pas absolue et dépend de la visualisation.
-            //Si une matrice est de longueur 3(n) et de hauteur 5(m), sa transpose est de longueur 5(m) et 
-            //de hauteur 3(n). La forme serait cependant toujours Some((3,5)).
+            ///Ici shape est modifiée puisque la forme est absolue et ne dépend pas de la visualisation.
+            ///ij -> ji
+            ///Si une matrice est de longueur 3(m) et de hauteur 5(n), sa transpose est de longueur 5(m) et 
+            ///de hauteur 3(n). La forme serait aussi Some((5,3)).
+            if self.shape==None{
+                self.shape=Some((self.data.len(),1));
+            }
+            else{
+                let shape_unwraped=&self.shape.unwrap()
+                let mut (a,b)=(&shape_unwraped.0,&shape_unwraped.1);
+                mem::swap(&mut a, &mut b)
+                self.shape=Some( (a,b));
+            }
         }
         pub fn T(&mut self){
             //Autre façon d'écrire transpose d'une matrice
             /*let x=RustArray::new */
             transpose(&mut self);
         }
-        pub fn to_fortran(&mut Vec<H>){
-            //On peut envoyer simplement la variable data, et non l'array au complet
-            //Convertie une visualisation par colonne en fortran
+        pub fn to_fortran(&mut self){
+            ///Convertie une visualisation par colonne en fortran.
+            ///On crée une nouvelle matrice contenant un vecteur de référence aux positions 
+            /// de l'ancien vecteur. Formule pour trouver n2=(n-1)%j*i+(n-1)//j+1
+            ///Vérifier si shape==None
+            if self.shape==None{
+                self.reshape((self.data.len(),1));
+                self //Séquence terminée
+            }
+            let shape=&self.shape.unwrap();
+            let (i,j)=(shape.0,shape.1);
+            self.data=self.data.into_iter() .map(|n|{(n-1)%j*i+(n-1)/j+1}) .collect();
+            //On garde la même forme.
         }
-        pub fn to_column(&mut Vec<H>){
-            //Même chose que de passer de colonne à fortran
-            to_fortran(&mut Vec<H>);
+        pub fn to_column(&mut self){
+            ///Même chose que de passer de colonne à fortran en inversant i et j.
+            ///Convertie une visualisation fortran en colonne.
+            ///On crée une nouvelle matrice contenant un vecteur de référence aux positions 
+            /// de l'ancien vecteur. Formule pour trouver n2=(n-1)%i*j+(n-1)//i+1
+            if self.shape==None{
+                self.reshape((1,self.data.len()));
+                self //Séquence terminée
+            }
+            let shape=&self.shape.unwrap();
+            let (i,j)=(shape.0,shape.1);
+            self.data=self.data.into_iter() .map(|n|{(n-1)%i*j+(n-1)/i+1}) .collect();
+            //On garde la même forme.
         }
         
         //Get the values

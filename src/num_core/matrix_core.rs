@@ -31,12 +31,31 @@ trait TraitAddition{
     /// sans que un des str soit mis proriétaire avec &str.to_owned()+&str. 
     ///Tous les types additionnés doivent être identiques et sont typiquement des nombres
     /// ou des lettres. 
-    pub fn add_matrix(&matrice1:RustArray, &matrice2:RustArray);
+    pub fn add_matrix(&mut matrice1:RustArray, &matrice2:RustArray);
 
 }
 
+pub fn addition_vec<T>(a:&Vec<T>, b:&Vec<T>)-> Result<Vec<T>, &'static str>
+    where T: Add<Output=T>+ Copy {
+    ///Retourne l'addition de références de deux vecteurs dans un vecteur référencé 
+    /// de même longueur. Retourne une erreur si les longueurs ne correspondent pas. 
+    ///Peut prendre des vecteurs vides.
+    ///On déduit que puisque cette fonction est une addition, les types implémentent
+    /// Copy, comme tous les integers et nombres flottants
+    if  a.len()!=b.len(){
+        if a.is_empty(){ return Ok(b.clone()); } else if b.is_empty() { return Ok(a.clone()); }
+        print!("Addition de vecteurs incompatibles");
+        println!("Longueur de vecteur 1:{}, longueur de vecteur 2:{}",a.len(),b.len());
+        return Err("Vecteurs de dimensions incompatibles")
+    } else if a.is_empty(){ return Ok(a.clone()); } //Les deux sont vides, on retourne au hasard a
+    a.iter()//Tout va bien ici
+        .zip(b.iter())
+        .map(|(&x, &y)| x + y)
+        .collect()
+}
+
 pub fn add_matrix<H>(&mut matrice1:RustArray<H>, &matrice2:RustArray<H>) -> Option<RustArray<H>> 
-    where H:Add, Copy{
+    where H: Add<Output=H>+ Copy {
     /// Si la matrice 1 n'est pas du même type que la matrice2, on doit convertir de l'un à l'autre.
     /// Par souci de structure fixe, la première matrice est défini pour contenir l'espace de stockage
     /// ou les données sont accumulées. Donc, si les visualisations ne sont pas identiques, la matrice res
@@ -51,20 +70,46 @@ pub fn add_matrix<H>(&mut matrice1:RustArray<H>, &matrice2:RustArray<H>) -> Opti
     }
     else {
         //On continue
-        //Lorsqu'on fait Vec+Vec, on ne doit pas faire vec.extend()
-        let (matrice1_shape,matrice2_shape)=(matrice1.shape,matrice2.shape);
-        if matrice1_shape!=matrice2_shape{
+        //Lorsqu'on fait Vec+Vec, on ne doit pas faire vec.extend(), puisqu'on ajoute pas des valeurs
+        let (matrice1_shape,matrice2_shape)=(&matrice1.view,&matrice2.view);
+        if matrice1_shape!=matrice2_shape{//*erreur d'écriture, on parle ici de la visualisation, pas de la forme
             //Vérifier si shape est simplement un None avec un "C"
-            if matrice1_shape.unwrap()=="F" || matrice2_shape.unwrap()=="F" {
+            if matrice1_shape==Some("F") {
                 //Les matrices n'ont pas la même visualisation, il faut transposer la deuxième.
-                //On peut envoyer simplement matrice2.data à to_fortran()
-                let copy=
+                //On transpose en Fortran style
+                let mut copy=*matrice2;
+                matrice1.data= *addition_vec(&matrice1.data, &copy.to_fortran().data);
+                Some(matrice1)
             }
+            else if matrice2_shape==Some("F") {
+                //Les matrices n'ont pas la même visualisation, il faut transposer la deuxième.
+                //On transpose en Colonne style
+                let mut copy=*matrice2;
+                ///On envoie crée une copy de matrice2 en déréférençant ses données pour en modifier
+                /// la copie en changeant la visualisation, après on additionne la référence à ce
+                /// vecteur.
+                matrice1.data= *addition_vec(&matrice1.data, &copy.to_column().data);
+                Some(matrice1)
+            }
+            ///Cependant, il faut que l'addition soit aussi déréférencée des vecteurs réfécencés, soit
+            /// matrice1 et matrice2 ou copy, puisque les valeurs seront droppées, on ne sait pas 
+            /// comment les variables seront modifiées en dehors de la fonction et aussi copy est
+            /// temporaire et sera supprimée lorsque droppée.
             else{//Rien
+                ///Effectuer l'addition comme prévu, les deux ont une visualisation similaire
+                do_nothing();
+                None
             }
         }
         else{//Rien
+            ///Effectuer l'addition comme prévu, ceci est un undefined_behavior
+            do_nothing();
+            None
         }
+        ///À ce stade, une incompatibilité des formes des matrices est considérée comme un 
+        /// undefined_behavior même si le programme peut tout de même rouler.
+        matrice1.data= *addition_vec(&matrice1.data, &matrice2.data);
+        Some(matrice1)
     }
 }
 pub fn scalable_matrix(&mut self, scalaire:T) where T:Clone+ One+ Mul, H:Clone+ One+ Mul, {
@@ -76,7 +121,7 @@ pub fn scalable_matrix(&mut self, scalaire:T) where T:Clone+ One+ Mul, H:Clone+ 
         donnee*=scalaire;
     }
 }
-
+//Référence sur les types: https://doc.rust-lang.org/nightly/reference/special-types-and-traits.html?
 
 
 pub fn scalable_matrix<T>(&mut self, scalaire:T) where T:Clone+ One+ Mul, H:Clone+ One+ Mul, {
@@ -106,3 +151,7 @@ pub fn produit_multi_matrix
 impl Trait_trait for T{
     pub fn Myfunc(){}
 } */
+
+pub unsafe fn do_nothing(_:Void) -> !{
+    return Void
+}
