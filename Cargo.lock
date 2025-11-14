@@ -10,6 +10,7 @@ dependencies = [
  "bevy_encase_derive",
  "do_nothing",
  "glium",
+ "num-traits",
  "ogl33",
  "sdl",
  "serde",

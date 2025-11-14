@@ -5,299 +5,50 @@
 //! et l'intégration de toute les instances donne l'entité.
 
 #[cfg(not(target_arch = "wasm32"))]
-//use std::*;
-use std::{collections::HashMap, fs::*, io::prelude::*, os::unix::fs::FileExt, string::*};
+
 use std::ops::{Add,Mul};
 use bevy::{prelude::*,render::{render_asset::RenderAssetUsages,render_resource::{
     Extent3d, TextureDimension, TextureFormat},},};
 use Option::Some;
 use num_traits::{ToPrimitive,Zero,pow};
     
-#[path = "main.rs"]
-mod embarquation_b4d;
-mod matrix_core;
-use embarquation_b4d::*;
-use matrix_core::*;
 
 
-
-
-//'! Structure générale des entités
-#[derive(Debug)]
-pub struct Entité{
-    pub nom:&'static str,// Nom de l'entité
-    tags:Vec<String>,// Tags associés à l'entité
-    objets:String,//Objets contenus dans cette entité
-    role:Vec<String>,// Type et rôles associés à l'entité
-    donnees:HashMap<String, String>,// Informations sous forme de clés booléennes (Ajouter des défauts)
+pub fn test(){
+    //Si le test fonctionne, c'est que la fonction est bien appelée.
+    println("Module 'transformation' appelé, fonctionnel: Oui");
 }
-
-//'! Structure des objets "Points"
-#[derive(Debug)]
-pub struct Point{
-    pub nom:&'static str,// Nom du point
-    //Pas de tags car il n'y a pas de dimension inférieur dépendante du point
-    x: f32,  //Coordonnées associées au point
-    y: f32,
-    z: f32,
-    w: f32,
-    permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
-}
-
-//'! Structure des objets "Lignes"
-#[derive(Debug)]
-pub struct Ligne{
-    pub nom:&'static str,// Nom de la ligne
-    reference:String,//Intégration des points formant cette ligne
-    permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
-}
-
-//'! Structure des objets "Polygones"
-#[derive(Debug)]
-pub struct Polygone{
-    pub nom:&'static str,// Nom de la figure en 2D
-    reference:String,//Intégration des lignes formant ce polygone
-    permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
-}
-
-//'! Structure des objets "Polyèdres"
-#[derive(Debug)]
-pub struct Polyèdre{
-    pub nom:&'static str,// Nom de la figure en 3D
-    reference:String,//Intégration des polygones formant ce polyèdre
-    permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
-}
-
-//'! Structure des objets "Polychores"
-#[derive(Debug)]
-pub struct Polychore{
-    pub nom:&'static str,// Nom de la figure en 4D
-    reference:String,//Intégration des lignes formant ce polychore
-    permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
-}
-
-
-
-
-//'! Fonctions de création des objets
-
-impl Entité{
-    //Création d'une nouvelle entité si les références concordent
-    fn create_entity(
-        nom:&'static str,
-        tags:Vec<String>,
-        objets:String,
-        role:Vec<String>,
-        donnees:HashMap<String, String>,
-        )-> Self 
-        {Entité{nom,tags,objets,role,donnees,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
-    // Modifier les tags
-    fn changer_tags(&mut self, tag: Vec<String>) {self.tags=tag;}
-    //Les instances d'objets présents ne peuvent être modifiés une fois créés
-    //Modifier les rôles
-    fn changer_roles(&mut self, role:Vec<String>) {self.role=role;}
-    fn ajouter_roles(&mut self, role:String) {self.role.push(role);}
-    //Modifier les données
-    fn changer_donnees(&mut self, donnees:HashMap<String,String>) {self.donnees=donnees;}
-    fn ajouter_donnees(&mut self, clés:&str, donnée:&str) {self.donnees.insert(clés.to_string(),donnée.to_string());}
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Entité {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Tags: {:?}", self.tags);
-        println!("  Objets: {:?}", self.objets);
-        println!("  Rôles: {:?}", self.role);
-        println!("  Données: {:?}", self.donnees);
-        println!("}}");
-    }  
-}
-
-impl Point{
-    //Création d'un nouveau point selon les coordonnées
-    fn create_point(
-        nom:&'static str,
-        x: f32,
-        y: f32,
-        z: f32,
-        w: f32,
-        permissions:HashMap<String, bool>,
-        )-> Self 
-        {Point{nom,x,y,z,w,permissions,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
-    // Modifier x
-    fn changer_x(&mut self, nouvelle_coordonnee: f32) {self.x=nouvelle_coordonnee;}
-    // Modifier y
-    fn changer_y(&mut self, nouvelle_coordonnee: f32) {self.y=nouvelle_coordonnee;}
-    // Modifier z
-    fn changer_z(&mut self, nouvelle_coordonnee: f32) {self.z=nouvelle_coordonnee;}
-    // Modifier w
-    fn changer_w(&mut self, nouvelle_coordonnee: f32) {self.w=nouvelle_coordonnee;}
-    // Modifier les permissions
-    fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
-    fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
-    
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Point {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  x: {:?}", self.x);
-        println!("  y: {:?}", self.y);
-        println!("  z: {:?}", self.z);
-        println!("  w: {:?}", self.w);
-        println!("  Permissions: {:?}", self.permissions);
-        println!("}}");
-    }  
-}
-
-impl Ligne{
-    //Création d'une nouvelle ligne selon les références (points, équations)
-    fn create_ligne(
-        nom:&'static str,
-        reference:String,
-        permissions:HashMap<String, bool>,
-        )-> Self 
-        {Ligne{nom,reference,permissions,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
-    //Modifier les références
-    fn ajouter_reference(&mut self, nouvelle_référence:&str) {self.reference.push_str(nouvelle_référence);}
-    fn changer_reference(&mut self, reference:String) {self.reference=reference;}
-    //Modifier les permissions
-    fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
-    fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
-
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Ligne {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Référence: {:?}",self.reference);
-        println!("  Permissions: {:?}", self.permissions);
-        println!("}}");
-    }  
-}
-
-impl Polygone{
-    //Création d'un nouveau polygone selon les références
-    fn create_polygone(
-        nom:&'static str,
-        reference:String,
-        permissions:HashMap<String, bool>,
-        )-> Self 
-        {Polygone{nom,reference,permissions,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
-    //Modifier les références
-    fn ajouter_reference(&mut self, nouvelle_référence:&str) {self.reference.push_str(nouvelle_référence);}
-    fn changer_reference(&mut self, reference:String) {self.reference=reference;}
-    //Modifier les permissions
-    fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
-    fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
-
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Polygone {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Référence: {:?}",self.reference);
-        println!("  Permissions: {:?}", self.permissions);
-        println!("}}");
-    } 
-}
-
-impl Polyèdre{
-    //Création d'un nouveau polyèdre selon les références
-    fn create_polyèdre(
-        nom:&'static str,
-        reference:String,
-        permissions:HashMap<String, bool>,
-        )-> Self 
-        {Polyèdre{nom,reference,permissions,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
-    //Modifier les références
-    fn ajouter_reference(&mut self, nouvelle_référence:&str) {self.reference.push_str(nouvelle_référence);}
-    fn changer_reference(&mut self, reference:String) {self.reference=reference;}
-    //Modifier les permissions
-    fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
-    fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
-
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Polyèdre {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Référence: {:?}",self.reference);
-        println!("  Permissions: {:?}", self.permissions);
-        println!("}}");
-    } 
-}
-
-impl Polychore{
-    //Création d'un nouveau polychore selon les références
-    fn create_polychore(
-        nom:&'static str,
-        reference:String,
-        permissions:HashMap<String, bool>,
-        )-> Self 
-        {Polychore{nom,reference,permissions,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&'static str) {self.nom=nom;}
-    //Modifier les références
-    fn ajouter_reference(&mut self, nouvelle_référence:&str) {self.reference.push_str(nouvelle_référence);}
-    fn changer_reference(&mut self, reference:String) {self.reference=reference;}
-    //Modifier les permissions
-    fn ajouter_permission(&mut self, clés: &str, booléen: bool) {self.permissions.insert(clés.to_string(), booléen);}
-    fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
-
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Polychore {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Référence: {:?}",self.reference);
-        println!("  Permissions: {:?}", self.permissions);
-        println!("}}");
-    } 
-}
-
-
-//Vérification des macros générants des objets
-fn verif() {
-    // --temporaire-- Exemple de création d'un objet avec des tags, rôles, permissions et position initiale
-    let objet:&str = "Triangle";
-    let permissions: HashMap<String, bool> = HashMap::from([("fixe".to_string(),true)]);
-    let reference: String=String::new();
-    let triangle: Polygone = Polygone::create_polygone(objet,reference, permissions);
-    // Ajout de nouveaux éléments
-
-    // Affichage des détails de l'objet
-    triangle.afficher();
-}
-
 
 //Fonctions pour aider la production
 pub fn println(msg:&str){
     println!("{}",msg);
+    //Exemple d'utilisation:
+    //print("Oh my glob!");
+    //=> Oh my glob!
+    //=>
 }
 pub fn print(msg:&str){
     print!("{}",msg);
+    //Exemple d'utilisation:
+    //print("Oh my glob!");
+    //=> Oh my glob!
 }
-pub fn ReportError(message:&str,code:String){
+pub fn report_error(message:&str,code:&str){
     //Afficher fenêtre contenant une erreur mineure
     //Pour l'instant:
     println!("{} {}.",message,code);
 }
 
-type g64=f64;
-type g32=f32;
 
-pub fn is_float<S>(x:S)->bool
-    where S:Into<f64> + Copy,
-    f64: From<S>, {
-    /*Méthodes de vérification si generic.type ==float or integer. Prend des integers ou floats en paramètres. */
-    let y= f64::from(x).fract()!=0.0; //Méthode 1
-    //let y= f64::from(x)!=i32::from(x) as f64; //Méthode 2, less fonctionnal because i32: From<S> not always implemented.
-    return y
+#[warn(unconditional_recursion)]
+pub fn unreachable(){
+    type Unreachable=();
+    let _x:Unreachable=unreachable();
+    unreachable!()//Ceci n'est pas ateignable
+}
+
+pub fn not_implemented(){
+    todo!();//This will panic
 }
 
 pub fn panik() {
@@ -305,31 +56,18 @@ pub fn panik() {
     panic!("crash and burn");
 }
 
-pub fn unreachable(x: Void) -> ! {
-    match x {}
+pub unsafe fn do_nothing(_:()) -> (){
+    return ()//Fonction doit être appelé avec unsafe{do_nothing};
 }
 
-pub unsafe fn do_nothing(_:Void) -> !{
-    return Void
+pub fn is_float<S>(x:S)->bool   where S:Into<f64> + Copy, f64: From<S>, {
+    //Méthodes de vérification si generic.type ==float or integer. Prend des integers ou floats en paramètres.
+    let y= f64::from(x).fract()!=0.0; //Méthode 1
+    //let y= f64::from(x)!=i32::from(x) as f64; //Méthode 2, less fonctionnal because i32: From<S> not always implemented.
+    return y
 }
 
-fn dereferencer(reference:String)->Option<Vec<String>>{
-    //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
-    //Crée des structures temporaires de toutes les références
-    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
-    /*Autre idée pour simplifier les coordonnées: représenter les entités déférencées temporairement avec 4 matrices, soit une matrice de sommets (4 lignes de hauteur par x points de long),
-      une matrice d'arêtes (chaque ligne représente une arrête et comporte 4 éléments: 2 premières colonnes= référence ou numéro des sommets, les x autres= les références ou numéro des faces
-      contenant cette arête), une matrice de faces (chaque ligne représente une face et comporte naturellement 2 colonnes= référence ou numéro des polyèdres contenant cette face), finalement
-      une matrice de polyèdres (chaque ligne représente un polyèdre et comporte x colonnes= référence ou numéro des polychores contenant ce polyèdre). Le reste des données modifiées pourrait
-      être généré d'une autre façon (laquelle?) ou avec des références comme plus haut.
-    */
-    return SousStructures
-}
-
-
-
-
-pub mod Convert{
+pub mod convert{
     pub fn convert_f64_to_i64(x: f64) -> Option<i64> {
         let y = x as i64;
         if y as f64 == x {
@@ -358,9 +96,9 @@ pub mod Convert{
     pub fn convert_vec<T, U>(vector: Vec<T>) -> Vec<U>
         where T: TryInto<U>, 
         <T as std::convert::TryInto<U>>::Error: std::fmt::Display {
-        /// Try to convert `Vec<T>` to `Vec<U>`. Mentionner avant l'appel quel sera le type inféré.
-        /// Créé par Own_Sentence_6928 sur Reddit:https://www.reddit.com/r/learnrust/comments/11hyu0o/help_me_with_making_a_general_function_to_convert/
-        /// Exemple utilisation: let y:Vec<i16>=convert_vec(vec![7,8,9]);print!("{:?}",y);
+        // Try to convert `Vec<T>` to `Vec<U>`. Mentionner avant l'appel quel sera le type inféré.
+        // Créé par Own_Sentence_6928 sur Reddit:https://www.reddit.com/r/learnrust/comments/11hyu0o/help_me_with_making_a_general_function_to_convert/
+        // Exemple utilisation: let y:Vec<i16>=convert_vec(vec![7,8,9]);print!("{:?}",y);
         vector
             .into_iter()
             .map(|value_t|match TryInto::try_into(value_t) {
@@ -381,13 +119,31 @@ pub mod Convert{
         //Inspiré par la fonction convert_vec citée plus haut.
         //Exemple utilisation: let x:Vec<Vec<i16>>=convert_matrix(vec![vec![7,8,9];4]);print!("{:?}",y);
         matrix
-            matrix
             .into_iter()
             .map(convert_vec)
             .collect()
     }
 }
 
+
+//Fin des fonctions
+
+/*
+fn dereferencer(reference:String)->Option<Vec<String>>{
+    //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
+    //Crée des structures temporaires de toutes les références
+    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
+    /*Autre idée pour simplifier les coordonnées: représenter les entités déférencées temporairement avec 4 matrices, soit une matrice de sommets (4 lignes de hauteur par x points de long),
+      une matrice d'arêtes (chaque ligne représente une arrête et comporte 4 éléments: 2 premières colonnes= référence ou numéro des sommets, les x autres= les références ou numéro des faces
+      contenant cette arête), une matrice de faces (chaque ligne représente une face et comporte naturellement 2 colonnes= référence ou numéro des polyèdres contenant cette face), finalement
+      une matrice de polyèdres (chaque ligne représente un polyèdre et comporte x colonnes= référence ou numéro des polychores contenant ce polyèdre). Le reste des données modifiées pourrait
+      être généré d'une autre façon (laquelle?) ou avec des références comme plus haut.
+    */
+    return SousStructures
+}
+*/
+
+/* 
 pub mod  Matrix{
     //inspiration: https://github.com/IgorSusmelj/rustynum/blob/main/docs/tutorials/better-matrix-operations.md
     fn ScalableFloatMatrix(scalaire:f32,mut matrice:&[&[f32]]){
@@ -543,10 +299,7 @@ pub mod  Matrix{
             print!("done");  
         }
         */
-    }
-    let matrice=transpose;   
-    }
-    
+    } 
 }
 
 pub mod Trigo{
@@ -612,6 +365,7 @@ pub mod Trigo{
     }
     pub(super) const acos: fn(f32) -> f32 = arccos;
 }
+*/
 
 //'! Transformation des points
 /* Un matrice de dimension n est une suite de x vecteurs que l'on peut appliquer une transformation.
@@ -627,7 +381,7 @@ https://chatgpt.com
 */
     
 
-
+/* 
 pub(super) mod Transformation{
     //Pour l'instant essayer d'avoir en argument des matrices ou scalaires d'int ou float. Par la suite voir si les entités sont nécessaires en arguments.
     //Le type de mesure envoyé pour la transformation devrait être le même que l'unité de la matrice.
@@ -1028,3 +782,4 @@ pub(super) mod Transformation{
         }
     }
 }
+*/
