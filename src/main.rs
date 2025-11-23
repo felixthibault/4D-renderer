@@ -18,7 +18,7 @@ use transformations::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_systems(FixedUpdate, (update_objects, greet_objects))
+        //.add_systems(FixedUpdate, (update_objects, greet_objects))
         .add_systems(Startup, setup)
         .run();
     exit(0x0);
@@ -52,6 +52,7 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
         false => print("CAD prêt à être utilisé."),
         _ => panik(),
     }
+    //Tester si on peut générer une entité
     Entite::create_square(4);//Longueur de chaque côté=4
 
     exit_(0x0);

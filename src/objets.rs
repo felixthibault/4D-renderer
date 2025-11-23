@@ -41,7 +41,7 @@ pub struct Position<T>{
 
 
 //'! Structure générale des entités
-pub struct Entite < T /* Type */>{
+pub struct Entite<T> {
     
     pub nom:Nom,// Nom de l'entité
     tags:Option<Vec<String>>,// Tags associés à l'entité
@@ -51,7 +51,7 @@ pub struct Entite < T /* Type */>{
 }
 
 //'! Structure des objets "Points"
-pub struct Point<T>{
+pub struct Point<T> {
     pub nom:Nom,// Nom du point. Il n'y a pas de dimension inférieure dépendante du point
     x: T,  //Coordonnées associées au point
     y: T,
@@ -119,11 +119,11 @@ impl<T> Entite<T>{
         println!("}}");
     }
     
-    pub fn create_square(grosseur:i32)->Entite{
-        let p1=Point::new("square", (-grosseur,-grosseur,0));
-        let p2=Point::new("square", (grosseur,-grosseur,0));
+    pub fn create_square(grosseur:f32)->Entite{
+        let p1=Point::new("square", (-grosseur,-grosseur,0.));
+        let p2=Point::new("square", (grosseur,-grosseur,0.));
         let p3=Point::new("square", (grosseur,grosseur,0));
-        let p4=Point::new("square", (-grosseur,grosseur,0));
+        let p4=Point::new("square", (-grosseur,grosseur,0.));
         Entite{nom:Nom("square".to_string()), constituant:vec![p1,p2,p3,p4]}
     }
 }
