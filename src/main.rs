@@ -53,7 +53,7 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
         _ => panik(),
     }
     //Tester si on peut générer une entité
-    Entite::create_square(4);//Longueur de chaque côté=4
+    Entite::create_square(4f32);//Longueur de chaque côté=4
 
     exit_(0x0);
 }
@@ -93,11 +93,11 @@ fn exit_(code:i32){
     exit(code);
 }
 
-fn update_objects(_:Entite){
+fn update_objects(_:MesStructures){
     unsafe{do_nothing(())};
 }
 
-fn greet_objects(_:Entite){
+fn greet_objects(_:MesStructures){
     unsafe{do_nothing(())};
 }
 

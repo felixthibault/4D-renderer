@@ -9,8 +9,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/Felix/Documents/Codes/Rust/4D renderer",
-      "program": "/home/Felix/Documents/Codes/Rust/4D renderer/build/Release/outRelease",
+      "cwd": "/home/Felix/Documents/Codes/Rust/4D-renderer",
+      "program": "/home/Felix/Documents/Codes/Rust/4D-renderer/target/debug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -20,7 +20,7 @@ pub struct Fixe(bool);
 
 #[derive(Debug)]
 #[derive(Component)]
-enum MesStructures{
+pub enum MesStructures{
     Entite, //Structure globale, rien n'est plus grand
     Point, //Structure la plus petite, constituant de base des autres
     Ligne, //Structure nécessitant deux Points pour être créée
@@ -48,6 +48,48 @@ pub struct Entite<T> {
     constituant:Vec<MesStructures>,//Objets contenus dans cette entité
     role:Vec<Nom>,// Type et rôles associés à l'entité
     //donnees:HashMap<String, String>,// Informations sous forme de clés booléennes (Ajouter des défauts)
+}
+
+//Implémentation d'Entite
+impl<T> Entite<T>{
+    //Création d'une nouvelle entité si les références concordent
+    fn new(nom:&str,pos:Position<T>)-> Entite<T> {
+        Entite{nom:Nom(nom.to_string()),tags:None,constituant: vec![Point::new(nom,pos)], role: vec![Nom("point".to_string())]}
+    }
+    //Modifier le nom
+    fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}
+    // Modifier les tags
+    fn changer_tags(&mut self, tag: Vec<String>) {self.tags=Some(tag);}
+    fn ajouter_tags(&mut self, tag: &str) {
+        if self.tags==None{self.changer_tags(vec![tag.to_string()]);}
+        else{self.tags.as_mut().expect("on ne devrait pas ajouter de tags à un groupe vide").push(tag.to_string())
+        //On extrait des tags vides ou pleines leur référence mutable et on pousse un  nouvel élément.
+        }
+    }
+    //Modifier les rôles
+    fn changer_roles(&mut self, role:Vec<Nom>) {self.role=role;}
+    fn ajouter_roles(&mut self, role:&str) {self.role.push(Nom(role.to_string()));}
+    //Modifier les données
+    //fn changer_donnees(&mut self, donnees:HashMap<String,String>) {self.donnees=donnees;}
+    //fn ajouter_donnees(&mut self, clés:&str, donnée:&str) {self.donnees.insert(clés.to_string(),donnée.to_string());}
+    // Afficher les détails de l'objet
+    pub fn afficher(&self) {
+        println!("Entité {{");
+        println!("  Nom: {:?}", self.nom);
+        println!("  Tags: {:?}", self.tags);
+        println!("  Constituants: {:?}", self.constituant);
+        println!("  Rôles: {:?}", self.role);
+        //println!("  Données: {:?}", self.donnees);
+        println!("}}");
+    }
+    
+    pub fn create_square(grosseur:f32)->Entite{
+        let p1=Point::new("square", (-grosseur,-grosseur,0.));
+        let p2=Point::new("square", (grosseur,-grosseur,0.));
+        let p3=Point::new("square", (grosseur,grosseur,0));
+        let p4=Point::new("square", (-grosseur,grosseur,0.));
+        Entite{nom:Nom("square".to_string()), constituant:vec![p1,p2,p3,p4]}
+    }
 }
 
 //'! Structure des objets "Points"
@@ -87,46 +129,7 @@ pub struct Polyedre{
 
 
 //'! Fonctions de création des objets
-impl<T> Entite<T>{
-    //Création d'une nouvelle entité si les références concordent
-    fn new(nom:&str,pos:Position<T>)-> Entite<T> {
-        Entite{nom:Nom(nom.to_string()),tags:None,constituant: vec![Point::new(nom,pos)], role: vec![Nom("point".to_string())]}
-    }
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}
-    // Modifier les tags
-    fn changer_tags(&mut self, tag: Vec<String>) {self.tags=Some(tag);}
-    fn ajouter_tags(&mut self, tag: &str) {
-        if self.tags==None{self.changer_tags(vec![tag.to_string()]);}
-        else{self.tags.as_mut().expect("on ne devrait pas ajouter de tags à un groupe vide").push(tag.to_string())
-        //On extrait des tags vides ou pleines leur référence mutable et on pousse un  nouvel élément
-        }
-    }
-    //Modifier les rôles
-    fn changer_roles(&mut self, role:Vec<Nom>) {self.role=role;}
-    fn ajouter_roles(&mut self, role:&str) {self.role.push(Nom(role.to_string()));}
-    //Modifier les données
-    //fn changer_donnees(&mut self, donnees:HashMap<String,String>) {self.donnees=donnees;}
-    //fn ajouter_donnees(&mut self, clés:&str, donnée:&str) {self.donnees.insert(clés.to_string(),donnée.to_string());}
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Entité {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Tags: {:?}", self.tags);
-        println!("  Objets: {:?}", self.objets);
-        println!("  Rôles: {:?}", self.role);
-        println!("  Données: {:?}", self.donnees);
-        println!("}}");
-    }
-    
-    pub fn create_square(grosseur:f32)->Entite{
-        let p1=Point::new("square", (-grosseur,-grosseur,0.));
-        let p2=Point::new("square", (grosseur,-grosseur,0.));
-        let p3=Point::new("square", (grosseur,grosseur,0));
-        let p4=Point::new("square", (-grosseur,grosseur,0.));
-        Entite{nom:Nom("square".to_string()), constituant:vec![p1,p2,p3,p4]}
-    }
-}
+
 impl<T> fmt::Display for Entite<T>{
     fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result{
         write!(f, "Entite: {}", self.nom)
