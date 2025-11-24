@@ -17,9 +17,8 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-### VisualStudioCode ###
+### VisualStudioCode c++ properties###
 .vscode/*
-!.vscode/launch.json
 
 # Local History for Visual Studio Code
 .history/
@@ -38,5 +37,6 @@ Cargo.lock
 .Sauvegardes/*
 #Ignore Kaloo234
 .Kaloo234
+
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,rust

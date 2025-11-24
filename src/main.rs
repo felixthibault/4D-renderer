@@ -8,11 +8,12 @@ use bevy::{prelude::{Startup, App, DefaultPlugins, FixedUpdate, Component, Windo
 use std::process::exit;
 use num_traits::Zero;
 
-mod objets;
+//mod objets;
 mod transformations;
+mod Objets;
 //mod embarquation_b4d;
 
-use objets::*;
+use Objets::*;
 use transformations::*;
 
 fn main() {
@@ -27,7 +28,7 @@ fn main() {
 }
 
 fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
-    objets::test();
+    Objets::test();
     transformations::test();
     //embarquation_b4d::test();
 
@@ -53,7 +54,11 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
         _ => panik(),
     }
     //Tester si on peut générer une entité
-    Entite::create_square(4f32);//Longueur de chaque côté=4
+    let test1=Point::new("point 1", Position::new(1,2,3));
+    //Entite::create_square(4f32);//Longueur de chaque côté=4
+    let test2=Polygone::create_square(4.4f32);
+    dbg!(test1);
+    dbg!(test2);
 
     exit_(0x0);
 }

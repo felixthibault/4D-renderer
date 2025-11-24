@@ -30,7 +30,7 @@ pub fn verifier_fichier(fichier_type:&str)->&str {
             else{json.get("Preferred_default_project_name")
                     .expect("Le nom du défaut devrait exister si l'ouverture sécuritaire est désactivée.")};
         }.unwrap();
-        let nom_fichier:=&nom_par_defaut;
+        let nom_fichier=&nom_par_defaut;
     }
     else {
         //Ouverture du fichier spécifique
