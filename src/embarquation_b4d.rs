@@ -1,69 +1,119 @@
-#[allow(unused_imports)]
-#[allow(unused_variables)]
-use std::{fs::File, io, io::ErrorKind};
-use serde::Deserialize;
+//! # Gestion du fichier binaire
+//! 
+//! Ce fichier gère la lecture et l'écriture des éléments contenus dans 
+//! le fichier binaire .b4d, que ce soit des entités dimensionnelles ou 
+//! des plans, croquis, assemblages.
+//! Pour l'instant, le fichier JSON doit s'appeler Préférences, dans une version
+//! ultérieure, il pourrait s'appeler autrement ou être rennomable.
+
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+use std::{fs, io, io::ErrorKind};
+use fs::File as File;
+use serde_json::{self, Value};
+use std::io::{BufReader,Bytes};
+
 
 pub fn test(){
     //Si le test fonctionne, c'est que la fonction est bien appelée.
     println!("Module 'embarquation_b4d' appelé, fonctionnel: Oui");
 }
 
-//'! Implémentation des instances d'objets regroupés sous le nom d'une entité
-pub fn verifier_fichier(fichier_type:&str)->&str {
-    if fichier_type=="Demarrage"{
-        //Vérification des fichiers de démarrage standarts.
-        let parametre= File::open("Préférences.json").unwrap_or_else(|error|{
-            match error.kind(){
-                ErrorKind::NotFound=>{
-                print!("Fichier des paramètres non trouvé, écriture d'un nouveau à partir de la version actuelle .");
-                create_json("Préférences.json")
-                },
-                _=> panic!("Le fichier de préférences devrait être read-only."),
-            }});
-        let json: serde_json::Value = serde_json::from_reader(parametre).expect("Le fichier de préférences devrait être de format JSON");
-        //Utiliser json comme structure pour accéder au fichier JSON.
-        
-        let preference_ouverture = json.get("Ouverture_sécuritaire").unwrap();
-        let nom_par_defaut={
-            if preference_ouverture==true{json.get("Default_project_name")
-                    .expect("Le nom par défaut du projet devrait exister si l'ouverture sécuritaire est activée.")}
-            else{json.get("Preferred_default_project_name")
-                    .expect("Le nom du défaut devrait exister si l'ouverture sécuritaire est désactivée.")};
-        }.unwrap();
-        let nom_fichier=&nom_par_defaut;
-    }
-    else {
-        //Ouverture du fichier spécifique
-        let nom_fichier=fichier_type;
-    }
-    let ouverture_terrain_result = File::open(&nom_fichier).unwrap_or_else(|error|
+pub fn verifier_fichier(json:serde_json::Value)-> File{
+    //! Vérification de l'existence du fichier b4d. 
+    //! Retourner la référence du fichier pour pouvoir l'éditer
+
+    //On regarde quel est le nom par défaut du fichier du CAD inscrit dans le json
+    let binding = json.get("Default_project_name")
+        .expect("Le fichier JSON devrait avoir l'index 'Default_project_name' ")
+        .to_string();
+    let default_project_name:&str= binding.as_str();
+    //Vérifier si ce fichier existe, sinon on tombe par défaut à le créer
+    let ouverture_terrain_result: File = File::open(default_project_name).unwrap_or_else(|error|
         match error.kind(){
-        ErrorKind::NotFound => {
-            print!("Fichier du projet par défaut non trouvé, écriture d'un nouveau vide.");
-            create_fichier(&nom_fichier);
-            return 1//Avec problème
+            ErrorKind::NotFound => {
+                print!("Fichier du projet par défaut non trouvé, écriture d'un nouveau vide.");
+                create_b4d(default_project_name)
             },
         _ => panic!("Problem opening the default file: {error:?}"),
         });
-    print!("Fichier {ouverture_terrain_result:?} ouvert");
-    return 0//Sans problème
-    }
- 
-fn create_fichier(nom_fichier:&str)-> File {
-    let mut fichier=File::create(&nom_fichier).expect("Problem creating the file:");
-    let message_de_creation:String=format!("Voici le CAD du projet {}. Bonne chance! \n Ce document n'est pas conçu pour du DOS.",nom_fichier);
-    fichier.write_all(message_de_creation.as_bytes()).expect("Impossible d'écrire du texte au nouveau projet.");
+    print!("Fichier {default_project_name} ouvert.");
+    //On retourne le nom du fichier
+    ouverture_terrain_result
+        
+}
+fn create_b4d(file_name:&str)-> File {
+    let mut fichier: File=File::create(&file_name).expect("Problem creating the file:");
+    //Utiliser fs::write à la place de File::create et fs::write_all, va créer et écrire le
+    // contenu du fichier. Si un fichier était déjà présent avec ce nom, il sera réécrit.
+    let message_de_creation:String=format!("Voici le CAD du projet {}. Bonne chance! \n 
+            Ce document n'est pas conçu pour du DOS.",file_name);
+    fs::write(file_name, message_de_creation.as_bytes())
+        .expect("Impossible d'écrire du texte au nouveau projet.");
     return fichier;
 }
 
-fn create_json(nom_fichier:&str)-> File {
+pub fn verifier_json()-> serde_json::Value{
+    /*Il y a deux principales façons de déconstruire un fichier json avec Serde
+        1- Ouvrir le fichier avec file=File::open("Préférences.json").  
+            Lire ce fichier directement avec json:serde_json::Value=serde_json::from_reader(file).
+            Et ensuite on peut prendre une clé de la structure avec json.get(key).
+        2- Lire le fichier en string ou en bytes avec file=fs::read_to_string("Préférences.json").
+            Transformer ce fichier en type Value avec json=fs::read_to_string(file)
+            Et ensuite on peut lire une clé avec json.get(key).*/
+
+    let data:File= File::open("Préférences.json").unwrap_or_else(|error|{
+        match error.kind(){
+            ErrorKind::NotFound=>{
+                //Si le fichier de préférences n'existe pas
+                print!("Fichier des paramètres non trouvé, écriture d'un nouveau 
+                    à partir de la version actuelle.");
+                create_json("Préférences.json");
+                File::open("Préférences.json").unwrap()
+                },
+            _=> panic!("Problem opening the json file: {error:?}"),//Vérifier si cette partie doit retourner un type File
+        }
+    });
+    //Le fichier json existe ou vient d'être créé.
+    print!("Fichier Préférences.json ouvert.");
+    //Help: https://stackoverflow.com/questions/30292752/how-do-i-parse-a-json-file
+    //Désérializer le fichier
+    serde_json::from_reader(data).expect("JSON was not well-formatted")
+}
+fn create_json(file_name:&str) {
     //Aller chercher la version la plus récente de github au main. https://github.com/felixthibault/4D-renderer/blob/main/Préférences.json
-    let mut json=File::create_new(&nom_fichier).expect("Problem creating the file:");
-    let data:String=request("https:github.com/felixthibault/4D-renderer/blob/main/Préférences.json");
-    let v: Value = serde_json::from_str(data);
-    json.write_all(v);
+    //let data:&str=request("https:github.com/felixthibault/4D-renderer/blob/main/Préférences.json");
+    let data: serde_json::Value=serde_json::json!({
+                "Configuration": {
+                        "Default_project_name": "terrain.b4d",
+                        "Preferred_default_project_name": "Cube.b4d",
+
+                        "Debugging": true,
+                        "Visualisation": "Isométrique",
+                        "Projection4DMergée": true,
+                        "_option_unités": "Les valeurs possibles sont cm,mm,in,m",
+                        "Unité": "cm"
+
+                    },
+                "Utilisateur": "Félix T",
+                "Version": "alpha"
+        });
+    let json:File=File::create(file_name).expect("Problem creating the JSON file:");
     //Ça va très sûrement peut-être bugger ici en format binaire
-    return json;
+    serde_json::to_writer_pretty(json, &data);
+    //On ne peut renvoyer un type fichier puisque cela n'implémente pas Copy
+}
+
+//Désérializer le json
+#[allow(non_snake_case)]
+pub struct Configuration{
+    Default_project_name:String,
+    Preferred_default_project_name:String,
+    Debugging:bool,
+    Visualisation: String,
+    Projection4DMergée:bool,
+    _option_unités:String,
+    Unité:String,
 }
 
 /*Régler ce code pour l'update beta
@@ -75,7 +125,7 @@ fn actualise_json{
         "alpha"=>
     }
 }*/
-  
+/*  
 fn ecrire_texte_fichier(mut projet:File,texte:String)->std::io::Result<()>{
     projet.write(texte.as_bytes())?;
     //write!("Some bytes were written to {}",projet);
@@ -92,8 +142,8 @@ unsafe impl FromBytes for u32 {
     unsafe { std::mem::transmute::<[u8; 4], u32>(bytes) }
 }}
 
-unsafe fn EcrireUnByteFichier(mut projet:File,bytes:u8)->std::io::Result<()>{
-    projet.write(bytes);
+unsafe fn write_byte(mut projet:File,bytes:u8)->std::io::Result<()>{
+    projet.write_all(bytes);
 }
 
 //Wrapper les valeurs trop grosse de données de plusieurs bytes dans un vecteur de byte
@@ -104,3 +154,7 @@ fn wrapper<R>(byte:Wrapper<R>)->Vec<Wrapper>{
 }
 //Allouer de l'espace dans le fichier avant qu'un objet soit complètement prêt à être écrit. Simuler l'écriture des entités.
 //https:docs.rs/serde_bytes_wrapper/latest/serde_bytes_wrapper/struct.Bytes.html
+*/
+pub fn panik() {
+    panic!("crash and burn");
+}

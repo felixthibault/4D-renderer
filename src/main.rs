@@ -10,10 +10,10 @@ use num_traits::Zero;
 
 //mod objets;
 mod transformations;
-mod Objets;
-//mod embarquation_b4d;
+mod objets;
+mod embarquation_b4d;
 
-use Objets::*;
+use objets::*;
 use transformations::*;
 
 fn main() {
@@ -28,41 +28,46 @@ fn main() {
 }
 
 fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
-    Objets::test();
+    objets::test();
     transformations::test();
-    //embarquation_b4d::test();
+    embarquation_b4d::test();
 
-    
-    //Vérifier que le fichier binaire est présent sinon en créer un vide
-    //Vérifier que le fichier JSON est présent sinon en créer un avec des paramètres par défaut selon la version
-    //let verification_fichier:bool=verifier_fichier("Demarrage");
-    
-    //Vérification des paramètres de l'écran
+    //Vérifier que le fichier JSON est présent sinon
+    // en créer un avec des paramètres par défaut selon la version
+    let json: serde_json::Value=embarquation_b4d::verifier_json();
+    //Vérifier que le fichier binaire est présent sinon
+    // en créer un vide selon les paramètres du fichier json
+    embarquation_b4d::verifier_fichier(json);
+    //Vérification des paramètres de l'écran    
     let (width,height):(u16,u16)=get_size(query_window);
     let _screen_size: (u16, u16)=(width,height);
     
     //Démarrage de l'interface
     print!("Démarrage de l'interface...\n Interface démarré.\n");
-    print_window_size_system(query_window);
-    //Imprimer le débuggage
-    //if json.get("Debugging")==true{ println!("Le fichier du projet a été ouvert {}",verification_fichier); println!("Taille de l'écran de {}",screen_size); }
-    println!("Débuggage du système:\nTaille de l'écran=({width}, {height}),\nApplication fonctionnelle: Oui,\nDémarage du renderer\n BIENVENUE AU RENDERER 3D ET 4D!!!!!");
-    let in_progress:bool=true;
+//print_window_size_system(query_window);
+    //Imprimer le débogage
+    let json_data:embarquation_b4d::Configuration=serde_json::from_slice(json.get("Configuration")
+        .expect("Le fichier JSON devrait avoir l'index 'Configuration' "));
+    let in_progress=json.get("Debugging")
+        .expect("Le fichier JSON devrait avoir l'index 'Debugging' ")
+        .to_bool();
+    println!("Débogage du système:\nTaille de l'écran=({width}, {height}),
+    \nApplication fonctionnelle: Oui,\nDémarage du renderer\n BIENVENUE AU RENDERER 3D ET 4D!!!!!");
+    
     match in_progress{
         true => print("CAD toujours en progrès."),
         false => print("CAD prêt à être utilisé."),
         _ => panik(),
     }
-    //Tester si on peut générer une entité
-    let test1=Point::new("point 1", Position::new(1,2,3));
-    //Entite::create_square(4f32);//Longueur de chaque côté=4
-    let test2=Polygone::create_square(4.4f32);
-    dbg!(test1);
-    dbg!(test2);
+    //Tester si on peut générer une entité simple
+    //let test1=Point::new("point 1", Position::new(1,2,3));
+    //Teste de création d'une super-rtucture (un polygone formé de lignes et de points)
+    //let test2=Polygone::create_square(4.4f32);
+    //dbg!(test1);
+    //dbg!(test2);
 
     exit_(0x0);
 }
-
 pub fn report_error(message:&str,code:&str){
     //Afficher fenêtre contenant une erreur mineure
     //Pour l'instant:

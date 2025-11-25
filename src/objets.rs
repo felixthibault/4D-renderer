@@ -1,9 +1,11 @@
-///Structure des objets et entités utilisées dans le CAD
-/// 
-/// J'ai séparé la création d'une entité en plusieurs instances d'objets qui sont des
-/// points, lignes, carrés, cubes, tesseracts. Chaque instance a sa propre structure 
-/// et l'intégration de toute les instances donne l'entité.
-/// 
+//! # Structure des objets et entités utilisées dans le CAD
+//! 
+//! J'ai séparé la création d'une entité en plusieurs instances d'objets qui sont des
+//! points, lignes, polygones, polyèdres. Il faudra attendre une prochaine version pour
+//! voir apparaître les polychores (4D).
+//! Chaque instance a sa propre structure et l'intégration de toute les instances donne 
+//! ce qu'on appelle une entité. À ne pas mélanger avec la structure Entite qui, elle 
+//! est un croquis ou une forme extrudée.
 
 //Début vrai code
 use bevy::{math::primitives::Polygon, prelude::Component};
@@ -157,7 +159,7 @@ impl<T> Point<T>{
     //Création d'un nouveau point mobile selon les coordonnées
     pub fn new(nom:&str,pos:Position<T>)-> Self {
         let (x,y,z)=(pos.x,pos.y,pos.z);
-        Point{ nom:Nom(("point de".to_owned()+nom).to_string()),
+        Point{ nom:Nom(("point de ".to_owned()+nom).to_string()),
             x,y,z,etat:Fixe(false)}}
     //Modifier le nom
     fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}

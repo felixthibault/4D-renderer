@@ -1,8 +1,7 @@
 //! # Fonctions des transformations matriciels des objets.
 //! 
-//! J'ai séparé la création d'une entité en plusieurs instances d'objets qui sont des
-//! points, lignes, carrés, cubes, tesseracts. Chaque instance a sa propre structure 
-//! et l'intégration de toute les instances donne l'entité.
+//! Ici sont regroupées les transformations linéaires liées aux instances
+//!  d'entités.
 
 #[cfg(not(target_arch = "wasm32"))]
 
@@ -40,7 +39,7 @@ pub fn report_error(message:&str,code:&str){
 }
 
 
-#[warn(unconditional_recursion)]
+#[allow(unconditional_recursion)]
 pub fn unreachable(){
     type Unreachable=();
     let _x:Unreachable=unreachable();
@@ -50,11 +49,11 @@ pub fn unreachable(){
 pub fn not_implemented(){
     todo!();//This will panic
 }
-
 pub fn panik() {
     println("crash ans burn");
     panic!("crash and burn");
 }
+
 
 pub unsafe fn do_nothing(_:()) -> (){
     return ()//Fonction doit être appelé avec unsafe{do_nothing};
