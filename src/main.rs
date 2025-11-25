@@ -34,39 +34,51 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
 
     //Vérifier que le fichier JSON est présent sinon
     // en créer un avec des paramètres par défaut selon la version
-    let json: serde_json::Value=embarquation_b4d::verifier_json();
+    let json: embarquation_b4d::json_data::Configuration=embarquation_b4d::verifier_json(); // Ceci retourne la structure
+        //du fichier json. On pourra plus facilement accéder aux items et index.
+
     //Vérifier que le fichier binaire est présent sinon
     // en créer un vide selon les paramètres du fichier json
     embarquation_b4d::verifier_fichier(json);
+
     //Vérification des paramètres de l'écran    
     let (width,height):(u16,u16)=get_size(query_window);
     let _screen_size: (u16, u16)=(width,height);
     
     //Démarrage de l'interface
     print!("Démarrage de l'interface...\n Interface démarré.\n");
-//print_window_size_system(query_window);
+
     //Imprimer le débogage
-    let json_data:embarquation_b4d::Configuration=serde_json::from_slice(json.get("Configuration")
+    /*let json_data:embarquation_b4d::Configuration=serde_json::from_slice(json.get("Configuration")
         .expect("Le fichier JSON devrait avoir l'index 'Configuration' "));
     let in_progress=json.get("Debugging")
         .expect("Le fichier JSON devrait avoir l'index 'Debugging' ")
-        .to_bool();
-    println!("Débogage du système:\nTaille de l'écran=({width}, {height}),
-    \nApplication fonctionnelle: Oui,\nDémarage du renderer\n BIENVENUE AU RENDERER 3D ET 4D!!!!!");
+        .to_bool();*/
+    let in_progress=json.Debugging;
+    println!("Débogage du système:\nTaille de l'écran=({width}, {height})");
     
-    match in_progress{
+    match in_progress{ //Si le projet est toujours en construction
         true => print("CAD toujours en progrès."),
         false => print("CAD prêt à être utilisé."),
         _ => panik(),
     }
-    //Tester si on peut générer une entité simple
-    //let test1=Point::new("point 1", Position::new(1,2,3));
-    //Teste de création d'une super-rtucture (un polygone formé de lignes et de points)
-    //let test2=Polygone::create_square(4.4f32);
-    //dbg!(test1);
-    //dbg!(test2);
 
-    exit_(0x0);
+    if json.Testing{
+        print_window_size_system(query_window);
+        //Tester si on peut générer une entité simple
+        let test1=Point::new("point 1", Position::new(1,2,3));
+        //Teste de création d'une super-rtucture (un polygone formé de lignes et de points)
+        let test2=Polygone::create_square(4.4f32);
+        dbg!(test1);
+        dbg!(test2);
+        
+        //Fin des tests
+    }
+    
+
+    print("Application fonctionnelle: Oui,\nDémarage du renderer\n BIENVENUE AU RENDERER 3D ET 4D!!!!!");
+    //Lancer l'interface et afficher les premières entités visibles selon le plan de vue
+    exit_(0x0);//Pour l'instant
 }
 pub fn report_error(message:&str,code:&str){
     //Afficher fenêtre contenant une erreur mineure
@@ -99,7 +111,7 @@ fn print_window_size_system(query_window: Query<&Window, With<PrimaryWindow>>) {
 }
 
 fn exit_(code:i32){
-    print("Exiting.");
+    print("Exiting. Debug successful.");
     exit(code);
 }
 

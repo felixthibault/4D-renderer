@@ -10,8 +10,9 @@
 #![allow(unused_variables)]
 use std::{fs, io, io::ErrorKind};
 use fs::File as File;
+use serde::Deserialize;
 use serde_json::{self, Value};
-use std::io::{BufReader,Bytes};
+//use std::io::{BufReader,Bytes};
 
 
 pub fn test(){
@@ -54,19 +55,20 @@ fn create_b4d(file_name:&str)-> File {
 }
 
 pub fn verifier_json()-> serde_json::Value{
-    /*Il y a deux principales façons de déconstruire un fichier json avec Serde
+    /*Il y a trois principales façons de déconstruire un fichier json avec Serde
         1- Ouvrir le fichier avec file=File::open("Préférences.json").  
             Lire ce fichier directement avec json:serde_json::Value=serde_json::from_reader(file).
             Et ensuite on peut prendre une clé de la structure avec json.get(key).
         2- Lire le fichier en string ou en bytes avec file=fs::read_to_string("Préférences.json").
             Transformer ce fichier en type Value avec json=fs::read_to_string(file)
-            Et ensuite on peut lire une clé avec json.get(key).*/
+            Et ensuite on peut lire une clé avec json.get(key).
+        3- */
 
-    let data:File= File::open("Préférences.json").unwrap_or_else(|error|{
+    let json_file:File= File::open("Préférences.json").unwrap_or_else(|error|{
         match error.kind(){
             ErrorKind::NotFound=>{
                 //Si le fichier de préférences n'existe pas
-                print!("Fichier des paramètres non trouvé, écriture d'un nouveau 
+                println!("Fichier des paramètres non trouvé, écriture d'un nouveau 
                     à partir de la version actuelle.");
                 create_json("Préférences.json");
                 File::open("Préférences.json").unwrap()
@@ -78,7 +80,12 @@ pub fn verifier_json()-> serde_json::Value{
     print!("Fichier Préférences.json ouvert.");
     //Help: https://stackoverflow.com/questions/30292752/how-do-i-parse-a-json-file
     //Désérializer le fichier
-    serde_json::from_reader(data).expect("JSON was not well-formatted")
+    print!("Deserializing it...");
+    //Optionnel: si le json est très gros, on peut ajouter un BufReader 
+    // pour traiter un stream avec de multiples connections.
+    let data:Configuration=serde_json::from_reader(json_file).expect("JSON was not well-formatted");
+    print!("Done.");
+    data
 }
 fn create_json(file_name:&str) {
     //Aller chercher la version la plus récente de github au main. https://github.com/felixthibault/4D-renderer/blob/main/Préférences.json
@@ -104,13 +111,17 @@ fn create_json(file_name:&str) {
     //On ne peut renvoyer un type fichier puisque cela n'implémente pas Copy
 }
 
-//Désérializer le json
-#[allow(non_snake_case)]
+enum json_data{Configuration}
+//Désérializer le json en json_data
+//#[allow(non_snake_case)
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Configuration{
     Default_project_name:String,
     Preferred_default_project_name:String,
     Debugging:bool,
-    Visualisation: String,
+    Testing:bool,
+    Visualisation:String,
     Projection4DMergée:bool,
     _option_unités:String,
     Unité:String,

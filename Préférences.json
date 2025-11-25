@@ -4,6 +4,7 @@
             "Preferred_default_project_name": "Cube.b4d",
 
             "Debugging": true,
+            "Testing": false,
             "Visualisation": "Isométrique",
             "Projection4DMergée": true,
             "_option_unités": "Les valeurs possibles sont cm,mm,in,m",
