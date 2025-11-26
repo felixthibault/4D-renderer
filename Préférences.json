@@ -1,18 +1,18 @@
 {
     "Configuration": {
-            "Default_project_name": "terrain.b4d",
-            "Preferred_default_project_name": "Cube.b4d",
+            "default_project_name": "terrain.b4d",
+            "preferred_default_project_name": "Cube.b4d",
 
-            "Debugging": true,
-            "Testing": false,
-            "Visualisation": "Isométrique",
-            "Projection4DMergée": true,
+            "debugging": true,
+            "testing": false,
+            "visualisation": "Isométrique",
+            "projection4DMergée": true,
             "_option_unités": "Les valeurs possibles sont cm,mm,in,m",
-            "Unité": "cm"
+            "unité": "cm"
 
         },
         
-    "Utilisateur": "Félix T",
-    "Version": "alpha"
+    "utilisateur": "Félix T",
+    "version": "alpha"
 
 }

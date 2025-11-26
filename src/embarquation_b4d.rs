@@ -10,6 +10,7 @@
 #![allow(unused_variables)]
 use std::{fs, io, io::ErrorKind};
 use fs::File as File;
+use serde;
 use serde::Deserialize;
 use serde_json::{self, Value};
 //use std::io::{BufReader,Bytes};
@@ -20,15 +21,12 @@ pub fn test(){
     println!("Module 'embarquation_b4d' appelé, fonctionnel: Oui");
 }
 
-pub fn verifier_fichier(json:serde_json::Value)-> File{
+pub fn verifier_fichier(json:&Configuration)-> File{
     //! Vérification de l'existence du fichier b4d. 
     //! Retourner la référence du fichier pour pouvoir l'éditer
 
     //On regarde quel est le nom par défaut du fichier du CAD inscrit dans le json
-    let binding = json.get("Default_project_name")
-        .expect("Le fichier JSON devrait avoir l'index 'Default_project_name' ")
-        .to_string();
-    let default_project_name:&str= binding.as_str();
+    let default_project_name = json.default_project_name.as_str();
     //Vérifier si ce fichier existe, sinon on tombe par défaut à le créer
     let ouverture_terrain_result: File = File::open(default_project_name).unwrap_or_else(|error|
         match error.kind(){
@@ -54,7 +52,7 @@ fn create_b4d(file_name:&str)-> File {
     return fichier;
 }
 
-pub fn verifier_json()-> serde_json::Value{
+pub fn verifier_json()-> Configuration{
     /*Il y a trois principales façons de déconstruire un fichier json avec Serde
         1- Ouvrir le fichier avec file=File::open("Préférences.json").  
             Lire ce fichier directement avec json:serde_json::Value=serde_json::from_reader(file).
@@ -92,18 +90,18 @@ fn create_json(file_name:&str) {
     //let data:&str=request("https:github.com/felixthibault/4D-renderer/blob/main/Préférences.json");
     let data: serde_json::Value=serde_json::json!({
                 "Configuration": {
-                        "Default_project_name": "terrain.b4d",
-                        "Preferred_default_project_name": "Cube.b4d",
+                        "default_project_name": "terrain.b4d",
+                        "preferred_default_project_name": "Cube.b4d",
 
-                        "Debugging": true,
-                        "Visualisation": "Isométrique",
-                        "Projection4DMergée": true,
+                        "debugging": true,
+                        "visualisation": "Isométrique",
+                        "projection4DMergée": true,
                         "_option_unités": "Les valeurs possibles sont cm,mm,in,m",
-                        "Unité": "cm"
+                        "unité": "cm"
 
                     },
-                "Utilisateur": "Félix T",
-                "Version": "alpha"
+                "utilisateur": "Félix T",
+                "version": "alpha"
         });
     let json:File=File::create(file_name).expect("Problem creating the JSON file:");
     //Ça va très sûrement peut-être bugger ici en format binaire
@@ -113,23 +111,24 @@ fn create_json(file_name:&str) {
 
 enum json_data{Configuration}
 //Désérializer le json en json_data
-//#[allow(non_snake_case)
-#[derive(Debug, Deserialize)]
+#[allow(non_snake_case)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Configuration{
-    Default_project_name:String,
-    Preferred_default_project_name:String,
-    Debugging:bool,
-    Testing:bool,
-    Visualisation:String,
-    Projection4DMergée:bool,
+    //Utiliser des fonctions embarquées pour modifier ou lire les fields qui ne sont pas publiques.
+    default_project_name:String,
+    preferred_default_project_name:String,
+    pub debugging:bool,
+    pub testing:bool,
+    visualisation:String,
+    projection4DMergée:bool,
     _option_unités:String,
-    Unité:String,
+    unité:String,
 }
 
 /*Régler ce code pour l'update beta
 fn actualise_json{
-    //Se rappeler de merger les préférences actuelles avec les nouvelles
+    //Se rappeler de merger les préférences actuelles avec les nouvelles.
     let data:String= match version {
         "Scratch"=>"",//Vide, comme l'avenir de ce projet
 

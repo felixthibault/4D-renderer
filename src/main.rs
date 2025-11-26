@@ -10,9 +10,9 @@ use num_traits::Zero;
 
 //mod objets;
 mod transformations;
-mod objets;
-mod embarquation_b4d;
 
+mod embarquation_b4d;
+pub(crate) mod objets;
 use objets::*;
 use transformations::*;
 
@@ -34,12 +34,14 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
 
     //Vérifier que le fichier JSON est présent sinon
     // en créer un avec des paramètres par défaut selon la version
-    let json: embarquation_b4d::json_data::Configuration=embarquation_b4d::verifier_json(); // Ceci retourne la structure
+    let json: embarquation_b4d::Configuration=embarquation_b4d::verifier_json(); // Ceci retourne la structure
         //du fichier json. On pourra plus facilement accéder aux items et index.
 
     //Vérifier que le fichier binaire est présent sinon
     // en créer un vide selon les paramètres du fichier json
-    embarquation_b4d::verifier_fichier(json);
+    embarquation_b4d::verifier_fichier(&json);//Note à moi-même: il faut envoyer une référence de json
+    // car ce type de structure n'implémente pas Copy, donc on ne peut envoyer la valeur sans aussi 
+    // envoyer la variable au complet, et elle n'est pas retournée ensuite.
 
     //Vérification des paramètres de l'écran    
     let (width,height):(u16,u16)=get_size(query_window);
@@ -49,12 +51,7 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     print!("Démarrage de l'interface...\n Interface démarré.\n");
 
     //Imprimer le débogage
-    /*let json_data:embarquation_b4d::Configuration=serde_json::from_slice(json.get("Configuration")
-        .expect("Le fichier JSON devrait avoir l'index 'Configuration' "));
-    let in_progress=json.get("Debugging")
-        .expect("Le fichier JSON devrait avoir l'index 'Debugging' ")
-        .to_bool();*/
-    let in_progress=json.Debugging;
+    let (testing,in_progress)=(json.testing,json.debugging);
     println!("Débogage du système:\nTaille de l'écran=({width}, {height})");
     
     match in_progress{ //Si le projet est toujours en construction
@@ -63,7 +60,7 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
         _ => panik(),
     }
 
-    if json.Testing{
+    if testing{
         print_window_size_system(query_window);
         //Tester si on peut générer une entité simple
         let test1=Point::new("point 1", Position::new(1,2,3));
@@ -111,7 +108,7 @@ fn print_window_size_system(query_window: Query<&Window, With<PrimaryWindow>>) {
 }
 
 fn exit_(code:i32){
-    print("Exiting. Debug successful.");
+    print("Exiting. Debug was successful.");
     exit(code);
 }
 

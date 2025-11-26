@@ -18,11 +18,8 @@ pub fn test(){
     println!("Module 'objets' appelé, fonctionnel: Oui");
 }
 
-#[derive(Debug)]
-#[derive(Component)]
-
 //Structures d'un nom et de l'état fixe ou non d'une structure
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Nom(String);
 #[derive(Debug,Clone)]
 pub struct Fixe(bool);
@@ -57,13 +54,15 @@ pub struct Entite {
     tags:Option<Vec<String>>,// Tags associés à l'entité
     constituant:Vec<MesStructures>,//Objets contenus dans cette entité
     role:Vec<Nom>,// Type et rôles associés à l'entité
+    position: Position<T>,
+    surface: T,
     //donnees:HashMap<String, String>,// Informations sous forme de clés booléennes (Ajouter des défauts)
 }
 
 //'! Structure des objets "Points"
-#[derive(Clone)]
+#[derive(Copy, Clone, Component)]
 pub(crate) struct Point<H> {
-    pub nom:Nom,// Nom du point. Il n'y a pas de dimension inférieure dépendante du point
+    //Il n'y a pas de dimension inférieure dépendante du point
     x: H,  //Coordonnées associées au point
     y: H,
     z: H,
@@ -74,7 +73,6 @@ pub(crate) struct Point<H> {
 
 //'! Structure des objets "Lignes"
 pub struct Ligne<H>{
-    pub nom:Nom,// Nom de la ligne
     p1:Point<H>,//Intégration des points formant cette ligne
     p2:Point<H>,
     //permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
@@ -82,14 +80,12 @@ pub struct Ligne<H>{
 
 //'! Structure des objets "Polygones"
 pub struct Polygone<H>{
-    pub nom:Nom,// Nom de la figure en 2D
     constituant:Vec<Ligne<H>>,//Intégration des lignes formant ce polygone
     //permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
 }
 
 //'! Structure des objets "Polyèdres"
 pub struct Polyedre<H>{
-    pub nom:Nom,// Nom de la figure en 3D
     constituant:Vec<Polygone<H>>,//Intégration des polygones formant ce polyèdre
     //permissions:HashMap<String, bool>,// Permissions sous forme de clés booléennes
 }
@@ -157,12 +153,9 @@ impl Entite{
 
 impl<T> Point<T>{
     //Création d'un nouveau point mobile selon les coordonnées
-    pub fn new(nom:&str,pos:Position<T>)-> Self {
+    pub fn new(pos:Position<T>)-> Self {
         let (x,y,z)=(pos.x,pos.y,pos.z);
-        Point{ nom:Nom(("point de ".to_owned()+nom).to_string()),
-            x,y,z,etat:Fixe(false)}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}
+        Point{x,y,z,etat:Fixe(false)}}
     // Modifier x
     fn changer_x(&mut self, nouvelle_coordonnee: T) {self.x=nouvelle_coordonnee;}
     // Modifier y
@@ -178,9 +171,7 @@ impl<T> Point<T>{
 
 impl<H> Ligne<H>{
     //Création d'une nouvelle ligne selon les références (points, équations)
-    fn new(nom:&str, p1:Point<H>, p2:Point<H>)-> Self {Ligne{nom:Nom(nom.to_string()),p1,p2}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}
+    fn new(p1:Point<H>, p2:Point<H>)-> Self {Ligne{p1,p2}}
     //Modifier les références de points
     fn changer_constituant(&mut self, nouvelle_reference:Vec<Point<H>>) where Point<H>: Clone{
         self.p1=nouvelle_reference[0].clone();
@@ -190,9 +181,8 @@ impl<H> Ligne<H>{
 
 impl<H:Zero> Polygone<H>{
     //Création d'un nouveau polygone selon les références
-    fn new(nom:&str,constituant:Vec<Ligne<H>>,)-> Self {Polygone{nom:Nom(nom.to_string()),constituant}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}
+    fn new(constituant:Vec<Ligne<H>>,)-> Self {Polygone{constituant}}
+
     //Modifier les références de lignes
     fn ajouter_constituant(&mut self, nouvelle_référence:Ligne<H>) {self.constituant.push(nouvelle_référence);}
     fn changer_constituant(&mut self, reference:Vec<Ligne<H>>) {self.constituant=reference;}
@@ -202,23 +192,23 @@ impl<H:Zero> Polygone<H>{
 
     pub fn create_square(grosseur:H)-> Self
         where H:Neg+Copy+Neg<Output = H>, <H as Neg>::Output: Zero, Point<H>:Clone,{
-        let p1=Point::new("square", Position::new(-grosseur,-grosseur,H::zero()));
-        let p2=Point::new("square", Position::new(grosseur,-grosseur,H::zero()));
-        let p3=Point::new("square", Position::new(grosseur,grosseur,H::zero()));
-        let p4=Point::new("square", Position::new(-grosseur,grosseur,H::zero()));
-        let l1=Ligne::new("p1-p2",p1.clone(),p2.clone());
-        let l2=Ligne::new("p2-p3",p2.clone(),p3.clone());
-        let l3=Ligne::new("p3-p4",p3.clone(),p4.clone());
-        let l4=Ligne::new("p4-p1",p4.clone(),p1.clone());
-        Polygone::new("square", vec![l1,l2,l3,l4])
+        let p1=Point::new(Position::new(-grosseur,-grosseur,H::zero()));
+        let p2=Point::new(Position::new(grosseur,-grosseur,H::zero()));
+        let p3=Point::new(Position::new(grosseur,grosseur,H::zero()));
+        let p4=Point::new(Position::new(-grosseur,grosseur,H::zero()));
+        let l1=Ligne::new(p1.clone(),p2.clone());
+        let l2=Ligne::new(p2.clone(),p3.clone());
+        let l3=Ligne::new(p3.clone(),p4.clone());
+        let l4=Ligne::new(p4.clone(),p1.clone());
+        Polygone::new(vec![l1,l2,l3,l4])
+        //Par contre, si on veut que ce carré soit visible, il doit être
+        //contenu dans une entité d'esquisse.
     }
 }
 
 impl<H> Polyedre<H>{
     //Création d'un nouveau polyèdre selon les références
-    fn new(nom: &str,constituant:Vec<Polygone<H>>,)-> Self {Polyedre{nom:Nom(nom.to_string()),constituant,}}
-    //Modifier le nom
-    fn changer_nom(&mut self, nom:&str) {self.nom=Nom(nom.to_string());}
+    fn new(constituant:Vec<Polygone<H>>,)-> Self {Polyedre{constituant,}}
     //Modifier les références de polygones
     fn ajouter_constituant(&mut self, nouvelle_référence:Polygone<H>) {self.constituant.push(nouvelle_référence);}
     fn changer_constituant(&mut self, reference:Vec<Polygone<H>>) {self.constituant=reference;}
@@ -242,12 +232,18 @@ impl fmt::Display for Entite{
     }
 }
 
+impl<T:fmt::Debug> fmt::Debug for Enttie{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        //Débogue le nom, la position approximative, le volume ou l'aire 
+        //et les constituants de l'entité d'esquisse
+        f.debug_struct("Entité=")
+                .field("nom", &self.nom)
+
 impl<T:fmt::Debug> fmt::Debug for Point<T>{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         //Imprime la position et le nom du point
         //Permet de faire dbg!(point);
         f.debug_struct("Point=")
-                .field("nom", &self.nom)
                 .field("x", &self.x)
                 .field("y", &self.y)
                 .field("z", &self.z)
