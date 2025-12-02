@@ -21,23 +21,24 @@ pub fn test(){
 //Structures d'un nom et de l'état fixe ou non d'une structure
 #[derive(Clone, Debug)]
 pub struct Nom(String);
-#[derive(Debug,Clone)]
+
+#[derive(Debug, Copy, Clone)]
 pub struct Fixe(bool);
 
-#[derive(Debug)]
-#[derive(Component)]
+#[derive(Debug, Component)]
 pub enum MesStructures{
-    Entite, //Structure globale, rien n'est plus grand
+    Entite, //Structure globale, rien n'est plus large
     Point, //Structure la plus petite, constituant de base des autres
     Ligne, //Structure nécessitant deux Points pour être créée
     Polygone, //Structure ayant besoin de ligne ou de points pour se créer. 
             //L'algorithme des lignes dans une matrice et d'une matrice d'ordre 
             //ou de points détermine comment elle est générée 
-    Polyedre //Structure 3D alternative du Polygone.
+    Polyedre, //Structure 3D alternative du Polygone.
              //Elle nécessite une matrice d'ordre et de Polygones pour être générée.
+    Croquis, //Plan 2D permettant de positionner des structures 2D à extruder.
 }
 
-#[derive(Debug,Component)]
+#[derive(Debug, Copy, Clone, Component)]
 pub struct Position<T>{
     //Tuple d'une position 3D d'un point. Cela permet, comme dans desmos, de faire (p1.x,p1.y,p1.z)
     x:T,
@@ -46,18 +47,7 @@ pub struct Position<T>{
 }
 
 
-//'! Structure générale des entités
-pub struct Entite {
-    //Une entité peut être un sketch ou croquis regroupant plusieurs objets, tels que des points, lignes ou polygones
-    //ou bien l'extrusion 3D de ce croquis.
-    pub nom:Nom,// Nom de l'entité
-    tags:Option<Vec<String>>,// Tags associés à l'entité
-    constituant:Vec<MesStructures>,//Objets contenus dans cette entité
-    role:Vec<Nom>,// Type et rôles associés à l'entité
-    position: Position<T>,
-    surface: T,
-    //donnees:HashMap<String, String>,// Informations sous forme de clés booléennes (Ajouter des défauts)
-}
+//'! Structure générale des objets dimensionnels
 
 //'! Structure des objets "Points"
 #[derive(Copy, Clone, Component)]
@@ -92,9 +82,19 @@ pub struct Polyedre<H>{
 
 pub struct Plan<T>(T);
 pub struct Vecteur<T>(T,T,T);
+pub struct Entite<H>{
+    //Une entité peut être un sketch ou croquis regroupant plusieurs objets, tels que des points, lignes ou polygones
+    //ou bien l'extrusion 3D de ce croquis.
+    pub nom:Nom,// Nom de l'entité
+    tags:Option<Vec<String>>,// Tags associés à l'entité
+    constituant:Vec<MesStructures>,//Objets contenus dans cette entité
+    position: Position<H>,
+    surface: Vecteur<H>, //Le volume en prisme l'entité
+    //donnees:HashMap<String, String>,// Informations sous forme de clés booléennes (Ajouter des défauts)
+}
 pub struct Croquis<T>{
     origine: Position<T>,
-    normale: Position<T>,
+    normale: Vecteur<T>, //L'équation de la normale est égale à sa surface rectangulaire (aire du plan)
     equation:  Plan<T>, //Équation d'un plan Ax+By+Cz+D=0
     //Un croquis est un plan où les instances d'objets peuvent être placés pour une construction
     //Par la définition 3D, il est défini par un point d'origine, son vecteur directeur et 
@@ -114,13 +114,14 @@ impl<T:Zero> Position<T>{
 
 }
 
-impl Entite{
+impl<H:Zero> Entite<H>{
     //Création d'une nouvelle entité si les références concordent
-    fn new(nom:&str)-> Self {
+    fn new(nom:&str, constituants:Vec<MesStructures>)-> Self {
         Entite{nom:Nom(nom.to_string()),
                 tags:None,
-                constituant: vec![MesStructures::Point],
-                role: vec![Nom("point".to_string())]
+                constituant: constituants,
+                position: Position::new(0,0,0),//Chercher le centre des constituants
+                surface: Vecteur::null(), //Chercher plus tard le volume total occupé par les constituants
             }
     }
     //Modifier le nom
@@ -133,9 +134,6 @@ impl Entite{
         //On extrait des tags vides ou pleines leur référence mutable et on pousse un  nouvel élément.
         }
     }
-    //Modifier les rôles
-    fn changer_roles(&mut self, role:Vec<Nom>) {self.role=role;}
-    fn ajouter_roles(&mut self, role:&str) {self.role.push(Nom(role.to_string()));}
     //Modifier les données
     //fn changer_donnees(&mut self, donnees:HashMap<String,String>) {self.donnees=donnees;}
     //fn ajouter_donnees(&mut self, clés:&str, donnée:&str) {self.donnees.insert(clés.to_string(),donnée.to_string());}
@@ -145,15 +143,14 @@ impl Entite{
         println!("  Nom: {:?}", self.nom);
         println!("  Tags: {:?}", self.tags);
         println!("  Constituants: {:?}", self.constituant);
-        println!("  Rôles: {:?}", self.role);
         //println!("  Données: {:?}", self.donnees);
         println!("}}");
     }
 }
 
-impl<T> Point<T>{
+impl<H> Point<H>{
     //Création d'un nouveau point mobile selon les coordonnées
-    pub fn new(pos:Position<T>)-> Self {
+    pub fn new(pos:Position<H>)-> Self {
         let (x,y,z)=(pos.x,pos.y,pos.z);
         Point{x,y,z,etat:Fixe(false)}}
     // Modifier x
@@ -217,6 +214,11 @@ impl<H> Polyedre<H>{
     //fn changer_permission(&mut self, permission: HashMap<String, bool>) {self.permissions=permission;}
 }
 
+impl<H:Zero> Vecteur<H>{
+    fn null()-> Self{
+        Vecteur(H::zero(),H::zero(),H::zero())
+    }
+}
 //Implémentation de débogage des structures
 
 impl fmt::Display for Nom{
@@ -228,16 +230,21 @@ impl fmt::Display for Nom{
 
 impl fmt::Display for Entite{
     fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result{
-        write!(f, "Entite: {:?}", self.nom)
+        write!(f, "{}",self)
     }
 }
 
-impl<T:fmt::Debug> fmt::Debug for Enttie{
+impl fmt::Debug for Entite{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         //Débogue le nom, la position approximative, le volume ou l'aire 
         //et les constituants de l'entité d'esquisse
         f.debug_struct("Entité=")
                 .field("nom", &self.nom)
+                .field("tags", &self.tags)
+                .field("constituants", &self.constituant)
+                .finish()
+    }
+}
 
 impl<T:fmt::Debug> fmt::Debug for Point<T>{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -258,7 +265,6 @@ impl<H:fmt::Debug> fmt::Debug for Ligne<H>{
         //Imprime les constituants et le nom de la ligne
         //Permet de faire dbg!(ligne);
         f.debug_struct("Ligne=")
-                .field("nom", &self.nom)
                 .field("point 1", &self.p1)
                 .field("point 2", &self.p2)
                 .finish()
@@ -270,7 +276,6 @@ impl<H:fmt::Debug> fmt::Debug for Polygone<H>{
         //Imprime les constituants et le nom du polygone
         //Permet de faire dbg!(polygone);
         f.debug_struct("Polygone=")
-                .field("nom", &self.nom)
                 .field("constituants", &self.constituant)
                 .finish()
     }
@@ -281,7 +286,6 @@ impl<H:fmt::Debug> fmt::Debug for Polyedre<H>{
         //Imprime les constituants et le nom du polyèdre
         //Permet de faire dbg!(polyedre);
         f.debug_struct("Polyèdre=")
-                .field("nom", &self.nom)
                 .field("constituants", &self.constituant)
                 .finish()
     }

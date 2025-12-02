@@ -12,8 +12,8 @@ use num_traits::Zero;
 mod transformations;
 
 mod embarquation_b4d;
-pub(crate) mod objets;
-use objets::*;
+pub(crate) mod Objets;
+use Objets::*;
 use transformations::*;
 
 fn main() {
@@ -28,7 +28,7 @@ fn main() {
 }
 
 fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
-    objets::test();
+    Objets::test();
     transformations::test();
     embarquation_b4d::test();
 
@@ -63,7 +63,7 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     if testing{
         print_window_size_system(query_window);
         //Tester si on peut générer une entité simple
-        let test1=Point::new("point 1", Position::new(1,2,3));
+        let test1=Point::new(Position::new(1,2,3));
         //Teste de création d'une super-rtucture (un polygone formé de lignes et de points)
         let test2=Polygone::create_square(4.4f32);
         dbg!(test1);
