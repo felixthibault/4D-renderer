@@ -1,5 +1,8 @@
 {
-    "Configuration": {
+    "utilisateur": "Félix T",
+    "version": "alpha",
+
+    "mathing": {
             "default_project_name": "terrain.b4d",
             "preferred_default_project_name": "Cube.b4d",
 
@@ -8,11 +11,15 @@
             "visualisation": "Isométrique",
             "projection4DMergée": true,
             "_option_unités": "Les valeurs possibles sont cm,mm,in,m",
-            "unité": "cm"
-
+            "unité": "cm",
+            "anaglyphe": false
         },
-        
-    "utilisateur": "Félix T",
-    "version": "alpha"
+    "interface": {
+            "liste_entite_width": 0.6,
+            
+            "zoom": 150,
+            "thème": "Sombre",
+            "choix_de_thèmes": ["Sombre","Clair","Breeze", "Oxygen"]
 
+    }
 }

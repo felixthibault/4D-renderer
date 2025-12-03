@@ -12,25 +12,29 @@ use num_traits::Zero;
 mod transformations;
 
 mod embarquation_b4d;
-pub(crate) mod Objets;
-use Objets::*;
+pub(crate) mod objets;
+use objets::*;
 use transformations::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        //.add_systems(FixedUpdate, (update_objects, greet_objects))
         .add_systems(Startup, setup)
+        //.add_systems(FixedUpdate, (update_liste, update_cad ))
         .run();
     exit(0x0);
     
 
 }
 
+//-----Systems--------
+
 fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
-    Objets::test();
+    //Setuper la fonctionnalité du système
+    objets::test();
     transformations::test();
     embarquation_b4d::test();
+    winsdl::test();
 
     //Vérifier que le fichier JSON est présent sinon
     // en créer un avec des paramètres par défaut selon la version
@@ -51,7 +55,7 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     print!("Démarrage de l'interface...\n Interface démarré.\n");
 
     //Imprimer le débogage
-    let (testing,in_progress)=(json.testing,json.debugging);
+    let (testing,in_progress)=(json.mathing.testing,json.mathing.debugging);
     println!("Débogage du système:\nTaille de l'écran=({width}, {height})");
     
     match in_progress{ //Si le projet est toujours en construction
@@ -74,13 +78,12 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     
 
     print("Application fonctionnelle: Oui,\nDémarage du renderer\n BIENVENUE AU RENDERER 3D ET 4D!!!!!");
-    //Lancer l'interface et afficher les premières entités visibles selon le plan de vue
+    //Lancer l'interface avec le module winsdl et afficher les premières entités visibles selon le plan de vue
+
+    //Chercher une bonne configuration -> Prendre les nombres du fichier de settings
+
+
     exit_(0x0);//Pour l'instant
-}
-pub fn report_error(message:&str,code:&str){
-    //Afficher fenêtre contenant une erreur mineure
-    //Pour l'instant:
-    println!("{} {}.",message,code);
 }
 
 fn get_size<R:From<u16>+Zero>(query_window: Query<&Window, With<PrimaryWindow>>)->(R,R){
@@ -112,11 +115,46 @@ fn exit_(code:i32){
     exit(code);
 }
 
-fn update_objects(_:MesStructures){
+fn update_objects(_:){
     unsafe{do_nothing(())};
 }
 
-fn greet_objects(_:MesStructures){
+fn greet_objects(_:){
     unsafe{do_nothing(())};
 }
 
+fn hello_world() {
+    println!("hello world!");
+}
+
+fn println(msg:&str){
+    println!("{}",msg);
+    //Exemple d'utilisation:
+    //print("Oh my glob!");
+    //=> Oh my glob!
+    //=>
+}
+fn print(msg:&str){
+    print!("{}",msg);
+    //Exemple d'utilisation:
+    //print("Oh my glob!");
+    //=> Oh my glob!
+}
+pub fn report_error(message:&str,code:&str){
+    //Afficher fenêtre contenant une erreur mineure
+    //Pour l'instant:
+    println!("{} {}.",message,code);
+}
+#[allow(unconditional_recursion)]
+pub fn unreachable(){
+    type Unreachable=();
+    let _x:Unreachable=unreachable();
+    unreachable!()//Ceci n'est pas ateignable
+}
+pub fn not_implemented(){
+    todo!();//This will panic
+}
+pub fn panik() {
+    println("crash ans burn");
+    panic!("crash and burn");
+}

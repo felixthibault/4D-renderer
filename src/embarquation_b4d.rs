@@ -2,7 +2,7 @@
 //! 
 //! Ce fichier gère la lecture et l'écriture des éléments contenus dans 
 //! le fichier binaire .b4d, que ce soit des entités dimensionnelles ou 
-//! des plans, croquis, assemblages.
+//! des plans, croquis, assemblages. Il désérialize aussi le fichier JSON.
 //! Pour l'instant, le fichier JSON doit s'appeler Préférences, dans une version
 //! ultérieure, il pourrait s'appeler autrement ou être rennomable.
 
@@ -26,7 +26,7 @@ pub fn verifier_fichier(json:&Configuration)-> File{
     //! Retourner la référence du fichier pour pouvoir l'éditer
 
     //On regarde quel est le nom par défaut du fichier du CAD inscrit dans le json
-    let default_project_name = json.default_project_name.as_str();
+    let default_project_name = json.mathing.default_project_name.as_str();
     //Vérifier si ce fichier existe, sinon on tombe par défaut à le créer
     let ouverture_terrain_result: File = File::open(default_project_name).unwrap_or_else(|error|
         match error.kind(){
@@ -59,8 +59,8 @@ pub fn verifier_json()-> Configuration{
             Et ensuite on peut prendre une clé de la structure avec json.get(key).
         2- Lire le fichier en string ou en bytes avec file=fs::read_to_string("Préférences.json").
             Transformer ce fichier en type Value avec json=fs::read_to_string(file)
-            Et ensuite on peut lire une clé avec json.get(key).
-        3- */
+        3- Et ensuite on peut lire une clé avec json.get(key).*/
+         
 
     let json_file:File= File::open("Préférences.json").unwrap_or_else(|error|{
         match error.kind(){
@@ -87,9 +87,11 @@ pub fn verifier_json()-> Configuration{
 }
 fn create_json(file_name:&str) {
     //Aller chercher la version la plus récente de github au main. https://github.com/felixthibault/4D-renderer/blob/main/Préférences.json
-    //let data:&str=request("https:github.com/felixthibault/4D-renderer/blob/main/Préférences.json");
+    //let data: serde_json::Value=request("https:github.com/felixthibault/4D-renderer/blob/main/Préférences.json");
     let data: serde_json::Value=serde_json::json!({
-                "Configuration": {
+                    "utilisateur": "Félix T",
+                    "version": "alpha",
+                    "mathing": {
                         "default_project_name": "terrain.b4d",
                         "preferred_default_project_name": "Cube.b4d",
 
@@ -97,11 +99,17 @@ fn create_json(file_name:&str) {
                         "visualisation": "Isométrique",
                         "projection4DMergée": true,
                         "_option_unités": "Les valeurs possibles sont cm,mm,in,m",
-                        "unité": "cm"
-
+                        "unité": "cm",
                     },
-                "utilisateur": "Félix T",
-                "version": "alpha"
+
+                    "interface": {
+                        "liste_entite_width": 0.6,
+                        
+                        "zoom": 150,
+                        "thème": "Sombre",
+                        "choix_de_thèmes": ["Sombre","Clair","Breeze", "Oxygen"]
+
+                    }
         });
     let json:File=File::create(file_name).expect("Problem creating the JSON file:");
     //Ça va très sûrement peut-être bugger ici en format binaire
@@ -114,7 +122,8 @@ enum json_data{Configuration}
 #[allow(non_snake_case)]
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Configuration{
+
+struct Mathing{
     //Utiliser des fonctions embarquées pour modifier ou lire les fields qui ne sont pas publiques.
     default_project_name:String,
     preferred_default_project_name:String,
@@ -124,6 +133,19 @@ pub struct Configuration{
     projection4DMergée:bool,
     _option_unités:String,
     unité:String,
+}
+struct Interface{
+    liste_entite_width: f32,
+
+    zoom: u8,
+    thème: String,
+    choix_de_thèmes: Vec<String>,
+}
+pub struct Configuration{
+    utilisateur: String,
+    version: String,
+    mathing: Mathing,
+    interface: Interface,
 }
 
 /*Régler ce code pour l'update beta

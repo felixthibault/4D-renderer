@@ -12,48 +12,12 @@ use Option::Some;
 use num_traits::{ToPrimitive,Zero,pow};
     
 
-
 pub fn test(){
     //Si le test fonctionne, c'est que la fonction est bien appelée.
     println("Module 'transformation' appelé, fonctionnel: Oui");
 }
 
 //Fonctions pour aider la production
-pub fn println(msg:&str){
-    println!("{}",msg);
-    //Exemple d'utilisation:
-    //print("Oh my glob!");
-    //=> Oh my glob!
-    //=>
-}
-pub fn print(msg:&str){
-    print!("{}",msg);
-    //Exemple d'utilisation:
-    //print("Oh my glob!");
-    //=> Oh my glob!
-}
-pub fn report_error(message:&str,code:&str){
-    //Afficher fenêtre contenant une erreur mineure
-    //Pour l'instant:
-    println!("{} {}.",message,code);
-}
-
-
-#[allow(unconditional_recursion)]
-pub fn unreachable(){
-    type Unreachable=();
-    let _x:Unreachable=unreachable();
-    unreachable!()//Ceci n'est pas ateignable
-}
-
-pub fn not_implemented(){
-    todo!();//This will panic
-}
-pub fn panik() {
-    println("crash ans burn");
-    panic!("crash and burn");
-}
-
 
 pub unsafe fn do_nothing(_:()) -> (){
     return ()//Fonction doit être appelé avec unsafe{do_nothing};
@@ -126,21 +90,6 @@ pub mod convert{
 
 
 //Fin des fonctions
-
-/*
-fn dereferencer(reference:String)->Option<Vec<String>>{
-    //Méthode pour déférencer les entités depuis les références du fichier binaire séparés par des virgules.
-    //Crée des structures temporaires de toutes les références
-    //Retourner une liste avec l'instance nommée des sous-structures (comment?: le faire en boucle, vérifier que les structures ne sont pas effacées lors de la boucle)
-    /*Autre idée pour simplifier les coordonnées: représenter les entités déférencées temporairement avec 4 matrices, soit une matrice de sommets (4 lignes de hauteur par x points de long),
-      une matrice d'arêtes (chaque ligne représente une arrête et comporte 4 éléments: 2 premières colonnes= référence ou numéro des sommets, les x autres= les références ou numéro des faces
-      contenant cette arête), une matrice de faces (chaque ligne représente une face et comporte naturellement 2 colonnes= référence ou numéro des polyèdres contenant cette face), finalement
-      une matrice de polyèdres (chaque ligne représente un polyèdre et comporte x colonnes= référence ou numéro des polychores contenant ce polyèdre). Le reste des données modifiées pourrait
-      être généré d'une autre façon (laquelle?) ou avec des références comme plus haut.
-    */
-    return SousStructures
-}
-*/
 
 /* 
 pub mod  Matrix{

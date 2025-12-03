@@ -7,7 +7,7 @@
 //! ce qu'on appelle une entité. À ne pas mélanger avec la structure Entite qui, elle 
 //! est un croquis ou une forme extrudée.
 
-//Début vrai code
+
 use bevy::{math::primitives::Polygon, prelude::Component};
 use std::{fmt,ops::Neg};
 use num_traits::Zero;
@@ -18,6 +18,7 @@ pub fn test(){
     println!("Module 'objets' appelé, fonctionnel: Oui");
 }
 
+//-----Entities--------
 //Structures d'un nom et de l'état fixe ou non d'une structure
 #[derive(Clone, Debug)]
 pub struct Nom(String);
@@ -93,6 +94,7 @@ pub struct Entite<H>{
     //donnees:HashMap<String, String>,// Informations sous forme de clés booléennes (Ajouter des défauts)
 }
 pub struct Croquis<T>{
+    pub nom: Nom, //Nom du croquis, exemple Sketch1.
     origine: Position<T>,
     normale: Vecteur<T>, //L'équation de la normale est égale à sa surface rectangulaire (aire du plan)
     equation:  Plan<T>, //Équation d'un plan Ax+By+Cz+D=0
@@ -110,6 +112,9 @@ impl<T:Zero> Position<T>{
     }
     fn null()->Self{
         Position{x:T::zero(),y:T::zero(),z:T::zero()}
+    }
+    fn from_vecteur<T>(v:Vecteur<T>)->Self{
+        Position{v.1,v.2,v.3}
     }
 
 }
