@@ -14,14 +14,11 @@ use num_traits::{ToPrimitive,Zero,pow};
 
 pub fn test(){
     //Si le test fonctionne, c'est que la fonction est bien appelée.
-    println("Module 'transformation' appelé, fonctionnel: Oui");
+    println!("Module 'transformation' appelé, fonctionnel: Oui");
 }
 
 //Fonctions pour aider la production
 
-pub unsafe fn do_nothing(_:()) -> (){
-    return ()//Fonction doit être appelé avec unsafe{do_nothing};
-}
 
 pub fn is_float<S>(x:S)->bool   where S:Into<f64> + Copy, f64: From<S>, {
     //Méthodes de vérification si generic.type ==float or integer. Prend des integers ou floats en paramètres.

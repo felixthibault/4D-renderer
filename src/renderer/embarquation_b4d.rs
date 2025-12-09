@@ -117,7 +117,7 @@ fn create_json(file_name:&str) {
     //On ne peut renvoyer un type fichier puisque cela n'implémente pas Copy
 }
 
-enum json_data{Configuration}
+enum JsonData{Configuration}
 //Désérializer le json en json_data
 #[allow(non_snake_case)]
 #[derive(Debug, Deserialize, Clone)]
@@ -144,7 +144,7 @@ struct Interface{
 pub struct Configuration{
     utilisateur: String,
     version: String,
-    mathing: Mathing,
+    pub mathing: Mathing,
     interface: Interface,
 }
 

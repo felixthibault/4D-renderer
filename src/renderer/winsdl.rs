@@ -13,3 +13,4 @@ pub fn test(){
     println!("Module 'winsdl' appelé, fonctionnel: Oui");
 }
 
+//Faire des recherches sur Tauri comme GUI. 

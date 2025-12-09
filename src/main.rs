@@ -2,39 +2,47 @@
 //use bevy::render::{renderer::RenderAdapter, RenderDebugFlags};
 //#[cfg(not(target_arch = "wasm32"))]
 #![allow(unused)]
-use bevy::{prelude::{Startup, App, DefaultPlugins, FixedUpdate, Component, Window, Query, With, Commands},
-             window::PrimaryWindow};
 
-use std::process::exit;
-use num_traits::Zero;
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 
-//mod objets;
-mod transformations;
+mod renderer;
+mod main_menu;
+mod num_core;
+mod systems;
 
-mod embarquation_b4d;
-pub(crate) mod objets;
-use objets::*;
-use transformations::*;
+use systems::*;
+use crate::renderer::{embarquation_b4d, transformations, objets::*, winsdl};
+use main_menu::MainMenuPlugin;
+use renderer::RendererPlugin;
 
 fn main() {
     App::new()
+        // Bevy Plugins
         .add_plugins(DefaultPlugins)
+        .init_state::<AppState>()
+        // My Plugins
+        .add_plugins(MainMenuPlugin)
+        .add_plugins(RendererPlugin)
+        // Startup Systems
+        //.add_startup_system(spawn_camera)
         .add_systems(Startup, setup)
-        //.add_systems(FixedUpdate, (update_liste, update_cad ))
+        // Systems
+        .add_systems(transition_to_cad_state)
+        .add_systems(transition_to_main_menu_state)
+        .add_systems(exit_cad)
+        //.add_systems(FixedUpdate, (update_liste, update_cad )
         .run();
-    exit(0x0);
-    
-
 }
 
 //-----Systems--------
 
 fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     //Setuper la fonctionnalité du système
-    objets::test();
-    transformations::test();
-    embarquation_b4d::test();
-    winsdl::test();
+    renderer::test();
+    num_core::test();
+    main_menu::test();
+    systems::test();
 
     //Vérifier que le fichier JSON est présent sinon
     // en créer un avec des paramètres par défaut selon la version
@@ -86,34 +94,6 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     exit_(0x0);//Pour l'instant
 }
 
-fn get_size<R:From<u16>+Zero>(query_window: Query<&Window, With<PrimaryWindow>>)->(R,R){
-    if let Ok(window)=query_window.single(){
-        let x = window.physical_width();
-        let y = window.physical_height();
-        ((x as u16).into(),(y as u16).into())
-    }
-    else{(R::zero(),R::zero())}
-}
-
-fn print_window_size_system(query_window: Query<&Window, With<PrimaryWindow>>) {
-    //Généré par AI de google search
-    if let Ok(window) = query_window.single() {
-        let physical_width = window.physical_width();
-        let physical_height = window.physical_height();
-        let logical_width = window.resolution.width();
-        let logical_height = window.resolution.height();
-        let scale_factor = window.resolution.scale_factor();
-
-        println!("Physical Window Size: {}x{}", physical_width, physical_height);
-        println!("Logical Window Size: {}x{}", logical_width, logical_height);
-        println!("Scale Factor: {}", scale_factor);
-    }
-}
-
-fn exit_(code:i32){
-    print("Exiting. Debug was successful.");
-    exit(code);
-}
 
 fn update_objects(_:){
     unsafe{do_nothing(())};
@@ -123,38 +103,10 @@ fn greet_objects(_:){
     unsafe{do_nothing(())};
 }
 
-fn hello_world() {
-    println!("hello world!");
-}
-
-fn println(msg:&str){
-    println!("{}",msg);
-    //Exemple d'utilisation:
-    //print("Oh my glob!");
-    //=> Oh my glob!
-    //=>
-}
-fn print(msg:&str){
-    print!("{}",msg);
-    //Exemple d'utilisation:
-    //print("Oh my glob!");
-    //=> Oh my glob!
-}
-pub fn report_error(message:&str,code:&str){
-    //Afficher fenêtre contenant une erreur mineure
-    //Pour l'instant:
-    println!("{} {}.",message,code);
-}
-#[allow(unconditional_recursion)]
-pub fn unreachable(){
-    type Unreachable=();
-    let _x:Unreachable=unreachable();
-    unreachable!()//Ceci n'est pas ateignable
-}
-pub fn not_implemented(){
-    todo!();//This will panic
-}
-pub fn panik() {
-    println("crash ans burn");
-    panic!("crash and burn");
+#[derive(States, Clone, PartialEq, Eq, Hash, Debug, Default)]
+pub enum AppState {
+    #[default]
+    MainMenu,
+    Cad,
+    //GameOver, //Voir ce que je pourrais mettre à la place
 }

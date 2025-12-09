@@ -113,8 +113,8 @@ impl<T:Zero> Position<T>{
     fn null()->Self{
         Position{x:T::zero(),y:T::zero(),z:T::zero()}
     }
-    fn from_vecteur<T>(v:Vecteur<T>)->Self{
-        Position{v.1,v.2,v.3}
+    fn from_vecteur(v:Vecteur<T>)->Self{
+        Position{x:v.0,y:v.1,z:v.2}
     }
 
 }
