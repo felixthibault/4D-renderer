@@ -1,10 +1,12 @@
 //Inspiration de certains systèmes par https://github.com/frederickjjoubert/bevy-ball-game/blob/Episode-10/src/systems.rs
-//dans la vidéo Learn Bevy 0.10 - EP10 - Bevy UI
+//dans la vidéo Learn Bevy 0.10 - EP10 - Bevy UI : 
+
+//Référence pour le clavier: https://bevy-cheatbook.github.io/input/keyboard.html
 use bevy::{prelude::*, window::PrimaryWindow, app::AppExit};
 
 use std::process::exit;
 use num_traits::Zero;
-
+use crate::AppState;
 
 pub fn test(){
     //Si le test fonctionne, c'est que la fonction est bien appelée.
@@ -71,6 +73,10 @@ pub fn report_error(message:&str,code:&str){
     println!("{} {}.",message,code);
 }
 
+fn get_a_job(){
+    unsafe{do_nothing(())};
+}
+
 #[allow(unconditional_recursion)]
 pub fn unreachable(){
     type Unreachable=();
@@ -83,4 +89,29 @@ pub fn not_implemented(){
 pub fn panik() {
     println("crash ans burn");
     panic!("crash and burn");
+}
+
+//Systèmes de transition
+
+pub fn transition_to_cad_state(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    app_state: Res<State<AppState>>,
+    mut app_state_next_state: ResMut<NextState<AppState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::G) {
+        if app_state.0 != AppState::Cad {
+            app_state_next_state.set(AppState::Cad);
+            println!("Entered AppState::Cad");
+        }
+    }
+}
+
+pub fn transition_to_main_menu_state(
+    app_state: Res<State<AppState>>,
+    mut app_state_next_state: ResMut<NextState<AppState>>,
+) {
+    if app_state.0 != AppState::MainMenu {
+        app_state_next_state.set(AppState::MainMenu);
+        println!("Entered AppState::MainMenu");
+    }
 }

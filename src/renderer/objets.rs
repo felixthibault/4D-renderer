@@ -142,15 +142,6 @@ impl<H:Zero> Entite<H>{
     //Modifier les données
     //fn changer_donnees(&mut self, donnees:HashMap<String,String>) {self.donnees=donnees;}
     //fn ajouter_donnees(&mut self, clés:&str, donnée:&str) {self.donnees.insert(clés.to_string(),donnée.to_string());}
-    // Afficher les détails de l'objet
-    pub fn afficher(&self) {
-        println!("Entité {{");
-        println!("  Nom: {:?}", self.nom);
-        println!("  Tags: {:?}", self.tags);
-        println!("  Constituants: {:?}", self.constituant);
-        //println!("  Données: {:?}", self.donnees);
-        println!("}}");
-    }
 }
 
 impl<H> Point<H>{
@@ -159,13 +150,13 @@ impl<H> Point<H>{
         let (x,y,z)=(pos.x,pos.y,pos.z);
         Point{x,y,z,etat:Fixe(false)}}
     // Modifier x
-    fn changer_x(&mut self, nouvelle_coordonnee: T) {self.x=nouvelle_coordonnee;}
+    fn changer_x(&mut self, nouvelle_coordonnee: H) {self.x=nouvelle_coordonnee;}
     // Modifier y
-    fn changer_y(&mut self, nouvelle_coordonnee: T) {self.y=nouvelle_coordonnee;}
+    fn changer_y(&mut self, nouvelle_coordonnee: H) {self.y=nouvelle_coordonnee;}
     // Modifier z
-    fn changer_z(&mut self, nouvelle_coordonnee: T) {self.z=nouvelle_coordonnee;}
+    fn changer_z(&mut self, nouvelle_coordonnee: H) {self.z=nouvelle_coordonnee;}
     // Modifier w
-    //fn changer_w(&mut self, nouvelle_coordonnee: T) {self.w=nouvelle_coordonnee;}
+    //fn changer_w(&mut self, nouvelle_coordonnee: H) {self.w=nouvelle_coordonnee;}
     
     //Modifier l'état fixe
     fn fixer(&mut self, fixe:bool){self.etat=Fixe(fixe);}
@@ -247,6 +238,8 @@ impl fmt::Debug for Entite{
                 .field("nom", &self.nom)
                 .field("tags", &self.tags)
                 .field("constituants", &self.constituant)
+                .field("position", &self.position)
+                .field("surface", &self.surface)
                 .finish()
     }
 }

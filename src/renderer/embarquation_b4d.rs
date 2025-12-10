@@ -187,6 +187,3 @@ fn wrapper<R>(byte:Wrapper<R>)->Vec<Wrapper>{
 //Allouer de l'espace dans le fichier avant qu'un objet soit complètement prêt à être écrit. Simuler l'écriture des entités.
 //https:docs.rs/serde_bytes_wrapper/latest/serde_bytes_wrapper/struct.Bytes.html
 */
-pub fn panik() {
-    panic!("crash and burn");
-}

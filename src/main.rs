@@ -1,6 +1,4 @@
-
-//use bevy::render::{renderer::RenderAdapter, RenderDebugFlags};
-//#[cfg(not(target_arch = "wasm32"))]
+//! #Main de l'application gérant le démarrage
 #![allow(unused)]
 
 use bevy::prelude::*;
@@ -16,6 +14,7 @@ use crate::renderer::{embarquation_b4d, transformations, objets::*, winsdl};
 use main_menu::MainMenuPlugin;
 use renderer::RendererPlugin;
 
+//#[cfg(not(target_arch = "wasm32"))]
 fn main() {
     App::new()
         // Bevy Plugins
@@ -86,21 +85,9 @@ fn setup(query_window: Query<&Window, With<PrimaryWindow>>){
     
 
     print("Application fonctionnelle: Oui,\nDémarage du renderer\n BIENVENUE AU RENDERER 3D ET 4D!!!!!");
+    //Lancer le main_menu
     //Lancer l'interface avec le module winsdl et afficher les premières entités visibles selon le plan de vue
-
     //Chercher une bonne configuration -> Prendre les nombres du fichier de settings
-
-
-    exit_(0x0);//Pour l'instant
-}
-
-
-fn update_objects(_:){
-    unsafe{do_nothing(())};
-}
-
-fn greet_objects(_:){
-    unsafe{do_nothing(())};
 }
 
 #[derive(States, Clone, PartialEq, Eq, Hash, Debug, Default)]
