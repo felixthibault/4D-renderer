@@ -12,5 +12,5 @@ pub fn test(){
     embarquation_b4d::test();
     winsdl::test();
 }
-
+#[derive(Plugins)]
 pub struct RendererPlugin;

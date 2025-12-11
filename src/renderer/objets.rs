@@ -82,6 +82,7 @@ pub struct Polyedre<H>{
 }
 
 pub struct Plan<T>(T);
+#[derive(Debug)]
 pub struct Vecteur<T>(T,T,T);
 pub struct Entite<H>{
     //Une entité peut être un sketch ou croquis regroupant plusieurs objets, tels que des points, lignes ou polygones
@@ -224,7 +225,7 @@ impl fmt::Display for Nom{
 }
 
 
-impl fmt::Display for Entite{
+impl<H:fmt::Display> fmt::Display for Entite<H>{
     fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result{
         write!(f, "{}",self)
     }

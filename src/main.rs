@@ -27,9 +27,9 @@ fn main() {
         //.add_startup_system(spawn_camera)
         .add_systems(Startup, setup)
         // Systems
-        .add_systems(transition_to_cad_state)
-        .add_systems(transition_to_main_menu_state)
-        .add_systems(exit_cad)
+        .add_systems(Update, transition_to_cad_state)
+        .add_systems(Update, transition_to_main_menu_state)
+        .add_plugins(AppExit, exit_cad)
         //.add_systems(FixedUpdate, (update_liste, update_cad )
         .run();
 }
