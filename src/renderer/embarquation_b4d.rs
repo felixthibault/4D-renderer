@@ -134,6 +134,7 @@ struct Mathing{
     _option_unités:String,
     unité:String,
 }
+#[derive(Deserialize)]
 struct Interface{
     liste_entite_width: f32,
 
@@ -141,6 +142,7 @@ struct Interface{
     thème: String,
     choix_de_thèmes: Vec<String>,
 }
+#[derive(Deserialize)]
 pub struct Configuration{
     utilisateur: String,
     version: String,

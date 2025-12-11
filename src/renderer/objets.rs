@@ -125,7 +125,7 @@ impl<H:Zero> Entite<H>{
         Entite{nom:Nom(nom.to_string()),
                 tags:None,
                 constituant: constituants,
-                position: Position::new(0,0,0),//Chercher le centre des constituants
+                position: Position::new(H::zero(),H::zero(),H::zero()),//Chercher le centre des constituants
                 surface: Vecteur::null(), //Chercher plus tard le volume total occupé par les constituants
             }
     }
@@ -230,7 +230,7 @@ impl fmt::Display for Entite{
     }
 }
 
-impl fmt::Debug for Entite{
+impl <H:fmt::Debug> fmt::Debug for Entite<H>{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         //Débogue le nom, la position approximative, le volume ou l'aire 
         //et les constituants de l'entité d'esquisse
@@ -244,7 +244,7 @@ impl fmt::Debug for Entite{
     }
 }
 
-impl<T:fmt::Debug> fmt::Debug for Point<T>{
+impl<H:fmt::Debug> fmt::Debug for Point<H>{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         //Imprime la position et le nom du point
         //Permet de faire dbg!(point);
